@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class DocumentLoader {
+public final class DocumentLoader {
 
     private PDFTextExtractor PDFTextExtractor;
     private PDFGraphicsExtractor PDFGraphicsExtractor;

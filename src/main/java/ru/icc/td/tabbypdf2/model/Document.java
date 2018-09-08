@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Document implements Closeable {
+public final class Document implements Closeable {
     private final File sourceFile;
     private final PDDocument pdDocument;
     private final List<Page> pages = new ArrayList();

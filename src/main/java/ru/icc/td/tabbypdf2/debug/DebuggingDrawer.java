@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import ru.icc.td.tabbypdf2.model.*;
 
 import java.awt.Color;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -26,7 +27,7 @@ public final class DebuggingDrawer {
         File file = document.getSourceFile();
 
         PDDocument pdDocument = loadPDDocument(file);
-        ContentDrawer contentDrawer = new ContentDrawer(pdDocument);
+        PDFContentDrawer contentDrawer = new PDFContentDrawer(pdDocument);
 
         drawDocument(document, contentDrawer);
 
@@ -70,12 +71,12 @@ public final class DebuggingDrawer {
         return new File(String.format("%s/%s%s.pdf", outputDirectoryPath, fileName, suffix));
     }
 
-    private void drawDocument(Document document, ContentDrawer contentDrawer) throws IOException {
+    private void drawDocument(Document document, PDFContentDrawer contentDrawer) throws IOException {
         for (Page page : document.getPages())
             drawPage(page, contentDrawer);
     }
 
-    private void drawPage(Page page, ContentDrawer contentDrawer) throws IOException {
+    private void drawPage(Page page, PDFContentDrawer contentDrawer) throws IOException {
         int pageIndex = page.getIndex();
         contentDrawer.startPage(pageIndex);
 
@@ -83,16 +84,19 @@ public final class DebuggingDrawer {
         drawWords(page, contentDrawer);
         drawBlocks(page, contentDrawer);
         drawRulings(page, contentDrawer);
+        drawImageBounds(page, contentDrawer);
 
         contentDrawer.endPage();
     }
 
-    private void drawCharPositions(Page page, ContentDrawer contentDrawer) throws IOException {
+    private void drawCharPositions(Page page, PDFContentDrawer contentDrawer) throws IOException {
+        contentDrawer.setStyle(Color.BLACK, null, 0.25f);
+
         for (CharPosition charPosition : page.getCharPositions())
             contentDrawer.strokeRectangle(charPosition);
     }
 
-    private void drawWords(Page page, ContentDrawer contentDrawer) throws IOException {
+    private void drawWords(Page page, PDFContentDrawer contentDrawer) throws IOException {
         contentDrawer.setStyle(Color.BLUE, Color.RED, 0.25f);
 
         for (Word word : page.getWords()) {
@@ -102,18 +106,26 @@ public final class DebuggingDrawer {
         }
     }
 
-    private void drawBlocks(Page page, ContentDrawer contentDrawer) throws IOException {
+    private void drawBlocks(Page page, PDFContentDrawer contentDrawer) throws IOException {
         contentDrawer.setStyle(Color.BLACK, Color.RED, 0.5f);
 
         for (Block block : page.getBlocks())
             contentDrawer.strokeRectangle(block);
     }
 
-    private void drawRulings(Page page, ContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.GREEN, Color.GREEN, 0.5f);
+    private void drawRulings(Page page, PDFContentDrawer contentDrawer) throws IOException {
+        contentDrawer.setStyle(Color.GREEN, null, 0.5f);
 
         for (Ruling ruling : page.getRulings())
             contentDrawer.strokeLine(ruling);
+    }
+
+
+    private void drawImageBounds(Page page, PDFContentDrawer contentDrawer) throws IOException {
+        contentDrawer.setStyle(Color.PINK, null, 2.0f);
+
+        for (Rectangle2D imageBBox : page.getImageBounds())
+            contentDrawer.strokeRectangle(imageBBox);
     }
 
 

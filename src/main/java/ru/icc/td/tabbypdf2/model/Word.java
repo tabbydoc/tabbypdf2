@@ -4,7 +4,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Word extends Rectangle2D.Float {
+public final class Word extends Rectangle2D.Float {
     private String text;
     private final List<CharPosition> charPositions;
     private Line line;

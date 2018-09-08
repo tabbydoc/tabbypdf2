@@ -6,7 +6,7 @@ import ru.icc.td.tabbypdf2.model.Block;
 
 import java.util.List;
 
-public class BlockComposer {
+public final class BlockComposer {
     public void composeBlocks(Page page) {
         List<Word> words = page.getWords();
 

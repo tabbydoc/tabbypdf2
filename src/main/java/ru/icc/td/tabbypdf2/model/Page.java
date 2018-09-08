@@ -5,13 +5,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class Page extends Rectangle2D.Float {
+public final class Page extends Rectangle2D.Float {
     private List<CharPosition> charPositions;
     private List<Word> words;
     private List<Word> lines;
     private List<Block> blocks;
     private List<Ruling> rulings;
-    private List<Ruling> imageBounds;
+    private List<Rectangle2D> imageBounds;
 
     private final Document document;
     private final int index;
@@ -21,6 +21,7 @@ public class Page extends Rectangle2D.Float {
         words = new ArrayList<>(300);
         blocks = new ArrayList<>(30);
         rulings = new ArrayList<>(100);
+        imageBounds = new ArrayList<>(5);
     }
 
     public Page(Document document, int index, Rectangle2D.Float bbox) {
@@ -59,5 +60,13 @@ public class Page extends Rectangle2D.Float {
 
     public List<Ruling> getRulings() {
         return rulings;
+    }
+
+    public boolean addImageBounds(Collection<Rectangle2D> imageBounds) {
+        return this.imageBounds.addAll(imageBounds);
+    }
+
+    public List<Rectangle2D> getImageBounds() {
+        return imageBounds;
     }
 }

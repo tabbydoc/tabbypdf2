@@ -4,7 +4,7 @@ import java.awt.Font;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 
-public class CharPosition extends Rectangle2D.Float {
+public final class CharPosition extends Rectangle2D.Float {
     private int chunkId;
     private Character unicode;
     private float spaceWidth;

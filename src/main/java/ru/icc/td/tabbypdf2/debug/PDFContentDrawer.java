@@ -11,7 +11,7 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 
-final class ContentDrawer {
+final class PDFContentDrawer {
     private final PDDocument pdDocument;
     private PDPageContentStream contentStream;
 
@@ -41,7 +41,7 @@ final class ContentDrawer {
         lineWidth = lINE_WIDTH;
     }
 
-    ContentDrawer(PDDocument pdDocument) {
+    PDFContentDrawer(PDDocument pdDocument) {
         this.pdDocument = pdDocument;
     }
 
@@ -57,45 +57,63 @@ final class ContentDrawer {
         contentStream.close();
     }
 
-    ContentDrawer setStrokeColor(Color color) {
+    PDFContentDrawer setStrokeColor(Color color) {
         assert (null != color);
         strokeColor = color;
         return this;
     }
 
-    ContentDrawer setFillColor(Color color) {
+    PDFContentDrawer setFillColor(Color color) {
         assert (null != color);
         fillColor = color;
         return this;
     }
 
-    ContentDrawer setLineWidth(float width) {
+    PDFContentDrawer setLineWidth(float width) {
         assert (width > 0f);
         lineWidth = width;
         return this;
     }
 
     void setStyle(Color strokeColor, Color fillColor, float lineWidth) throws IOException {
-        contentStream.setStrokingColor(strokeColor);
-        contentStream.setNonStrokingColor(fillColor);
+        if (null != strokeColor)
+            contentStream.setStrokingColor(strokeColor);
+
+        if (null != fillColor)
+            contentStream.setNonStrokingColor(fillColor);
+
         contentStream.setLineWidth(lineWidth);
     }
 
-    void strokeRectangle(Rectangle2D.Float rect) throws IOException {
-        contentStream.addRect(rect.x, rect.y, rect.width, rect.height);
+    private void addRectangle(Rectangle2D rect) throws IOException {
+        float x = (float) rect.getX();
+        float y = (float) rect.getY();
+        float w = (float) rect.getWidth();
+        float h = (float) rect.getHeight();
+
+        contentStream.addRect(x, y, w, h);
+    }
+
+    void strokeRectangle(Rectangle2D rect) throws IOException {
+        addRectangle(rect);
         contentStream.stroke();
     }
 
-    void fillRectangle(Rectangle2D.Float rect) throws IOException {
-        contentStream.addRect(rect.x, rect.y, rect.width, rect.height);
+    void fillRectangle(Rectangle2D rect) throws IOException {
+        addRectangle(rect);
         contentStream.fill();
     }
 
-    void strokeLine(Line2D.Float line) throws IOException {
-        contentStream.moveTo(line.x1, line.y1);
-        contentStream.lineTo(line.x2, line.y2);
+    void strokeLine(Line2D line) throws IOException {
+        float x1 = (float) line.getX1();
+        float y1 = (float) line.getY1();
+        float x2 = (float) line.getX2();
+        float y2 = (float) line.getY2();
+
+        contentStream.moveTo(x1, y1);
+        contentStream.lineTo(x2, y2);
         contentStream.stroke();
-        contentStream.moveTo(line.x1, line.y1);
+        contentStream.moveTo(x1, y1);
     }
 
     void showText(String text, float x, float y) throws IOException {

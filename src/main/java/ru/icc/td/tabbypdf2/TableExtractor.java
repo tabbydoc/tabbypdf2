@@ -16,7 +16,7 @@ import java.nio.file.*;
 import java.util.Collection;
 import java.util.List;
 
-public class TableExtractor {
+public final class TableExtractor {
 
     // CLI params
 

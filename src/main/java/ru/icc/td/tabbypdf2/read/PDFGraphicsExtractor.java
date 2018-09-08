@@ -17,16 +17,16 @@ import java.util.List;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Ruling;
 
-public class PDFGraphicsExtractor {
+public final class PDFGraphicsExtractor {
 
     private final PDDocument pdDocument; // A source untagged PDF document that needs to be processed
     private final List<Ruling> rulings;  // Rulings extracted from the PDF document
-    private final List<Rectangle2D> imageRegions;
+    private final List<Rectangle2D> imageBounds; // Image bounding boxes extracted from the PDF document
 
     public PDFGraphicsExtractor(PDDocument pdDocument) throws IOException {
         this.pdDocument = pdDocument;
         rulings = new ArrayList<>(1000);
-        imageRegions = new ArrayList<>();
+        imageBounds = new ArrayList<>(10);
     }
 
     public void readTo(final int pageIndex, Page page) {
@@ -35,8 +35,9 @@ public class PDFGraphicsExtractor {
         } else {
             try {
                 PDPage pdPage = pdDocument.getPage(pageIndex);
-                new RulingAndImageStreamEngine(pdPage).run();
+                new InnerStreamEngine(pdPage).run();
                 page.addRulings(rulings);
+                page.addImageBounds(imageBounds);
             } finally {
                 clearAll();
             }
@@ -45,13 +46,13 @@ public class PDFGraphicsExtractor {
 
     private void clearAll() {
         rulings.clear();
-        imageRegions.clear();
+        imageBounds.clear();
     }
 
-    private class RulingAndImageStreamEngine extends PDFGraphicsStreamEngine {
+    private final class InnerStreamEngine extends PDFGraphicsStreamEngine {
         private float x, y;
 
-        private RulingAndImageStreamEngine(PDPage page) {
+        private InnerStreamEngine(PDPage page) {
             super(page);
         }
 
@@ -79,8 +80,8 @@ public class PDFGraphicsExtractor {
             at.scale(1d, -1d);
             at.translate(0d, -1d);
 
-            Rectangle2D imageBounds = at.createTransformedShape(new Rectangle2D.Double(0d, 0d, 1d, 1d)).getBounds2D();
-            imageRegions.add(imageBounds);
+            Rectangle2D imageBBox = at.createTransformedShape(new Rectangle2D.Double(0d, 0d, 1d, 1d)).getBounds2D();
+            imageBounds.add(imageBBox);
         }
 
         @Override
