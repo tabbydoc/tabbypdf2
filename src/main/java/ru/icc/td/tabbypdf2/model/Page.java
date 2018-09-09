@@ -24,10 +24,10 @@ public final class Page extends Rectangle2D.Float {
         imageBounds = new ArrayList<>(5);
     }
 
-    public Page(Document document, int index, Rectangle2D.Float bbox) {
+    public Page(Document document, int index, Rectangle2D bbox) {
         this.document = document;
         this.index = index;
-        setRect(bbox.x, bbox.y, bbox.width, bbox.height);
+        setRect(bbox);
     }
 
     public boolean addCharPositions(Collection<CharPosition> charPositions) {

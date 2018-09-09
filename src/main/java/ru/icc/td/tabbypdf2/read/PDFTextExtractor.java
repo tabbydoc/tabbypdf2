@@ -115,7 +115,8 @@ public final class PDFTextExtractor {
             addOperator(new SetNonStrokingDeviceGrayColor());
         }
 
-        private InnerTextStripper() throws IOException {}
+        private InnerTextStripper() throws IOException {
+        }
 
         private void stripPage(int pageIndex) throws IOException {
             PDPage page = pdDocument.getPage(pageIndex);
@@ -273,12 +274,7 @@ public final class PDFTextExtractor {
                     continue;
                 }
 
-                // Check if the font of the text position is not null
-                Font font = getFont(textPos);
-                if (null == font) {
-                    System.err.println("WARNING: a text position whose font is null was ignored");
-                    continue;
-                }
+                Character c = unicode.charAt(0);
 
                 // Text position coordinates
                 final float x = textPos.getX();
@@ -286,13 +282,20 @@ public final class PDFTextExtractor {
                 final float w = textPos.getWidth();
                 final float h = textPos.getHeight();
 
-
-                Rectangle2D.Float bbox = new Rectangle2D.Float(x, y, w, h);
+                Rectangle2D bbox = new Rectangle2D.Float(x, y, w, h);
 
                 float spaceWidth = textPos.getWidthOfSpace();
+
+                // Check if the font of the text position is not null
+                Font font = getFont(textPos);
+                if (null == font) {
+                    System.err.println("WARNING: a text position whose font is null was ignored");
+                    continue;
+                }
+
                 Color color = getColor(textPos);
 
-                CharPosition charPosition = new CharPosition(chunkCount, unicode.charAt(0), bbox, spaceWidth, font, color);
+                CharPosition charPosition = new CharPosition(chunkCount, c, bbox, spaceWidth, font, color);
                 charPositions.add(charPosition);
             }
         }
