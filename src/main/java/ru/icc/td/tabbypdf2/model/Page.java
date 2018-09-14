@@ -69,4 +69,8 @@ public final class Page extends Rectangle2D.Float {
     public List<Rectangle2D> getImageBounds() {
         return imageBounds;
     }
+
+    public boolean addBlocks(Collection<Block> blocks){
+        return this.blocks.addAll(blocks);
+    }
 }
