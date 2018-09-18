@@ -80,11 +80,11 @@ public final class DebuggingDrawer {
         int pageIndex = page.getIndex();
         contentDrawer.startPage(pageIndex);
 
-        //drawCharPositions(page, contentDrawer);
-        drawWords(page, contentDrawer);
         drawBlocks(page, contentDrawer);
         drawRulings(page, contentDrawer);
         drawImageBounds(page, contentDrawer);
+        //drawCharPositions(page, contentDrawer);
+        drawWords(page, contentDrawer);
 
         contentDrawer.endPage();
     }
@@ -107,7 +107,7 @@ public final class DebuggingDrawer {
     }
 
     private void drawBlocks(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.BLACK, Color.RED, 0.5f);
+        contentDrawer.setStyle(Color.BLUE, Color.RED, 1.0f);
 
         for (Block block : page.getBlocks())
             contentDrawer.strokeRectangle(block);
