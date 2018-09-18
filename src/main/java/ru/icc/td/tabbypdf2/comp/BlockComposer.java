@@ -39,7 +39,6 @@ public class BlockComposer {
             addWord(word);
             i = -1;
 
-            //doesExistAnotherWordWithTheSameIndex();
             block = new Block(blockWords);
 
             blocks.add(block);
@@ -54,11 +53,16 @@ public class BlockComposer {
         //Метод работает хорошо, но не совсем точно. Пока в стадии developing. Хорошо срабаывает в документе eu-004.pdf.
         //Сравните разбиение таблицы
 
-        //unionSeparatedWords(); //Блок, в котором оказалось только одно слово
+        separateByChunkId();
+        separateByChunkId();
 
-        //unionWronglyIsolatedBlocks(); //Блок, который по ошибке не склеен и находится сбоку
+        //separateOneToOneRelation();
 
-        //unionIntersectedBlocks(); //Объединяет блоки, которые пересекаются. Эту аномалию в статье не рассматривают.
+        unionSeparatedWords(); //Блок, в котором оказалось только одно слово
+
+        unionWronglyIsolatedBlocks(); //Блок, который по ошибке не склеен и находится сбоку
+
+        unionIntersectedBlocks(); //Объединяет блоки, которые пересекаются. Эту аномалию в статье не рассматривают.
 
         return blocks;
     }
@@ -93,6 +97,68 @@ public class BlockComposer {
                 j = -1;
             }
         }
+    }
+
+    private void separateByChunkId(){
+        List<Word> blockWordsI = new ArrayList<>();
+        Block blockI;
+        Word wordI;
+        int chunkIdI;
+        List<Word> blockWordsK = new ArrayList<>();
+        Block blockK;
+        Word wordK;
+        int chunkIdK;
+        updatedBlocks.clear();
+        Block block;
+
+        for(int i = 0; i < blocks.size(); i++){
+            blockWordsI.clear();
+            blockI = blocks.get(i);
+            blockWordsI.addAll(blockI.getWords());
+
+            if(blockWordsI.size() == 1)
+                continue;
+
+            for(int j = 0; j < blockWordsI.size(); j++){
+
+                wordI = blockWordsI.get(j);
+                chunkIdI = wordI.getStartChunkID();
+
+                for(int k = 0; k < blocks.size(); k++){
+                    blockWordsK.clear();
+                    blockK = blocks.get(k);
+
+                    if(blockK.equals(blockI))
+                        continue;
+
+                    blockWordsK.addAll(blockK.getWords());
+
+                    for(int l = 0; l < blockWordsK.size(); l++){
+                        wordK = blockWordsK.get(l);
+                        chunkIdK = wordK.getStartChunkID();
+
+                        if(chunkIdI == chunkIdK){
+                            blockI.removeWord(wordI);
+                            blockK.removeWord(wordK);
+                            k = -1;
+                            j = -1;
+
+                            blockWords.clear();
+                            blockWords.add(wordI);
+                            block = new Block(blockWords);
+                            updatedBlocks.add(block);
+
+                            blockWords.clear();
+                            blockWords.add(wordK);
+                            block = new Block(blockWords);
+                            updatedBlocks.add(block);
+                        }
+                    }
+                }
+            }
+        }
+
+        blocks.addAll(updatedBlocks);
     }
 
     /**Ищет блоки, которые пересекаются и объединяет их
@@ -143,9 +209,7 @@ public class BlockComposer {
         Rectangle2D.Float rectangle1 = new Rectangle2D.Float();
         Rectangle2D.Float rectangle2 = new Rectangle2D.Float();
         float spaceI, spaceJ;
-        //Создаём два прямоугольника с увелчинной вправо и влево шириной на расстояние одного пробела. Пробел
-        //вычисляется в методе calculateSpace. Если есть пересечения, то объединяем два блока. Этот метод, еще
-        //объединяет блоки, состоящие из одного слова
+
         do {
             updatedBlocks.clear();
 
