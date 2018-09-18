@@ -55,6 +55,12 @@ public class Block extends Rectangle2D.Float {
         update();
     }
 
+    public void removeWords(List<Word> words){
+        for(Word word : words)
+            this.words.remove(word);
+        update();
+    }
+
     private void setWords(List<Word> words){
         this.words.addAll(words);
     }

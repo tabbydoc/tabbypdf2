@@ -82,7 +82,7 @@ public final class DebuggingDrawer {
 
         drawBlocks(page, contentDrawer);
         drawRulings(page, contentDrawer);
-        drawImageBounds(page, contentDrawer);
+        //drawImageBounds(page, contentDrawer);
         //drawCharPositions(page, contentDrawer);
         drawWords(page, contentDrawer);
 

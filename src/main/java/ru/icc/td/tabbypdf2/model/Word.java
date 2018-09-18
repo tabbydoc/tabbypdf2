@@ -72,4 +72,9 @@ public final class Word extends Rectangle2D.Float {
     public int getStartChunkID() {
         return charPositions.get(0).getChunkId();
     }
+
+    public void addCharPositions(List<CharPosition> charPositions){
+        this.charPositions.addAll(charPositions);
+        update();
+    }
 }

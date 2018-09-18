@@ -3,8 +3,7 @@ package ru.icc.td.tabbypdf2.comp;
 import ru.icc.td.tabbypdf2.model.*;
 
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class BlockComposer {
     private Page page;
@@ -36,14 +35,11 @@ public class BlockComposer {
         Word word;
 
         for (int i = 0; i < words.size(); i++) {
-            //Берём слово, добавляем в список блочных слов blockWords, убираем из списка words,
-            //строим для него расширенный прямоугольник, ищем пересечения с другими словами.
-            //Для слов, которые пересеклись, делаем тоже самое. Как только пройдём все слова в words, создаем Block
-            //и добавляем в blocks
             word = words.get(i);
             addWord(word);
             i = -1;
 
+            //doesExistAnotherWordWithTheSameIndex();
             block = new Block(blockWords);
 
             blocks.add(block);
@@ -58,11 +54,11 @@ public class BlockComposer {
         //Метод работает хорошо, но не совсем точно. Пока в стадии developing. Хорошо срабаывает в документе eu-004.pdf.
         //Сравните разбиение таблицы
 
-        unionSeparatedWords(); //Блок, в котором оказалось только одно слово
+        //unionSeparatedWords(); //Блок, в котором оказалось только одно слово
 
-        unionWronglyIsolatedBlocks(); //Блок, который по ошибке не склеен и находится сбоку
+        //unionWronglyIsolatedBlocks(); //Блок, который по ошибке не склеен и находится сбоку
 
-        unionIntersectedBlocks(); //Объединяет блоки, которые пересекаются. Эту аномалию в статье не рассматривают.
+        //unionIntersectedBlocks(); //Объединяет блоки, которые пересекаются. Эту аномалию в статье не рассматривают.
 
         return blocks;
     }
@@ -81,7 +77,6 @@ public class BlockComposer {
     /**Ищет для даного слова <code>word</code> пересечения
      * @param word Слово, для которого ищется пересечение
      */
-
     private void hasWordIntersections(Word word) {
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
         rectangle.setRect(word.x, (word.y - word.height), word.width, 3 * word.height); //создаём прямоугольник высотой в три высоты слова
@@ -90,9 +85,10 @@ public class BlockComposer {
         for (int j = 0; j < words.size(); j++) {
             wordJ = words.get(j);
 
-            //Ищем для этого прямоугольника пересечения с другими словами. Если есть пересесечение, то добавляем его в список blockWords
-            //и для последнего слова снова ищем пересечения
-            if (rectangle.intersects(wordJ)) {
+            boolean isOrder = Math.abs(word.getStartChunkID() - wordJ.getStartChunkID()) <= 1;
+            boolean isRulings = hasWordLineIntersections(word, wordJ);
+
+            if (rectangle.intersects(wordJ) && isOrder && !isRulings) {
                 addWord(wordJ);
                 j = -1;
             }
@@ -307,6 +303,21 @@ public class BlockComposer {
         return false;
     }
 
+    private boolean hasWordLineIntersections(Word wordI, Word wordJ){
+        List<Ruling> rulings = page.getRulings();
+
+        for (int i = 0; i < rulings.size(); i++) {
+            Ruling ruling = rulings.get(i);
+
+            if (ruling.x1 == ruling.x2 && ((wordI.x + wordI.width <= ruling.x1 && ruling.x1 <= wordJ.x)
+                    || (wordJ.x + wordJ.width <= ruling.x1 && ruling.x1 <= wordI.x)))
+                return true;
+        }
+
+        return false;
+
+
+    }
 
     /**Определяет: есть ли между двумя блоками вертикальный Ruling
      * @param blockI Первый блок
@@ -315,8 +326,6 @@ public class BlockComposer {
      */
     private boolean hasLineIntersections(Block blockI, Block blockJ) {
         List<Ruling> rulings = page.getRulings();
-        Block block = new Block(blockI.getWords());
-        block.addWords(blockJ.getWords());
 
         for (int i = 0; i < rulings.size(); i++) {
             Ruling ruling = rulings.get(i);
