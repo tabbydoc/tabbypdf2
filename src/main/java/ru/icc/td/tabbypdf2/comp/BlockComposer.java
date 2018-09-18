@@ -45,24 +45,24 @@ public class BlockComposer {
             blockWords.clear();
         }
 
-        //Дальше идут методы постанализа
-        //Названия аномалий совпадают с Кейгером
-        //Можете комментить их смотреть, что за аномалии они убирают
 
-        //separateOneToOneRelation(); //Экспериментальный метод. Улучшает точность разбиения таблиц. Можете разкомментить и посмотреть, что получается.
-        //Метод работает хорошо, но не совсем точно. Пока в стадии developing. Хорошо срабаывает в документе eu-004.pdf.
-        //Сравните разбиение таблицы
 
         separateByChunkId();
-        separateByChunkId();
+        for(int i = 0; i < blocks.size(); i++){
+            if(blocks.get(i).getWords().size() == 0) {
+                blocks.remove(i);
+                i--;
+            }
+        }
 
-        //separateOneToOneRelation();
+        //separateByChunkId();
 
-        unionSeparatedWords(); //Блок, в котором оказалось только одно слово
+        unionSeparatedWords();
 
-        unionWronglyIsolatedBlocks(); //Блок, который по ошибке не склеен и находится сбоку
+        unionWronglyIsolatedBlocks("h");
+        unionWronglyIsolatedBlocks("v");
 
-        unionIntersectedBlocks(); //Объединяет блоки, которые пересекаются. Эту аномалию в статье не рассматривают.
+        unionIntersectedBlocks();
 
         return blocks;
     }
@@ -140,7 +140,9 @@ public class BlockComposer {
                         if(chunkIdI == chunkIdK){
                             blockI.removeWord(wordI);
                             blockK.removeWord(wordK);
-                            k = -1;
+                            blockWordsK.remove(wordK);
+                            blockWordsI.remove(wordI);
+                            l = -1;
                             j = -1;
 
                             blockWords.clear();
@@ -197,10 +199,10 @@ public class BlockComposer {
         } while (hasIntersections(updatedBlocks));
     }
 
-    /**Объединяем блоки, которые находятся рядом на расстоянии пробела и изолированы по ошибке
+    /**Объединяем блоки, которые находятся рядом
      */
 
-    private void unionWronglyIsolatedBlocks() {
+    private void unionWronglyIsolatedBlocks(String param) {
         updatedBlocks.clear();
         blockWords.clear();
 
@@ -208,38 +210,74 @@ public class BlockComposer {
         Block blockJ;
         Rectangle2D.Float rectangle1 = new Rectangle2D.Float();
         Rectangle2D.Float rectangle2 = new Rectangle2D.Float();
-        float spaceI, spaceJ;
+        float spaceI, spaceJ, height;
 
         do {
+            System.out.println("blocks.size = " + blocks.size());
             updatedBlocks.clear();
 
             for (int i = 0; i < blocks.size(); i++) {
                 blockI = blocks.get(i);
-                spaceI = calculateSpace(blockI);
 
-                rectangle1.setRect(blockI.x - spaceI, blockI.y, blockI.width + 2 * spaceI, blockI.height);
-                blocks.remove(i);
-                i--;
+                switch (param){
+                    case "h": {
+                        spaceI = calculateSpace(blockI);
+                        rectangle1.setRect(blockI.x - spaceI, blockI.y, blockI.width + 2 * spaceI, blockI.height);
+                        break;
+                    }
+
+                    case "v":{
+                        if(blockI.getWords().size() == 0)
+                            continue;
+
+                        height = evaluateHeight(blockI);
+                        rectangle1.setRect(blockI.x, blockI.y - height, blockI.width, 3*height);
+                        break;
+                    }
+                }
+
+
                 for (int j = 0; j < blocks.size(); j++) {
                     blockJ = blocks.get(j);
 
-                    spaceJ = calculateSpace(blockJ);
-                    rectangle2.setRect(blockJ.x - spaceJ, blockJ.y, blockJ.width + 2 * spaceJ, blockJ.height);
+                    if(blockJ.equals(blockI))
+                        continue;
 
-                    if (rectangle1.intersects(rectangle2)) {
-                        blocks.remove(j);
-                        i = -1;
-                        j--;
-                        blockI.addWords(blockJ.getWords());
+                    switch (param) {
+                        case "h": {
+                            spaceJ = calculateSpace(blockJ);
+                            rectangle2.setRect(blockJ.x - spaceJ, blockJ.y, blockJ.width + 2 * spaceJ, blockJ.height);
+
+                            if (rectangle1.intersects(rectangle2)) {
+                                blocks.remove(j);
+                                i = -1;
+                                j--;
+                                blockI.addWords(blockJ.getWords());
+                            }
+                            break;
+                        }
+
+                        case "v": {
+                            if (rectangle1.intersects(blockJ) && !hasLineIntersections(blockI, blockJ, "v")) {
+                                System.out.printf("i = %d, j = %d, Isize = %d, Jsize = %d; \n", i, j, blockI.getWords().size(), blockJ.getWords().size());
+
+                                blocks.remove(j);
+
+                                j--;
+                                i = -1;
+
+                                blockI.addWords(blockJ.getWords());
+                            }
+                            break;
+                        }
                     }
                 }
                 updatedBlocks.add(blockI);
+                blocks.remove(blockI);
             }
 
-            blocks.clear();
             blocks.addAll(updatedBlocks);
-        } while (hasWronglyIsolatedBlocks(updatedBlocks));
-
+        } while (hasWronglyIsolatedBlocks(updatedBlocks, param));
     }
 
     /**Объдиняет блоки состоящих из одного слова
@@ -250,10 +288,6 @@ public class BlockComposer {
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
 
         updatedBlocks.clear();
-
-        //Первый блок blockI -- блок состоящий из одного слова. Второй blockJ -- не обязательно.
-        //Строим прямоугольник шириной в страницу из блока blockI. Ищем для него пересечения.
-        //Объеденим их только, если есть совпадения по ChunkId и нет между ними Rulings.
 
         for(int i = 0; i < blocks.size(); i++){
             blockI = blocks.get(i);
@@ -276,7 +310,7 @@ public class BlockComposer {
                         areIdsEqual = true;
                 }
 
-                if(rectangle.intersects(blockJ) && areIdsEqual && !hasLineIntersections(blockI, blockJ)){
+                if(rectangle.intersects(blockJ) && areIdsEqual && !hasLineIntersections(blockI, blockJ, "h")){
                     blocks.remove(j);
                     j--;
                     i = -1;
@@ -319,33 +353,74 @@ public class BlockComposer {
      * @return Возвращает true, если есть такие блоки
      */
 
-    private boolean hasWronglyIsolatedBlocks(List<Block> blocks) {
+    private boolean hasWronglyIsolatedBlocks(List<Block> blocks, String param) {
         Block blockI;
         Block blockJ;
         Rectangle2D.Float rectangle1 = new Rectangle2D.Float();
         Rectangle2D.Float rectangle2 = new Rectangle2D.Float();
-        float spaceI, spaceJ;
+        float spaceI, spaceJ, height;
 
         for (int i = 0; i < blocks.size(); i++) {
             blockI = blocks.get(i);
-            spaceI = calculateSpace(blockI);
 
-            rectangle1.setRect(blockI.x - spaceI, blockI.y, blockI.width + 2 * spaceI, blockI.height);
+            switch (param){
+                case "h": {
+                    spaceI = calculateSpace(blockI);
+                    rectangle1.setRect(blockI.x - spaceI, blockI.y, blockI.width + 2 * spaceI, blockI.height);
+                    break;
+                }
+
+                case "v":{
+                    if(blockI.getWords().size() == 0)
+                        continue;
+
+                    height = evaluateHeight(blockI);
+                    rectangle1.setRect(blockI.x, blockI.y - height, blockI.width, 3*height);
+                    break;
+                }
+            }
 
             for (int j = 0; j < blocks.size(); j++) {
                 blockJ = blocks.get(j);
+
                 if(blockI.equals(blockJ))
                     continue;
 
-                spaceJ = calculateSpace(blockJ);
-                rectangle2.setRect(blockJ.x - spaceJ, blockJ.y, blockJ.width + 2 * spaceJ, blockJ.height);
+                switch (param) {
+                    case "h": {
+                        spaceJ = calculateSpace(blockJ);
+                        rectangle2.setRect(blockJ.x - spaceJ, blockJ.y, blockJ.width + 2 * spaceJ, blockJ.height);
 
-                if (rectangle1.intersects(rectangle2)) {
-                    return true;
+                        if (rectangle1.intersects(rectangle2)) {
+                            return true;
+                        }
+                        break;
+                    }
+
+                    case "v": {
+                        if (rectangle1.intersects(blockJ) && !hasLineIntersections(blockI, blockJ, "v")) {
+                            return true;
+                        }
+                        break;
+                    }
                 }
             }
         }
         return false;
+    }
+
+    private float evaluateHeight(Block block){
+        List<Word> words = block.getWords();
+        Word word;
+        float height = Float.MIN_VALUE, wHeight;
+
+        for(int i = 0; i < words.size(); i++){
+            word = words.get(i);
+            wHeight = word.height;
+            height = Math.max(height, wHeight);
+        }
+
+        return height;
     }
 
     /**Определяет: есть ли пересекающиеся блоки
@@ -388,15 +463,28 @@ public class BlockComposer {
      * @param blockJ Второй блок
      * @return true, если есть между блоками Ruling
      */
-    private boolean hasLineIntersections(Block blockI, Block blockJ) {
+    private boolean hasLineIntersections(Block blockI, Block blockJ, String param) {
         List<Ruling> rulings = page.getRulings();
 
         for (int i = 0; i < rulings.size(); i++) {
             Ruling ruling = rulings.get(i);
 
-            if (ruling.x1 == ruling.x2 && ((blockI.x + blockI.width <= ruling.x1 && ruling.x1 <= blockJ.x)
-                    || (blockJ.x + blockJ.width <= ruling.x1 && ruling.x1 <= blockI.x)))
-                return true;
+            switch (param) {
+                case "h": {
+                    if (ruling.x1 == ruling.x2 &&
+                            ((blockI.x + blockI.width <= ruling.x1 && ruling.x1 <= blockJ.x) ||
+                                    (blockJ.x + blockJ.width <= ruling.x1 && ruling.x1 <= blockI.x)))
+                        return true;
+                    break;
+                }
+
+                case "v": {
+                    if (ruling.y1 == ruling.y2 &&
+                            ((blockI.y + blockI.height <= ruling.y1 && blockJ.y >= ruling.y1) ||
+                                    (blockJ.y + blockJ.height <= ruling.y1 && blockI.y >= ruling.y1)))
+                        return true;
+                }
+            }
         }
 
         return false;

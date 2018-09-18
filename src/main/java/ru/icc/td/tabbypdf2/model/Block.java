@@ -44,12 +44,12 @@ public class Block extends Rectangle2D.Float {
     public List<Word> getWords() {
         return words;
     }
-    //Добавляем новые слова в блок и пересчитываем рамку блока
+
     public void addWords(List<Word> words){
-        setWords(words);
+        this.words.addAll(words);
         update();
     }
-    //Убираем слово из блока и пересчитываем рамку блока
+
     public void removeWord(Word word){
         words.remove(word);
         update();
@@ -59,9 +59,5 @@ public class Block extends Rectangle2D.Float {
         for(Word word : words)
             this.words.remove(word);
         update();
-    }
-
-    private void setWords(List<Word> words){
-        this.words.addAll(words);
     }
 }
