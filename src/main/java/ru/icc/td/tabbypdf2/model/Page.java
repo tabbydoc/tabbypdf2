@@ -12,6 +12,7 @@ public final class Page extends Rectangle2D.Float {
     private List<Block> blocks;
     private List<Ruling> rulings;
     private List<Rectangle2D> imageBounds;
+    private Gap<List<Ruling>> gap;
 
     private final Document document;
     private final int index;
@@ -73,4 +74,7 @@ public final class Page extends Rectangle2D.Float {
     public boolean addBlocks(Collection<Block> blocks){
         return this.blocks.addAll(blocks);
     }
+
+    public Gap<List<Ruling>> getGap () { return gap; }
+    public void setGap (Gap value) { this.gap = value; }
 }

@@ -5,11 +5,13 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 
 import ru.icc.td.tabbypdf2.model.*;
 
-import java.awt.Color;
+import java.awt.*;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 public final class DebuggingDrawer {
     private static final String SUFFIX_SEPARATOR = "_";
@@ -85,6 +87,7 @@ public final class DebuggingDrawer {
         drawBlocks(page, contentDrawer);
         drawRulings(page, contentDrawer);
         drawImageBounds(page, contentDrawer);
+        //drawGaps(page, contentDrawer);
 
         contentDrawer.endPage();
     }
@@ -126,6 +129,22 @@ public final class DebuggingDrawer {
 
         for (Rectangle2D imageBBox : page.getImageBounds())
             contentDrawer.strokeRectangle(imageBBox);
+    }
+
+    private void drawGaps(Page page, PDFContentDrawer contentDrawer) throws IOException {
+        contentDrawer.setStyle(Color.blue, null, 2.0f);
+
+        List<Ruling> leftRulings = page.getGap().getLeft();
+        for (Ruling ruling:leftRulings) {
+            contentDrawer.strokeLine(new Line2D.Double(ruling.x1, ruling.y1, ruling.x2, ruling.y2));
+        }
+
+        contentDrawer.setStyle(Color.RED, null, 2.0f);
+
+        List<Ruling> rightRuling = page.getGap().getRight();
+        for (Ruling ruling:rightRuling) {
+            contentDrawer.strokeLine(new Line2D.Double(ruling.x1, ruling.y1, ruling.x2, ruling.y2));
+        }
     }
 
 
