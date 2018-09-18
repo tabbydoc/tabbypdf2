@@ -82,8 +82,6 @@ public final class DebuggingDrawer {
         int pageIndex = page.getIndex();
         contentDrawer.startPage(pageIndex);
 
-        //drawCharPositions(page, contentDrawer);
-        drawWords(page, contentDrawer);
         drawBlocks(page, contentDrawer);
         drawRulings(page, contentDrawer);
         drawImageBounds(page, contentDrawer);
@@ -110,7 +108,7 @@ public final class DebuggingDrawer {
     }
 
     private void drawBlocks(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.BLACK, Color.RED, 0.5f);
+        contentDrawer.setStyle(Color.BLUE, Color.RED, 1.0f);
 
         for (Block block : page.getBlocks())
             contentDrawer.strokeRectangle(block);
@@ -123,7 +121,6 @@ public final class DebuggingDrawer {
             contentDrawer.strokeLine(ruling);
     }
 
-
     private void drawImageBounds(Page page, PDFContentDrawer contentDrawer) throws IOException {
         contentDrawer.setStyle(Color.PINK, null, 2.0f);
 
@@ -132,7 +129,7 @@ public final class DebuggingDrawer {
     }
 
     private void drawGaps(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.blue, null, 2.0f);
+        contentDrawer.setStyle(Color.BLUE, null, 2.0f);
 
         List<Ruling> leftRulings = page.getGap().getLeft();
         for (Ruling ruling:leftRulings) {
