@@ -1,5 +1,7 @@
 package ru.icc.td.tabbypdf2.model;
 
+import ru.icc.td.tabbypdf2.comp.InterColumnGapExtractor;
+
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,9 +12,9 @@ public final class Page extends Rectangle2D.Float {
     private List<Word> words;
     private List<Word> lines;
     private List<Block> blocks;
-    private List<Ruling> rulings;
+    private List<CursorTrace> cursorTraces;
     private List<Rectangle2D> imageBounds;
-    private Gap<List<Ruling>> gap;
+    private InterColumnGapExtractor.Gap<List<CursorTrace>> gap;
 
     private final Document document;
     private final int index;
@@ -21,7 +23,7 @@ public final class Page extends Rectangle2D.Float {
         charPositions = new ArrayList<>(2000);
         words = new ArrayList<>(300);
         blocks = new ArrayList<>(30);
-        rulings = new ArrayList<>(100);
+        cursorTraces = new ArrayList<>(100);
         imageBounds = new ArrayList<>(5);
     }
 
@@ -51,16 +53,16 @@ public final class Page extends Rectangle2D.Float {
         return blocks;
     }
 
-    public boolean addRulings(Collection<Ruling> rulings) {
-        return this.rulings.addAll(rulings);
+    public boolean addCursorTraces(Collection<CursorTrace> cursorTraces) {
+        return this.cursorTraces.addAll(cursorTraces);
     }
 
     public int getIndex() {
         return index;
     }
 
-    public List<Ruling> getRulings() {
-        return rulings;
+    public List<CursorTrace> getCursorTraces() {
+        return cursorTraces;
     }
 
     public boolean addImageBounds(Collection<Rectangle2D> imageBounds) {
@@ -75,6 +77,6 @@ public final class Page extends Rectangle2D.Float {
         return this.blocks.addAll(blocks);
     }
 
-    public Gap<List<Ruling>> getGap () { return gap; }
-    public void setGap (Gap value) { this.gap = value; }
+    public InterColumnGapExtractor.Gap<List<CursorTrace>> getGap () { return gap; }
+    public void setGap (InterColumnGapExtractor.Gap value) { this.gap = value; }
 }

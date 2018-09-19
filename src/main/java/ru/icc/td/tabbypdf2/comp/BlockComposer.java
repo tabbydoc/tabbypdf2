@@ -308,18 +308,18 @@ public class BlockComposer {
     }
 
 
-    /**Определяет: есть ли между двумя блоками вертикальный Ruling
+    /**Определяет: есть ли между двумя блоками вертикальный CursorTrace
      * @param blockI Первый блок
      * @param blockJ Второй блок
-     * @return true, если есть между блоками Ruling
+     * @return true, если есть между блоками CursorTrace
      */
     private boolean hasLineIntersections(Block blockI, Block blockJ) {
-        List<Ruling> rulings = page.getRulings();
+        List<CursorTrace> rulings = page.getCursorTraces();
         Block block = new Block(blockI.getWords());
         block.addWords(blockJ.getWords());
 
         for (int i = 0; i < rulings.size(); i++) {
-            Ruling ruling = rulings.get(i);
+            CursorTrace ruling = rulings.get(i);
 
             if (ruling.x1 == ruling.x2 && ((blockI.x + blockI.width <= ruling.x1 && ruling.x1 <= blockJ.x)
                     || (blockJ.x + blockJ.width <= ruling.x1 && ruling.x1 <= blockI.x)))

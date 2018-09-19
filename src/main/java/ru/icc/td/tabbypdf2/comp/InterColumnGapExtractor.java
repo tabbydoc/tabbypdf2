@@ -1,9 +1,7 @@
 package ru.icc.td.tabbypdf2.comp;
 
-import ru.icc.td.tabbypdf2.model.Block;
-import ru.icc.td.tabbypdf2.model.Gap;
+import ru.icc.td.tabbypdf2.model.CursorTrace;
 import ru.icc.td.tabbypdf2.model.Page;
-import ru.icc.td.tabbypdf2.model.Ruling;
 
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -11,19 +9,17 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class PageLayoutAlgorithm {
-
-    //private Page page;
-    //private Rectangle2D.Float boundary;
-    private List<Rectangle2D> obstacles;
-    private List<Ruling> rulings;
-    private Tuple<List<Ruling>> linesTuple;
+public class InterColumnGapExtractor {
 
     private final Comparator<Rectangle2D.Float> RECTANGLE_COMPARATOR = Comparator
             .comparing(Rectangle2D.Float::getY)
             .reversed()
             .thenComparing(Rectangle2D.Float::getX);
+    //private List<CursorTrace> cursorTraces;
+    //private Tuple<List<CursorTrace>> linesTuple;
+    private List<Rectangle2D> obstacles;
 
+    /*
     private class Tuple<T> {
         T left;
         T right;
@@ -33,8 +29,9 @@ public class PageLayoutAlgorithm {
             this.right = right;
         }
     }
+    */
 
-    public PageLayoutAlgorithm() {
+    public InterColumnGapExtractor() {
     }
 
     public void composeGaps(Page page) {
@@ -42,16 +39,22 @@ public class PageLayoutAlgorithm {
         obstacles = new ArrayList<>();
         obstacles.addAll(page.getBlocks());
         obstacles.addAll(page.getImageBounds());
-        rulings = page.getRulings();
-        //obstacles.addAll(page.getRulings());
-        page.setGap(findRulings());
+        //cursorTraces = page.getCursorTraces();
+        //obstacles.addAll(page.getCursorTraces());
+        Gap<List<CursorTrace>> gap = findRulings();
+        if (null != gap)
+            page.setGap(gap);
     }
 
-    private Gap<List<Ruling>> findRulings() {
+    private Gap<List<CursorTrace>> findRulings() {
+        if (obstacles == null && obstacles.isEmpty())
+            return null;
 
-        Rectangle2D.Double boundary = getBoundingRectangle();
-        List<Ruling> leftRulings = new ArrayList<>();
-        List<Ruling> rightRulings = new ArrayList<>();
+        Rectangle2D boundary = getBBox();
+
+
+        List<CursorTrace> leftCursorTraces = new ArrayList<>();
+        List<CursorTrace> rightCursorTraces = new ArrayList<>();
         List<Rectangle2D> rectangles = new ArrayList<>();
         rectangles.addAll(obstacles);
 
@@ -63,14 +66,14 @@ public class PageLayoutAlgorithm {
         Double boundingRight = boundary.getX() + boundary.getWidth();
 
         // add left bounding line
-        leftRulings.add(new Ruling(
+        leftCursorTraces.add(new CursorTrace(
                 new Point2D.Double(boundingRight, boundingTop),
                 new Point2D.Double(boundingRight, boundingBottom)
         ));
 
         // find all left lines
-        for (Rectangle2D currentRect:rectangles) {
-            //Ruling line = new Ruling(new Point2D.Double(rect.getX(), boundary.getY()), new Point2D.Double(rect.getX(), boundary.getY()+ boundary.getHeight()));
+        for (Rectangle2D currentRect : rectangles) {
+            //CursorTrace line = new CursorTrace(new Point2D.Double(rect.getX(), boundary.getY()), new Point2D.Double(rect.getX(), boundary.getY()+ boundary.getHeight()));
             Double x = currentRect.getX();
             Double currentTop = currentRect.getY();
             Double currentBottom = currentRect.getY() + currentRect.getHeight();
@@ -78,7 +81,7 @@ public class PageLayoutAlgorithm {
             Double y1 = boundingTop;
             Double y2 = boundingBottom;
 
-            for (Rectangle2D obstacle:rectangles) {
+            for (Rectangle2D obstacle : rectangles) {
 
                 Double obstacleBottom = obstacle.getY() + obstacle.getHeight();
                 Double obstacleLeft = obstacle.getX();
@@ -94,23 +97,23 @@ public class PageLayoutAlgorithm {
                 }
             }
 
-            Ruling line = new Ruling(new Point2D.Double(x, y1), new Point2D.Double(x, y2) );
-            if (!leftRulings.contains(line)) {
-                leftRulings.add(line);
+            CursorTrace line = new CursorTrace(new Point2D.Double(x, y1), new Point2D.Double(x, y2));
+            if (!leftCursorTraces.contains(line)) {
+                leftCursorTraces.add(line);
             }
         }
 
         rectangles.sort(Comparator.comparing(Rectangle2D::getX).reversed());
 
         // add right bounding line
-        rightRulings.add(new Ruling(
+        rightCursorTraces.add(new CursorTrace(
                 new Point2D.Double(boundingLeft, boundingTop),
                 new Point2D.Double(boundingLeft, boundingBottom)
         ));
 
         // find right lines
-        for (Rectangle2D currentRect:rectangles) {
-            //Ruling line = new Ruling(new Point2D.Double(rect.getX(), boundary.getY()), new Point2D.Double(rect.getX(), boundary.getY()+ boundary.getHeight()));
+        for (Rectangle2D currentRect : rectangles) {
+            //CursorTrace line = new CursorTrace(new Point2D.Double(rect.getX(), boundary.getY()), new Point2D.Double(rect.getX(), boundary.getY()+ boundary.getHeight()));
             Double x = currentRect.getX() + currentRect.getWidth();
             Double currentTop = currentRect.getY();
             Double currentBottom = currentRect.getY() + currentRect.getHeight();
@@ -118,7 +121,7 @@ public class PageLayoutAlgorithm {
             Double y1 = boundingTop;
             Double y2 = boundingBottom;
 
-            for (Rectangle2D obstacle:rectangles) {
+            for (Rectangle2D obstacle : rectangles) {
 
                 Double obstacleBottom = obstacle.getY() + obstacle.getHeight();
                 Double obstacleLeft = obstacle.getX();
@@ -134,41 +137,58 @@ public class PageLayoutAlgorithm {
                 }
             }
 
-            Ruling line = new Ruling(new Point2D.Double(x, y1), new Point2D.Double(x, y2) );
-            if (!rightRulings.contains(line)) {
-                rightRulings.add(line);
+            CursorTrace line = new CursorTrace(new Point2D.Double(x, y1), new Point2D.Double(x, y2));
+            if (!rightCursorTraces.contains(line)) {
+                rightCursorTraces.add(line);
             }
         }
 
-        return new Gap<>(leftRulings, rightRulings);
+        return new Gap<>(leftCursorTraces, rightCursorTraces);
     }
 
-    private Rectangle2D.Double getBoundingRectangle() {
-        if (obstacles!=null && obstacles.size() > 0) {
-            Rectangle2D rectangle = obstacles.get(0);
+    private Rectangle2D getBBox() {
+        if (obstacles == null && obstacles.isEmpty())
+            return null;
 
-            double left = rectangle.getX();
-            double right = rectangle.getX() + rectangle.getWidth();
-            double top = rectangle.getY();
-            double bottom = rectangle.getY() + rectangle.getHeight();
+        if (obstacles.size() == 1)
+            return obstacles.get(0).getBounds2D();
 
-            for (Rectangle2D r:obstacles) {
-                if(r.getX() < left) left = r.getX();
-                if(r.getX() + r.getWidth() > right) right = r.getX() + r.getWidth();
-                if(r.getY() < top) top = r.getY();
-                if(r.getY() + r.getHeight() > bottom) bottom = r.getY() + r.getHeight();
-            }
+        double minX = Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE;
+        double maxX = Double.MIN_VALUE;
+        double maxY = Double.MIN_VALUE;
 
-            return new Rectangle2D.Double( left - 10, top, right - left + 20, bottom - top);
+        for (Rectangle2D obstacle : obstacles) {
+            if (minX > obstacle.getMinX()) minX = obstacle.getMinX();
+            if (minY > obstacle.getMinY()) minY = obstacle.getMinY();
+            if (maxX < obstacle.getMaxX()) maxX = obstacle.getMaxX();
+            if (maxY < obstacle.getMaxY()) maxY = obstacle.getMaxY();
         }
-        return null;
+
+        double x = minX;
+        double y = minY;
+        double w = maxX - minX;
+        double h = maxY - minY;
+
+        return new Rectangle2D.Double(x, y, w, h);
     }
 
-    /*private List<Rectangle2D.Float> getPreparedObstacles() {
-        List<Rectangle2D.Float> result = new ArrayList<>();
-        result.addAll(obstacles);
-        result.sort(RECTANGLE_COMPARATOR);
-        return result;
-    }*/
+    public static class Gap<T> {
 
+        T left;
+        T right;
+
+        public Gap(T left, T right) {
+            this.left = left;
+            this.right = right;
+        }
+
+        public T getLeft() {
+            return left;
+        }
+
+        public T getRight() {
+            return right;
+        }
+    }
 }

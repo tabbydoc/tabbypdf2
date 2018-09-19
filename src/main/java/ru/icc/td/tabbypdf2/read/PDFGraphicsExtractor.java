@@ -14,18 +14,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import ru.icc.td.tabbypdf2.model.CursorTrace;
 import ru.icc.td.tabbypdf2.model.Page;
-import ru.icc.td.tabbypdf2.model.Ruling;
 
 public final class PDFGraphicsExtractor {
 
-    private final PDDocument pdDocument; // A source untagged PDF document that needs to be processed
-    private final List<Ruling> rulings;  // Rulings extracted from the PDF document
-    private final List<Rectangle2D> imageBounds; // Image bounding boxes extracted from the PDF document
+    private final PDDocument pdDocument;          // A source untagged PDF document that needs to be processed
+    private final List<CursorTrace> cursorTraces; // Cursor traces extracted from the PDF document
+    private final List<Rectangle2D> imageBounds;  // Image bounding boxes extracted from the PDF document
 
     public PDFGraphicsExtractor(PDDocument pdDocument) throws IOException {
         this.pdDocument = pdDocument;
-        rulings = new ArrayList<>(1000);
+        cursorTraces = new ArrayList<>(1000);
         imageBounds = new ArrayList<>(10);
     }
 
@@ -36,7 +36,7 @@ public final class PDFGraphicsExtractor {
             try {
                 PDPage pdPage = pdDocument.getPage(pageIndex);
                 new InnerStreamEngine(pdPage).run();
-                page.addRulings(rulings);
+                page.addCursorTraces(cursorTraces);
                 page.addImageBounds(imageBounds);
             } finally {
                 clearAll();
@@ -45,7 +45,7 @@ public final class PDFGraphicsExtractor {
     }
 
     private void clearAll() {
-        rulings.clear();
+        cursorTraces.clear();
         imageBounds.clear();
     }
 
@@ -66,11 +66,11 @@ public final class PDFGraphicsExtractor {
 
         @Override
         public void appendRectangle(Point2D p0, Point2D p1, Point2D p2, Point2D p3) throws IOException {
-            rulings.addAll(Arrays.asList(
-                    new Ruling(p0, p1),
-                    new Ruling(p1, p2),
-                    new Ruling(p2, p3),
-                    new Ruling(p3, p0)
+            cursorTraces.addAll(Arrays.asList(
+                    new CursorTrace(p0, p1),
+                    new CursorTrace(p1, p2),
+                    new CursorTrace(p2, p3),
+                    new CursorTrace(p3, p0)
             ));
         }
 
@@ -96,7 +96,7 @@ public final class PDFGraphicsExtractor {
 
         @Override
         public void lineTo(float x, float y) throws IOException {
-            rulings.add(new Ruling(this.x, this.y, x, y));
+            cursorTraces.add(new CursorTrace(this.x, this.y, x, y));
             this.x = x;
             this.y = y;
         }

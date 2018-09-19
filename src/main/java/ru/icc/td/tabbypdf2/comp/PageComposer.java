@@ -5,7 +5,7 @@ import ru.icc.td.tabbypdf2.model.Page;
 public class PageComposer {
     private final WordComposer wordComposer = new WordComposer();
     private final BlockComposer blockComposer = new BlockComposer();
-    private final PageLayoutAlgorithm pageLayoutAlgorithm = new PageLayoutAlgorithm();
+    private final InterColumnGapExtractor interColumnGapExtractor = new InterColumnGapExtractor();
 
     public void compose(Page page) {
         if (null == page)
@@ -13,6 +13,6 @@ public class PageComposer {
 
         wordComposer.composeWords(page);
         blockComposer.composeBlocks(page);
-        pageLayoutAlgorithm.composeGaps(page);
+        interColumnGapExtractor.composeGaps(page);
     }
 }

@@ -82,10 +82,14 @@ public final class DebuggingDrawer {
         int pageIndex = page.getIndex();
         contentDrawer.startPage(pageIndex);
 
-        drawBlocks(page, contentDrawer);
         drawRulings(page, contentDrawer);
         drawImageBounds(page, contentDrawer);
-        //drawGaps(page, contentDrawer);
+
+        drawBlocks(page, contentDrawer);
+        drawWords(page, contentDrawer);
+        //drawCharPositions(page, contentDrawer);
+
+        drawGaps(page, contentDrawer);
 
         contentDrawer.endPage();
     }
@@ -108,7 +112,7 @@ public final class DebuggingDrawer {
     }
 
     private void drawBlocks(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.BLUE, Color.RED, 1.0f);
+        contentDrawer.setStyle(Color.BLUE, null, 1.0f);
 
         for (Block block : page.getBlocks())
             contentDrawer.strokeRectangle(block);
@@ -117,8 +121,8 @@ public final class DebuggingDrawer {
     private void drawRulings(Page page, PDFContentDrawer contentDrawer) throws IOException {
         contentDrawer.setStyle(Color.GREEN, null, 0.5f);
 
-        for (Ruling ruling : page.getRulings())
-            contentDrawer.strokeLine(ruling);
+        for (CursorTrace cursorTrace : page.getCursorTraces())
+            contentDrawer.strokeLine(cursorTrace);
     }
 
     private void drawImageBounds(Page page, PDFContentDrawer contentDrawer) throws IOException {
@@ -129,18 +133,18 @@ public final class DebuggingDrawer {
     }
 
     private void drawGaps(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.BLUE, null, 2.0f);
+        contentDrawer.setStyle(Color.GRAY, Color.GRAY, 2.0f);
 
-        List<Ruling> leftRulings = page.getGap().getLeft();
-        for (Ruling ruling:leftRulings) {
-            contentDrawer.strokeLine(new Line2D.Double(ruling.x1, ruling.y1, ruling.x2, ruling.y2));
+        List<CursorTrace> leftCursorTraces = page.getGap().getLeft();
+        for (CursorTrace cursorTrace : leftCursorTraces) {
+            contentDrawer.strokeLine(new Line2D.Double(cursorTrace.x1, cursorTrace.y1, cursorTrace.x2, cursorTrace.y2));
         }
 
         contentDrawer.setStyle(Color.RED, null, 2.0f);
 
-        List<Ruling> rightRuling = page.getGap().getRight();
-        for (Ruling ruling:rightRuling) {
-            contentDrawer.strokeLine(new Line2D.Double(ruling.x1, ruling.y1, ruling.x2, ruling.y2));
+        List<CursorTrace> rightCursorTrace = page.getGap().getRight();
+        for (CursorTrace cursorTrace : rightCursorTrace) {
+            contentDrawer.strokeLine(new Line2D.Double(cursorTrace.x1, cursorTrace.y1, cursorTrace.x2, cursorTrace.y2));
         }
     }
 
