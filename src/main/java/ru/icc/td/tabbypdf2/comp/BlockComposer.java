@@ -104,62 +104,60 @@ public class BlockComposer {
         updatedBlocks.clear();
         Block block;
 
-        for (int i = 0; i < blocks.size(); i++) {
-            blockWordsI.clear();
-            blockI = blocks.get(i);
-            blockWordsI.addAll(blockI.getWords());
+         for (int i = 0; i < blocks.size(); i++) {
+                blockWordsI.clear();
+                blockI = blocks.get(i);
+                blockWordsI.addAll(blockI.getWords());
 
-            if (blockWordsI.size() == 1)
-                continue;
+                for (int j = 0; j < blockWordsI.size(); j++) {
 
-            for (int j = 0; j < blockWordsI.size(); j++) {
+                    wordI = blockWordsI.get(j);
+                    chunkIdI = wordI.getStartChunkID();
 
-                wordI = blockWordsI.get(j);
-                chunkIdI = wordI.getStartChunkID();
+                    for (int k = 0; k < blocks.size(); k++) {
+                        blockWordsK.clear();
+                        blockK = blocks.get(k);
 
-                for (int k = 0; k < blocks.size(); k++) {
-                    blockWordsK.clear();
-                    blockK = blocks.get(k);
+                        if (blockK.equals(blockI))
+                            continue;
 
-                    if (blockK.equals(blockI))
-                        continue;
+                        blockWordsK.addAll(blockK.getWords());
 
-                    blockWordsK.addAll(blockK.getWords());
+                        for (int l = 0; l < blockWordsK.size(); l++) {
+                            wordK = blockWordsK.get(l);
+                            chunkIdK = wordK.getStartChunkID();
 
-                    for (int l = 0; l < blockWordsK.size(); l++) {
-                        wordK = blockWordsK.get(l);
-                        chunkIdK = wordK.getStartChunkID();
+                            if (chunkIdI == chunkIdK) {
+                                blockI.removeWord(wordI);
+                                blockK.removeWord(wordK);
 
-                        if (chunkIdI == chunkIdK) {
-                            blockI.removeWord(wordI);
-                            blockK.removeWord(wordK);
+                                blockWords.clear();
+                                blockWords.add(wordI);
+                                block = new Block(blockWords);
+                                updatedBlocks.add(block);
 
-                            blockWords.clear();
-                            blockWords.add(wordI);
-                            block = new Block(blockWords);
-                            updatedBlocks.add(block);
+                                blockWords.clear();
+                                blockWords.add(wordK);
+                                block = new Block(blockWords);
+                                updatedBlocks.add(block);
 
-                            blockWords.clear();
-                            blockWords.add(wordK);
-                            block = new Block(blockWords);
-                            updatedBlocks.add(block);
-
-                            blockWordsK.remove(wordK);
-                            blockWordsI.remove(wordI);
-                            l = -1;
-                            j = -1;
+                                blockWordsK.remove(wordK);
+                                blockWordsI.remove(wordI);
+                                l = -1;
+                                j = -1;
+                            }
                         }
                     }
                 }
             }
-        }
-        blocks.addAll(updatedBlocks);
-        for(int i = 0; i < blocks.size(); i++){
-            if(blocks.get(i).getWords().size() == 0) {
-                blocks.remove(i);
-                i--;
+            blocks.addAll(updatedBlocks);
+
+            for (int i = 0; i < blocks.size(); i++) {
+                if (blocks.get(i).getWords().size() == 0) {
+                    blocks.remove(i);
+                    i--;
+                }
             }
-        }
     }
 
     /**Ищет блоки, которые пересекаются и объединяет их

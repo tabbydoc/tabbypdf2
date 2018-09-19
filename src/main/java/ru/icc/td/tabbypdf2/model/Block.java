@@ -10,7 +10,7 @@ public class Block extends Rectangle2D.Float {
     private final List<Word> words;
 
     {
-        words = new ArrayList<>(3000);
+        words = new ArrayList<>();
     }
 
     public Block(List<Word> words){

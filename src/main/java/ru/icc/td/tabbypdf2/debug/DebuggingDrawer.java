@@ -81,10 +81,10 @@ public final class DebuggingDrawer {
         contentDrawer.startPage(pageIndex);
 
         drawBlocks(page, contentDrawer);
-        //drawRulings(page, contentDrawer);
+        drawRulings(page, contentDrawer);
         //drawImageBounds(page, contentDrawer);
         //drawCharPositions(page, contentDrawer);
-        //drawWords(page, contentDrawer);
+        drawWords(page, contentDrawer);
 
         contentDrawer.endPage();
     }
