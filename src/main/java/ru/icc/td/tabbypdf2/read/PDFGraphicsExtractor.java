@@ -11,7 +11,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import ru.icc.td.tabbypdf2.model.CursorTrace;
@@ -66,12 +65,18 @@ public final class PDFGraphicsExtractor {
 
         @Override
         public void appendRectangle(Point2D p0, Point2D p1, Point2D p2, Point2D p3) throws IOException {
-            cursorTraces.addAll(Arrays.asList(
-                    new CursorTrace(p0, p1),
-                    new CursorTrace(p1, p2),
-                    new CursorTrace(p2, p3),
-                    new CursorTrace(p3, p0)
-            ));
+
+            if (canAddCursorTrace(p0, p1))
+                cursorTraces.add(new CursorTrace(p0, p1));
+
+            if (canAddCursorTrace(p1, p2))
+                cursorTraces.add(new CursorTrace(p1, p2));
+
+            if (canAddCursorTrace(p2, p3))
+                cursorTraces.add(new CursorTrace(p2, p3));
+
+            if (canAddCursorTrace(p3, p0))
+                cursorTraces.add(new CursorTrace(p3, p0));
         }
 
         @Override
@@ -96,7 +101,10 @@ public final class PDFGraphicsExtractor {
 
         @Override
         public void lineTo(float x, float y) throws IOException {
-            cursorTraces.add(new CursorTrace(this.x, this.y, x, y));
+
+            if (canAddCursorTrace(this.x, this.y, x, y))
+                cursorTraces.add(new CursorTrace(this.x, this.y, x, y));
+
             this.x = x;
             this.y = y;
         }
@@ -132,6 +140,24 @@ public final class PDFGraphicsExtractor {
 
         @Override
         public void shadingFill(COSName shadingName) throws IOException {
+        }
+
+        private final static double MIN_CURSOR_TRACE_LONG = 10.0; 
+
+        // Check if these coordinates can be used to register a new cursor trace,
+        // assuming that the cursor trace is oriented and longer then <code>MIN_CURSOR_TRACE_LONG</code>
+        private boolean canAddCursorTrace(double x1, double y1, double x2, double y2) {
+            if (x1 == x2)
+                return Math.abs(y1 - y2) > MIN_CURSOR_TRACE_LONG;
+            else if (y1 == y2)
+                return Math.abs(x1 - x2) > MIN_CURSOR_TRACE_LONG;
+            else
+                return false;
+        }
+
+        // Check if these points can be used to register a new cursor trace
+        private boolean canAddCursorTrace(Point2D p1, Point2D p2) {
+            return canAddCursorTrace(p1.getX(), p1.getY(), p2.getX(), p2.getY());
         }
     }
 }
