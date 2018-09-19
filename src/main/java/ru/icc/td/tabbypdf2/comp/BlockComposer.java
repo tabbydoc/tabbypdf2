@@ -52,7 +52,6 @@ public class BlockComposer {
         separateByChunkId();
         separateByChunkId();
 
-        //unionIntersectedBlocks();
         unionSeparatedWords();
         unionWronglyIsolatedBlocks();
 
@@ -395,97 +394,5 @@ public class BlockComposer {
         }
 
         return false;
-    }
-
-    /**Пока что в стадии developing.
-     * Разибвает в столбцевой блок построчно. Суть описана в статье Кейгера
-     */
-
-    private void separateOneToOneRelation(){
-        List<Block> blocks1 = new ArrayList<>();
-        List<Word> neighborWords = new ArrayList<>();
-        Rectangle2D.Float rectangle = new Rectangle2D.Float();
-        Word upperWord;
-        Word lowerWord;
-        Word tempWord;
-        Block updatedBlock;
-
-        for(int k = 0; k < blocks.size(); k ++) {
-            Block block = blocks.get(k);
-
-            List<Word> words = block.getWords();
-            updatedBlocks.clear();
-
-            for (int i = 0; i < words.size(); i++) {
-                neighborWords.clear();
-                upperWord = words.get(i);
-                rectangle.setRect(upperWord.x, (upperWord.y - upperWord.height), upperWord.width, 2 * upperWord.height);
-
-                for (int j = 0; j < words.size(); j++) {
-                    tempWord = words.get(j);
-
-                    if (upperWord.equals(tempWord))
-                        continue;
-
-                    if (rectangle.intersects(tempWord)) {
-                        neighborWords.add(tempWord);
-                    }
-
-                    if (neighborWords.size() > 1)
-                        break;
-                }
-
-                if (neighborWords.size() != 1) {
-                    continue;
-                }
-
-                lowerWord = neighborWords.get(0);
-                rectangle.setRect(lowerWord.x, lowerWord.y, lowerWord.width, 2 * lowerWord.height);
-                neighborWords.clear();
-
-                for (int j = 0; j < words.size(); j++) {
-                    tempWord = words.get(j);
-
-                    if (tempWord.equals(lowerWord))
-                        continue;
-
-                    if (rectangle.intersects(tempWord)) {
-                        neighborWords.add(tempWord);
-                    }
-
-                    if (neighborWords.size() > 1)
-                        break;
-                }
-
-                if (neighborWords.size() != 1) {
-                    continue;
-                }
-
-                tempWord = neighborWords.get(0);
-
-                if (tempWord.equals(upperWord)) {
-                    blockWords.clear();
-                    blockWords.add(lowerWord);
-                    updatedBlock = new Block(blockWords);
-                    updatedBlocks.add(updatedBlock);
-
-                    blockWords.clear();
-                    blockWords.add(upperWord);
-                    updatedBlock = new Block(blockWords);
-                    updatedBlocks.add(updatedBlock);
-
-                    blocks.remove(block);
-                    k = -1;
-
-                    block.removeWord(upperWord);
-                    block.removeWord(lowerWord);
-                    updatedBlocks.add(block);
-                    i = -1;
-                }
-            }
-            blocks1.addAll(updatedBlocks);
-        }
-
-        blocks.addAll(blocks1);
     }
 }
