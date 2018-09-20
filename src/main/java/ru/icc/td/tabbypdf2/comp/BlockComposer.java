@@ -2,9 +2,9 @@ package ru.icc.td.tabbypdf2.comp;
 
 import ru.icc.td.tabbypdf2.model.*;
 
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class BlockComposer {
     private Page page;
@@ -36,10 +36,6 @@ public class BlockComposer {
         Word word;
 
         for (int i = 0; i < words.size(); i++) {
-            //Берём слово, добавляем в список блочных слов blockWords, убираем из списка words,
-            //строим для него расширенный прямоугольник, ищем пересечения с другими словами.
-            //Для слов, которые пересеклись, делаем тоже самое. Как только пройдём все слова в words, создаем Block
-            //и добавляем в blocks
             word = words.get(i);
             addWord(word);
             i = -1;
@@ -50,19 +46,15 @@ public class BlockComposer {
             blockWords.clear();
         }
 
-        //Дальше идут методы постанализа
-        //Названия аномалий совпадают с Кейгером
-        //Можете комментить их смотреть, что за аномалии они убирают
+        unionIntersectedBlocks();
+        unionSeparatedWords();
+        unionWronglyIsolatedBlocks();
 
-        //separateOneToOneRelation(); //Экспериментальный метод. Улучшает точность разбиения таблиц. Можете разкомментить и посмотреть, что получается.
-        //Метод работает хорошо, но не совсем точно. Пока в стадии developing. Хорошо срабаывает в документе eu-004.pdf.
-        //Сравните разбиение таблицы
+        separateByChunkId();
+        separateByChunkId();
 
-        unionSeparatedWords(); //Блок, в котором оказалось только одно слово
-
-        unionWronglyIsolatedBlocks(); //Блок, который по ошибке не склеен и находится сбоку
-
-        unionIntersectedBlocks(); //Объединяет блоки, которые пересекаются. Эту аномалию в статье не рассматривают.
+        unionSeparatedWords();
+        unionWronglyIsolatedBlocks();
 
         return blocks;
     }
@@ -81,7 +73,6 @@ public class BlockComposer {
     /**Ищет для даного слова <code>word</code> пересечения
      * @param word Слово, для которого ищется пересечение
      */
-
     private void hasWordIntersections(Word word) {
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
         rectangle.setRect(word.x, (word.y - word.height), word.width, 3 * word.height); //создаём прямоугольник высотой в три высоты слова
@@ -90,11 +81,82 @@ public class BlockComposer {
         for (int j = 0; j < words.size(); j++) {
             wordJ = words.get(j);
 
-            //Ищем для этого прямоугольника пересечения с другими словами. Если есть пересесечение, то добавляем его в список blockWords
-            //и для последнего слова снова ищем пересечения
-            if (rectangle.intersects(wordJ)) {
+            boolean isOrder = Math.abs(word.getStartChunkID() - wordJ.getStartChunkID()) <= 1;
+            boolean isRulings = hasWordLineIntersections(word, wordJ);
+
+            if (rectangle.intersects(wordJ) && isOrder && !isRulings) {
                 addWord(wordJ);
                 j = -1;
+            }
+        }
+    }
+
+    private void separateByChunkId() {
+        List<Word> blockWordsI = new ArrayList<>();
+        Block blockI;
+        Word wordI;
+        int chunkIdI;
+
+        List<Word> blockWordsK = new ArrayList<>();
+        Block blockK;
+        Word wordK;
+        int chunkIdK;
+
+        updatedBlocks.clear();
+        Block block;
+
+        for (int i = 0; i < blocks.size(); i++) {
+            blockWordsI.clear();
+            blockI = blocks.get(i);
+            blockWordsI.addAll(blockI.getWords());
+
+            for (int j = 0; j < blockWordsI.size(); j++) {
+
+                wordI = blockWordsI.get(j);
+                chunkIdI = wordI.getStartChunkID();
+
+                for (int k = 0; k < blocks.size(); k++) {
+                    blockWordsK.clear();
+                    blockK = blocks.get(k);
+
+                    if (blockK.equals(blockI))
+                        continue;
+
+                    blockWordsK.addAll(blockK.getWords());
+
+                    for (int l = 0; l < blockWordsK.size(); l++) {
+                        wordK = blockWordsK.get(l);
+                        chunkIdK = wordK.getStartChunkID();
+
+                        if (chunkIdI == chunkIdK) {
+                            blockI.removeWord(wordI);
+                            blockK.removeWord(wordK);
+
+                            blockWords.clear();
+                            blockWords.add(wordI);
+                            block = new Block(blockWords);
+                            updatedBlocks.add(block);
+
+                            blockWords.clear();
+                            blockWords.add(wordK);
+                            block = new Block(blockWords);
+                            updatedBlocks.add(block);
+
+                            blockWordsK.remove(wordK);
+                            blockWordsI.remove(wordI);
+                            l = -1;
+                            j = -1;
+                        }
+                    }
+                }
+            }
+        }
+        blocks.addAll(updatedBlocks);
+
+        for (int i = 0; i < blocks.size(); i++) {
+            if (blocks.get(i).getWords().size() == 0) {
+                blocks.remove(i);
+                i--;
             }
         }
     }
@@ -104,10 +166,7 @@ public class BlockComposer {
     private void unionIntersectedBlocks() {
         Block blockI;
         Block blockJ;
-        //Алгоритм прост:
-        //Берём блок blockI, убираем из спика блоков blocks, ищем для него пересечения с другими блоками blockJ.
-        //Если blockJ пересекает blockI, то убираем blockJ из списка blocks и все слова из blockJ добавляем в блок
-        //blockI. Добавляем blockI в updatedBlocks. Делаем это пока есть пересечения
+
         do {
             updatedBlocks.clear();
 
@@ -135,7 +194,7 @@ public class BlockComposer {
         } while (hasIntersections(updatedBlocks));
     }
 
-    /**Объединяем блоки, которые находятся рядом на расстоянии пробела и изолированы по ошибке
+    /**Объединяем блоки, которые находятся рядом
      */
 
     private void unionWronglyIsolatedBlocks() {
@@ -147,21 +206,22 @@ public class BlockComposer {
         Rectangle2D.Float rectangle1 = new Rectangle2D.Float();
         Rectangle2D.Float rectangle2 = new Rectangle2D.Float();
         float spaceI, spaceJ;
-        //Создаём два прямоугольника с увелчинной вправо и влево шириной на расстояние одного пробела. Пробел
-        //вычисляется в методе calculateSpace. Если есть пересечения, то объединяем два блока. Этот метод, еще
-        //объединяет блоки, состоящие из одного слова
+
         do {
             updatedBlocks.clear();
 
             for (int i = 0; i < blocks.size(); i++) {
                 blockI = blocks.get(i);
-                spaceI = calculateSpace(blockI);
 
+                spaceI = calculateSpace(blockI);
                 rectangle1.setRect(blockI.x - spaceI, blockI.y, blockI.width + 2 * spaceI, blockI.height);
-                blocks.remove(i);
-                i--;
+
+
                 for (int j = 0; j < blocks.size(); j++) {
                     blockJ = blocks.get(j);
+
+                    if (blockJ.equals(blockI))
+                        continue;
 
                     spaceJ = calculateSpace(blockJ);
                     rectangle2.setRect(blockJ.x - spaceJ, blockJ.y, blockJ.width + 2 * spaceJ, blockJ.height);
@@ -174,12 +234,11 @@ public class BlockComposer {
                     }
                 }
                 updatedBlocks.add(blockI);
+                blocks.remove(blockI);
             }
 
-            blocks.clear();
             blocks.addAll(updatedBlocks);
         } while (hasWronglyIsolatedBlocks(updatedBlocks));
-
     }
 
     /**Объдиняет блоки состоящих из одного слова
@@ -190,10 +249,6 @@ public class BlockComposer {
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
 
         updatedBlocks.clear();
-
-        //Первый блок blockI -- блок состоящий из одного слова. Второй blockJ -- не обязательно.
-        //Строим прямоугольник шириной в страницу из блока blockI. Ищем для него пересечения.
-        //Объеденим их только, если есть совпадения по ChunkId и нет между ними Rulings.
 
         for(int i = 0; i < blocks.size(); i++){
             blockI = blocks.get(i);
@@ -212,6 +267,7 @@ public class BlockComposer {
 
                 for(int k = 0; k < blockJ.getWords().size(); k++){
                     Word word = blockJ.getWords().get(k);
+
                     if(idI == word.getStartChunkID())
                         areIdsEqual = true;
                 }
@@ -223,7 +279,6 @@ public class BlockComposer {
                     blockI.addWords(blockJ.getWords());
                 }
             }
-
             updatedBlocks.add(blockI);
         }
         blocks.addAll(updatedBlocks);
@@ -268,13 +323,15 @@ public class BlockComposer {
 
         for (int i = 0; i < blocks.size(); i++) {
             blockI = blocks.get(i);
-            spaceI = calculateSpace(blockI);
 
+            spaceI = calculateSpace(blockI);
             rectangle1.setRect(blockI.x - spaceI, blockI.y, blockI.width + 2 * spaceI, blockI.height);
+
 
             for (int j = 0; j < blocks.size(); j++) {
                 blockJ = blocks.get(j);
-                if(blockI.equals(blockJ))
+
+                if (blockJ.equals(blockI))
                     continue;
 
                 spaceJ = calculateSpace(blockJ);
@@ -307,117 +364,34 @@ public class BlockComposer {
         return false;
     }
 
+    private boolean hasWordLineIntersections(Word wordI, Word wordJ) {
+        List<CursorTrace> cursorTraces = page.getCursorTraces();
 
-    /**Определяет: есть ли между двумя блоками вертикальный CursorTrace
+        for (int i = 0; i < cursorTraces.size(); i++) {
+            Line2D.Float cursorTrace = cursorTraces.get(i);
+
+            if (cursorTrace.x1 == cursorTrace.x2 && ((wordI.x + wordI.width <= cursorTrace.x1 && cursorTrace.x1 <= wordJ.x)
+                    || (wordJ.x + wordJ.width <= cursorTrace.x1 && cursorTrace.x1 <= wordI.x)))
+                return true;
+        }
+        return false;
+    }
+
+    /**Определяет: есть ли между двумя блоками вертикальный Ruling
      * @param blockI Первый блок
      * @param blockJ Второй блок
-     * @return true, если есть между блоками CursorTrace
+     * @return true, если есть между блоками Ruling
      */
     private boolean hasLineIntersections(Block blockI, Block blockJ) {
-        List<CursorTrace> rulings = page.getCursorTraces();
-        Block block = new Block(blockI.getWords());
-        block.addWords(blockJ.getWords());
+        List<CursorTrace> cursorTraces = page.getCursorTraces();
 
-        for (int i = 0; i < rulings.size(); i++) {
-            CursorTrace ruling = rulings.get(i);
-
-            if (ruling.x1 == ruling.x2 && ((blockI.x + blockI.width <= ruling.x1 && ruling.x1 <= blockJ.x)
-                    || (blockJ.x + blockJ.width <= ruling.x1 && ruling.x1 <= blockI.x)))
+        for (Line2D.Float cursorTrace : cursorTraces) {
+            if (cursorTrace.x1 == cursorTrace.x2 &&
+                    ((blockI.x + blockI.width <= cursorTrace.x1 && cursorTrace.x1 <= blockJ.x) ||
+                            (blockJ.x + blockJ.width <= cursorTrace.x1 && cursorTrace.x1 <= blockI.x)))
                 return true;
         }
 
         return false;
-    }
-
-    /**Пока что в стадии developing.
-     * Разибвает в столбцевой блок построчно. Суть описана в статье Кейгера
-     */
-
-    private void separateOneToOneRelation(){
-        List<Block> blocks1 = new ArrayList<>();
-        List<Word> neighborWords = new ArrayList<>();
-        Rectangle2D.Float rectangle = new Rectangle2D.Float();
-        Word upperWord;
-        Word lowerWord;
-        Word tempWord;
-        Block updatedBlock;
-
-        for(int k = 0; k < blocks.size(); k ++) {
-            Block block = blocks.get(k);
-
-            List<Word> words = block.getWords();
-            updatedBlocks.clear();
-
-            for (int i = 0; i < words.size(); i++) {
-                neighborWords.clear();
-                upperWord = words.get(i);
-                rectangle.setRect(upperWord.x, (upperWord.y - upperWord.height), upperWord.width, 2 * upperWord.height);
-
-                for (int j = 0; j < words.size(); j++) {
-                    tempWord = words.get(j);
-
-                    if (upperWord.equals(tempWord))
-                        continue;
-
-                    if (rectangle.intersects(tempWord)) {
-                        neighborWords.add(tempWord);
-                    }
-
-                    if (neighborWords.size() > 1)
-                        break;
-                }
-
-                if (neighborWords.size() != 1) {
-                    continue;
-                }
-
-                lowerWord = neighborWords.get(0);
-                rectangle.setRect(lowerWord.x, lowerWord.y, lowerWord.width, 2 * lowerWord.height);
-                neighborWords.clear();
-
-                for (int j = 0; j < words.size(); j++) {
-                    tempWord = words.get(j);
-
-                    if (tempWord.equals(lowerWord))
-                        continue;
-
-                    if (rectangle.intersects(tempWord)) {
-                        neighborWords.add(tempWord);
-                    }
-
-                    if (neighborWords.size() > 1)
-                        break;
-                }
-
-                if (neighborWords.size() != 1) {
-                    continue;
-                }
-
-                tempWord = neighborWords.get(0);
-
-                if (tempWord.equals(upperWord)) {
-                    blockWords.clear();
-                    blockWords.add(lowerWord);
-                    updatedBlock = new Block(blockWords);
-                    updatedBlocks.add(updatedBlock);
-
-                    blockWords.clear();
-                    blockWords.add(upperWord);
-                    updatedBlock = new Block(blockWords);
-                    updatedBlocks.add(updatedBlock);
-
-                    blocks.remove(block);
-                    k = -1;
-
-                    block.removeWord(upperWord);
-                    block.removeWord(lowerWord);
-                    updatedBlocks.add(block);
-                    i = -1;
-                }
-            }
-            blocks1.addAll(updatedBlocks);
-        }
-
-        blocks.addAll(blocks1);
     }
 }

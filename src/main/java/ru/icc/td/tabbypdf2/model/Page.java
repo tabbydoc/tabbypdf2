@@ -1,7 +1,6 @@
 package ru.icc.td.tabbypdf2.model;
 
 import ru.icc.td.tabbypdf2.comp.InterColumnGapExtractor;
-
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -77,6 +76,11 @@ public final class Page extends Rectangle2D.Float {
         return this.blocks.addAll(blocks);
     }
 
-    public InterColumnGapExtractor.Gap<List<CursorTrace>> getGap () { return gap; }
-    public void setGap (InterColumnGapExtractor.Gap value) { this.gap = value; }
+    public InterColumnGapExtractor.Gap<List<CursorTrace>> getGap () {
+        return gap;
+    }
+
+    public void setGap (InterColumnGapExtractor.Gap value) {
+        this.gap = value;
+    }
 }

@@ -2,6 +2,7 @@ package ru.icc.td.tabbypdf2.model;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class Block extends Rectangle2D.Float {
@@ -44,18 +45,21 @@ public class Block extends Rectangle2D.Float {
     public List<Word> getWords() {
         return words;
     }
+
     //Добавляем новые слова в блок и пересчитываем рамку блока
-    public void addWords(List<Word> words){
-        setWords(words);
+    public void addWords(Collection<Word> words){
+        this.words.addAll(words);
         update();
     }
+
     //Убираем слово из блока и пересчитываем рамку блока
-    public void removeWord(Word word){
+    public void removeWord(Word word) {
         words.remove(word);
         update();
     }
 
-    private void setWords(List<Word> words){
-        this.words.addAll(words);
+    public void removeWords(Collection<Word> words) {
+        this.words.removeAll(words);
+        update();
     }
 }

@@ -3,7 +3,7 @@ package ru.icc.td.tabbypdf2.model;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
-public class Ruling extends Line2D.Float {
+public final class Ruling extends Line2D.Float {
 
     private Page page;
 

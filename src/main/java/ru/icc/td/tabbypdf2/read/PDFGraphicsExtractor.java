@@ -35,6 +35,7 @@ public final class PDFGraphicsExtractor {
             try {
                 PDPage pdPage = pdDocument.getPage(pageIndex);
                 new InnerStreamEngine(pdPage).run();
+
                 page.addCursorTraces(cursorTraces);
                 page.addImageBounds(imageBounds);
             } finally {

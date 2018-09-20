@@ -5,8 +5,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 
 import ru.icc.td.tabbypdf2.model.*;
 
-import java.awt.*;
 import java.awt.geom.Line2D;
+import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
@@ -88,7 +88,6 @@ public final class DebuggingDrawer {
         drawBlocks(page, contentDrawer);
         drawWords(page, contentDrawer);
         //drawCharPositions(page, contentDrawer);
-
         //drawGaps(page, contentDrawer);
 
         contentDrawer.endPage();
@@ -147,6 +146,5 @@ public final class DebuggingDrawer {
             contentDrawer.strokeLine(new Line2D.Double(cursorTrace.x1, cursorTrace.y1, cursorTrace.x2, cursorTrace.y2));
         }
     }
-
 
 }
