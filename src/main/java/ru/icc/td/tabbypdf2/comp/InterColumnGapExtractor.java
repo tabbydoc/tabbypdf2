@@ -3,6 +3,8 @@ package ru.icc.td.tabbypdf2.comp;
 import ru.icc.td.tabbypdf2.model.CursorTrace;
 import ru.icc.td.tabbypdf2.model.Page;
 
+import java.awt.*;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -11,139 +13,124 @@ import java.util.List;
 
 public class InterColumnGapExtractor {
 
-    private final Comparator<Rectangle2D.Float> RECTANGLE_COMPARATOR = Comparator
-            .comparing(Rectangle2D.Float::getY)
-            .reversed()
-            .thenComparing(Rectangle2D.Float::getX);
-    //private List<CursorTrace> cursorTraces;
-    //private Tuple<List<CursorTrace>> linesTuple;
     private List<Rectangle2D> obstacles;
-
-    /*
-    private class Tuple<T> {
-        T left;
-        T right;
-
-        Tuple(T left, T right) {
-            this.left = left;
-            this.right = right;
-        }
-    }
-    */
 
     public InterColumnGapExtractor() {
     }
 
     public void composeGaps(Page page) {
-        //this.page = page;
         obstacles = new ArrayList<>();
         obstacles.addAll(page.getBlocks());
-        obstacles.addAll(page.getImageBounds());
-        //cursorTraces = page.getCursorTraces();
-        //obstacles.addAll(page.getCursorTraces());
-        Gap<List<CursorTrace>> gap = findRulings();
-        if (null != gap)
-            page.setGap(gap);
+        List<Rectangle2D> gaps = findAllGaps();
+        if (null != gaps)
+            page.setGap(gaps);
     }
 
-    private Gap<List<CursorTrace>> findRulings() {
+    private List<Rectangle2D> findAllGaps() {
         if (obstacles == null && obstacles.isEmpty())
             return null;
 
-        Rectangle2D boundary = getBBox();
-
+        Rectangle2D bBox = getBBox();
 
         List<CursorTrace> leftCursorTraces = new ArrayList<>();
         List<CursorTrace> rightCursorTraces = new ArrayList<>();
         List<Rectangle2D> rectangles = new ArrayList<>();
         rectangles.addAll(obstacles);
 
-        rectangles.sort(Comparator.comparing(Rectangle2D::getX));
-
-        Double boundingTop = boundary.getY();
-        Double boundingBottom = boundary.getY() + boundary.getHeight();
-        Double boundingLeft = boundary.getX();
-        Double boundingRight = boundary.getX() + boundary.getWidth();
-
-        // add left bounding line
-        leftCursorTraces.add(new CursorTrace(
-                new Point2D.Double(boundingRight, boundingTop),
-                new Point2D.Double(boundingRight, boundingBottom)
-        ));
-
-        // find all left lines
-        for (Rectangle2D currentRect : rectangles) {
-            //CursorTrace line = new CursorTrace(new Point2D.Double(rect.getX(), boundary.getY()), new Point2D.Double(rect.getX(), boundary.getY()+ boundary.getHeight()));
-            Double x = currentRect.getX();
-            Double currentTop = currentRect.getY();
-            Double currentBottom = currentRect.getY() + currentRect.getHeight();
-
-            Double y1 = boundingTop;
-            Double y2 = boundingBottom;
-
-            for (Rectangle2D obstacle : rectangles) {
-
-                Double obstacleBottom = obstacle.getY() + obstacle.getHeight();
-                Double obstacleLeft = obstacle.getX();
-                Double obstacleTop = obstacle.getY();
-                Double obstacleRight = obstacle.getX() + obstacle.getWidth();
-
-                if (x > obstacleLeft && x < obstacleRight) {
-                    if (obstacleBottom < currentTop) {
-                        if (obstacleBottom > y1) y1 = obstacleBottom;
-                    }
-                    if (obstacleTop > currentBottom)
-                        if (obstacleTop < y2) y2 = obstacleTop;
-                }
-            }
-
-            CursorTrace line = new CursorTrace(new Point2D.Double(x, y1), new Point2D.Double(x, y2));
-            if (!leftCursorTraces.contains(line)) {
-                leftCursorTraces.add(line);
-            }
-        }
-
-        rectangles.sort(Comparator.comparing(Rectangle2D::getX).reversed());
-
-        // add right bounding line
+        // add left and right bounding lines
         rightCursorTraces.add(new CursorTrace(
-                new Point2D.Double(boundingLeft, boundingTop),
-                new Point2D.Double(boundingLeft, boundingBottom)
+                new Point2D.Double(bBox.getMinX(), bBox.getMinY()),
+                new Point2D.Double(bBox.getMinX(), bBox.getMaxY())
+        ));
+        leftCursorTraces.add(new CursorTrace(
+                new Point2D.Double(bBox.getMaxX(), bBox.getMinY()),
+                new Point2D.Double(bBox.getMaxX(), bBox.getMaxY())
         ));
 
-        // find right lines
-        for (Rectangle2D currentRect : rectangles) {
-            //CursorTrace line = new CursorTrace(new Point2D.Double(rect.getX(), boundary.getY()), new Point2D.Double(rect.getX(), boundary.getY()+ boundary.getHeight()));
-            Double x = currentRect.getX() + currentRect.getWidth();
-            Double currentTop = currentRect.getY();
-            Double currentBottom = currentRect.getY() + currentRect.getHeight();
+        // add left and right lines of each rectangle
+        for (Rectangle2D currentRect:rectangles) {
+            CursorTrace left = getLine(currentRect.getMinX(), currentRect.getMinY(), currentRect.getMaxY());
+            CursorTrace right = getLine(currentRect.getMaxX(), currentRect.getMinY(), currentRect.getMaxY());
 
-            Double y1 = boundingTop;
-            Double y2 = boundingBottom;
-
-            for (Rectangle2D obstacle : rectangles) {
-
-                Double obstacleBottom = obstacle.getY() + obstacle.getHeight();
-                Double obstacleLeft = obstacle.getX();
-                Double obstacleTop = obstacle.getY();
-                Double obstacleRight = obstacle.getX() + obstacle.getWidth();
-
-                if (x > obstacleLeft && x < obstacleRight) {
-                    if (obstacleBottom < currentTop) {
-                        if (obstacleBottom > y1) y1 = obstacleBottom;
-                    }
-                    if (obstacleTop > currentBottom)
-                        if (obstacleTop < y2) y2 = obstacleTop;
-                }
+            if (!leftCursorTraces.contains(left)) {
+                leftCursorTraces.add(left);
             }
-
-            CursorTrace line = new CursorTrace(new Point2D.Double(x, y1), new Point2D.Double(x, y2));
-            if (!rightCursorTraces.contains(line)) {
-                rightCursorTraces.add(line);
+            if (!rightCursorTraces.contains(right)) {
+                rightCursorTraces.add(right);
             }
         }
 
-        return new Gap<>(leftCursorTraces, rightCursorTraces);
+        List<Rectangle2D> gaps = getGaps(leftCursorTraces, rightCursorTraces);
+        gaps.addAll(getHorizontalGaps(gaps));
+
+        return gaps;
+    }
+
+    private CursorTrace getLine (Double x, Double y1, Double y2) {
+        Rectangle2D bbox = getBBox();
+
+        List<Rectangle2D> rectangles = new ArrayList<>();
+        rectangles.addAll(obstacles);
+
+        Double minY = bbox.getMinY();
+        Double maxY = bbox.getMaxY();
+
+        for (Rectangle2D rectangle:rectangles) {
+            if (x > rectangle.getMinX() && x < rectangle.getMaxX()) {
+                if (y1 > rectangle.getMaxY()) {
+                    if (rectangle.getMaxY() > minY) minY = rectangle.getMaxY();
+                }
+
+                if (y2 < rectangle.getMinY()) {
+                    if (rectangle.getMinY() < maxY) maxY = rectangle.getMinY();
+                }
+            }
+
+        }
+
+        return new CursorTrace(new Point2D.Double(x, minY), new Point2D.Double(x, maxY));
+    }
+
+    private List<Rectangle2D> getGaps(List<CursorTrace> leftLines, List<CursorTrace> rightLines) {
+        List<Rectangle2D> gaps = new ArrayList<>();
+        List<Rectangle2D> rectangles = new ArrayList<>();
+        rectangles.addAll(obstacles);
+
+        leftLines.sort(Comparator.comparing(CursorTrace::getX1));
+        rightLines.sort(Comparator.comparing(CursorTrace::getX1));
+
+        for(CursorTrace left:leftLines) {
+            for (CursorTrace right:rightLines) {
+                if (right.getX1() < left.getX1()) {
+                    if (doLinesHaveSameHeight(left, right)) {
+                        if (isThereNoObstaclesBetweenLines(left, right)) {
+                            gaps.add(new Rectangle2D.Double(right.x1, right.y1, left.x1 - right.x1, right.y2 - right.y1));
+                        }
+                    }
+                }
+            }
+        }
+
+        return gaps;
+    }
+
+    private boolean doLinesHaveSameHeight(CursorTrace left, CursorTrace right) {
+        return right.getY1() == left.getY1() && right.getY2() == left.getY2();
+    }
+
+    private boolean isThereNoObstaclesBetweenLines(CursorTrace leftLine, CursorTrace rightLine) {
+        Double height = Math.abs(leftLine.getY2() - leftLine.getY1());
+        Double width = Math.abs(rightLine.getX1() - leftLine.getX1());
+        Rectangle2D rectangle = new Rectangle2D.Double(rightLine.getX1(), rightLine.getY1(), width, height);
+
+        List<Rectangle2D> rectangles = new ArrayList<>();
+        rectangles.addAll(obstacles);
+
+        for (Rectangle2D obstacle:rectangles) {
+            if (rectangle.contains(obstacle)) return false;
+        }
+
+        return true;
     }
 
     private Rectangle2D getBBox() {
@@ -173,22 +160,29 @@ public class InterColumnGapExtractor {
         return new Rectangle2D.Double(x, y, w, h);
     }
 
-    public static class Gap<T> {
+    private List<Rectangle2D> getHorizontalGaps(List<Rectangle2D> verticalGaps) {
+        List<Rectangle2D> horizontalGaps = new ArrayList<>();
 
-        T left;
-        T right;
+        Rectangle2D bbox = getBBox();
 
-        public Gap(T left, T right) {
-            this.left = left;
-            this.right = right;
+        for (Rectangle2D vertical:verticalGaps) {
+            Double verticalTop = vertical.getMinY();
+            Double verticalBottom = vertical.getMaxY();
+
+            Double y1 = verticalBottom;
+            Double y2 = verticalTop;
+
+            for (Rectangle2D obstacle:obstacles) {
+                if (obstacle.getMinY() >= verticalTop && obstacle.getMaxY() <= verticalBottom) {
+                    if (y1 > obstacle.getMinY()) y1 = obstacle.getMinY();
+                    if (y2 < obstacle.getMaxY()) y2 = obstacle.getMaxY();
+                }
+            }
+
+            horizontalGaps.add(new Rectangle2D.Double(bbox.getMinX(), verticalTop, bbox.getWidth(), y1 - verticalTop));
+            horizontalGaps.add(new Rectangle2D.Double(bbox.getMinX(), y2, bbox.getWidth(), verticalBottom - y2));
         }
 
-        public T getLeft() {
-            return left;
-        }
-
-        public T getRight() {
-            return right;
-        }
+        return horizontalGaps;
     }
 }
