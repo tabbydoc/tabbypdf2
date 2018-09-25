@@ -1,7 +1,5 @@
 package ru.icc.td.tabbypdf2.comp;
 
-import org.apache.commons.math3.stat.StatUtils;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import ru.icc.td.tabbypdf2.model.*;
 
 import java.awt.geom.Line2D;
@@ -10,7 +8,6 @@ import java.util.*;
 
 public class BlockComposer {
     private Page page;
-    private float lineSpace;
 
     public void composeBlocks(Page page) {
         words.addAll(page.getWords());
@@ -19,7 +16,6 @@ public class BlockComposer {
         if (words.isEmpty())
             return;
 
-        this.lineSpace = calculateLineSpacing();
         List<Block> blocks = composeBlocks();
         page.addBlocks(blocks);
     }
@@ -79,8 +75,8 @@ public class BlockComposer {
      */
     private void hasWordIntersections(Word word) {
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
-        float height = Math.max(lineSpace, word.height);
-        //rectangle.setRect(word.x, (word.y - word.height), word.width, 3 * word.height); //создаём прямоугольник высотой в три высоты слова
+        float height = 2f*word.height;
+
         rectangle.setRect(word.x, word.y - height, word.width, 3*height);
 
         Word wordJ;
@@ -89,8 +85,9 @@ public class BlockComposer {
 
             boolean isOrder = Math.abs(word.getStartChunkID() - wordJ.getStartChunkID()) <= 1;
             boolean isRulings = hasWordLineIntersections(word, wordJ);
+            //boolean isThereInterColumnGap = isThereInterColumnGap(word, wordJ);
 
-            if (rectangle.intersects(wordJ) && isOrder && !isRulings) {
+            if (rectangle.intersects(wordJ) && isOrder && !isRulings/* && !isThereInterColumnGap*/) {
                 addWord(wordJ);
                 j = -1;
             }
@@ -383,7 +380,22 @@ public class BlockComposer {
         return false;
     }
 
-    private float calculateLineSpacing(){
+    private boolean isThereInterColumnGap(Word word1, Word word2){
+        List<Rectangle2D> gaps = page.getGaps();
+
+        if(gaps != null) {
+
+            for (Rectangle2D gap : gaps) {
+
+                if ((word1.x + word1.width <= word2.x && gap.getMaxX() < word2.x && word1.x + word1.width >= gap.getMinX()) ||
+                        (word2.x + word2.width <= word1.x && gap.getMaxX() < word1.x && word2.x + word2.width >= gap.getMinX()))
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    /*private float calculateLineSpacing(){
         Word firstWord;
         Word secondWord;
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
@@ -405,9 +417,10 @@ public class BlockComposer {
 
                 t = y2 - (y1 + height);
 
-                if(t < space)
+                if(t <= space)
                     space = t;
             }
+
             ds.addValue(space);
         }
 
@@ -416,9 +429,9 @@ public class BlockComposer {
         if(doubles.length != 0)
             d = doubles[doubles.length - 1];
 
-        return (float) Math.max(Math.max(ds.getMean(), ds.getPercentile(50)), d);
+        return (float) Math.max(d, ds.getPopulationVariance());//(float) Math.max(ds.getMean(), ds.getPercentile(50)), d);
 
-    }
+    }*/
 
     /**Определяет: есть ли между двумя блоками вертикальный Ruling
      * @param blockI Первый блок
