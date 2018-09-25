@@ -82,11 +82,11 @@ public final class DebuggingDrawer {
         int pageIndex = page.getIndex();
         contentDrawer.startPage(pageIndex);
 
-        drawCursorTraces(page, contentDrawer);
-        drawImageBounds(page, contentDrawer);
+        //drawCursorTraces(page, contentDrawer);
+        //drawImageBounds(page, contentDrawer);
 
         drawBlocks(page, contentDrawer);
-        drawWords(page, contentDrawer);
+        //drawWords(page, contentDrawer);
         //drawCharPositions(page, contentDrawer);
         //drawGaps(page, contentDrawer);
 

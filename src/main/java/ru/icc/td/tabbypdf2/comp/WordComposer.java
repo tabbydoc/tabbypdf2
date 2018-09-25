@@ -95,7 +95,10 @@ public final class WordComposer {
             // Check if the word ends here
             if (interCharacterDistance > epsilon || k == i) {
                 word = new Word(wordCharPositions);
-                words.add(word);
+
+                if(!word.getText().replace("_", "").isEmpty())
+                    words.add(word);
+
                 wordCharPositions.clear();
             }
         }

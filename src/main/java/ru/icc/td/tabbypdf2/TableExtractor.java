@@ -40,7 +40,7 @@ public final class TableExtractor {
     @Option(name = "-d",
             aliases = {"--debug"},
             usage = "enable debug")
-    private boolean useDebug = false;
+    private boolean useDebug = true;
     private Path debugPath;
 
     @Option(name = "-?",

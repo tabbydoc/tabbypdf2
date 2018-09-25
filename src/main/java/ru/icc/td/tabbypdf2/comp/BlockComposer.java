@@ -1,5 +1,7 @@
 package ru.icc.td.tabbypdf2.comp;
 
+import org.apache.commons.math3.stat.StatUtils;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import ru.icc.td.tabbypdf2.model.*;
 
 import java.awt.geom.Line2D;
@@ -8,6 +10,7 @@ import java.util.*;
 
 public class BlockComposer {
     private Page page;
+    private float lineSpace;
 
     public void composeBlocks(Page page) {
         words.addAll(page.getWords());
@@ -16,6 +19,7 @@ public class BlockComposer {
         if (words.isEmpty())
             return;
 
+        this.lineSpace = calculateLineSpacing();
         List<Block> blocks = composeBlocks();
         page.addBlocks(blocks);
     }
@@ -75,7 +79,9 @@ public class BlockComposer {
      */
     private void hasWordIntersections(Word word) {
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
-        rectangle.setRect(word.x, (word.y - word.height), word.width, 3 * word.height); //создаём прямоугольник высотой в три высоты слова
+        float height = Math.max(lineSpace, word.height);
+        //rectangle.setRect(word.x, (word.y - word.height), word.width, 3 * word.height); //создаём прямоугольник высотой в три высоты слова
+        rectangle.setRect(word.x, word.y - height, word.width, 3*height);
 
         Word wordJ;
         for (int j = 0; j < words.size(); j++) {
@@ -368,13 +374,50 @@ public class BlockComposer {
         List<CursorTrace> cursorTraces = page.getCursorTraces();
 
         for (int i = 0; i < cursorTraces.size(); i++) {
-            Line2D.Float cursorTrace = cursorTraces.get(i);
+            CursorTrace cursorTrace = cursorTraces.get(i);
 
-            if (cursorTrace.x1 == cursorTrace.x2 && ((wordI.x + wordI.width <= cursorTrace.x1 && cursorTrace.x1 <= wordJ.x)
-                    || (wordJ.x + wordJ.width <= cursorTrace.x1 && cursorTrace.x1 <= wordI.x)))
+            if ((cursorTrace.isVertical() && ((wordI.x + wordI.width <= cursorTrace.x1 && cursorTrace.x1 <= wordJ.x)
+                    || (wordJ.x + wordJ.width <= cursorTrace.x1 && cursorTrace.x1 <= wordI.x))))
                 return true;
         }
         return false;
+    }
+
+    private float calculateLineSpacing(){
+        Word firstWord;
+        Word secondWord;
+        Rectangle2D.Float rectangle = new Rectangle2D.Float();
+        float y1, y2, height, t, space = Float.MAX_VALUE;
+        DescriptiveStatistics ds = new DescriptiveStatistics();
+
+        for(int i = 0; i < words.size(); i++){
+            firstWord = words.get(i);
+            y1 = firstWord.y;
+            height = firstWord.height;
+            rectangle.setRect(0, y1, this.page.width, height);
+
+            for(int j = 0; j < words.size(); j++){
+                secondWord = words.get(j);
+                y2 = secondWord.y;
+
+                if(rectangle.intersects(secondWord) || y1 + height <= y2)
+                    continue;
+
+                t = y2 - (y1 + height);
+
+                if(t < space)
+                    space = t;
+            }
+            ds.addValue(space);
+        }
+
+        double[] doubles = StatUtils.mode(ds.getValues());
+        double d = Double.MIN_VALUE;
+        if(doubles.length != 0)
+            d = doubles[doubles.length - 1];
+
+        return (float) Math.max(Math.max(ds.getMean(), ds.getPercentile(50)), d);
+
     }
 
     /**Определяет: есть ли между двумя блоками вертикальный Ruling
