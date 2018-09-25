@@ -13,7 +13,24 @@ public final class Page extends Rectangle2D.Float {
     private List<Block> blocks;
     private List<CursorTrace> cursorTraces;
     private List<Rectangle2D> imageBounds;
-    private InterColumnGapExtractor.Gap<List<CursorTrace>> gap;
+    private List<Rectangle2D> gaps;
+
+    /*********/
+    /*private List<CursorTrace> left;
+    private List<CursorTrace> right;
+    public List<CursorTrace> getLeft() {
+        return left;
+    }
+    public List<CursorTrace> getRight() {
+        return right;
+    }
+    public void addToLeft(List<CursorTrace> lines) {
+        left.addAll(lines);
+    }
+    public void addToRight(List<CursorTrace> lines) {
+        right.addAll(lines);
+    }*/
+    /*********/
 
     private final Document document;
     private final int index;
@@ -24,6 +41,8 @@ public final class Page extends Rectangle2D.Float {
         blocks = new ArrayList<>(30);
         cursorTraces = new ArrayList<>(100);
         imageBounds = new ArrayList<>(5);
+        //left = new ArrayList<>();
+        //right = new ArrayList<>();
     }
 
     public Page(Document document, int index, Rectangle2D bbox) {
@@ -76,11 +95,11 @@ public final class Page extends Rectangle2D.Float {
         return this.blocks.addAll(blocks);
     }
 
-    public InterColumnGapExtractor.Gap<List<CursorTrace>> getGap () {
-        return gap;
+    public List<Rectangle2D> getGaps () {
+        return gaps;
     }
 
-    public void setGap (InterColumnGapExtractor.Gap value) {
-        this.gap = value;
+    public void setGap (List<Rectangle2D> value) {
+        this.gaps = value;
     }
 }

@@ -88,7 +88,7 @@ public final class DebuggingDrawer {
         drawBlocks(page, contentDrawer);
         //drawWords(page, contentDrawer);
         //drawCharPositions(page, contentDrawer);
-        //drawGaps(page, contentDrawer);
+        drawGaps(page, contentDrawer);
 
         contentDrawer.endPage();
     }
@@ -132,18 +132,11 @@ public final class DebuggingDrawer {
     }
 
     private void drawGaps(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.GRAY, Color.GRAY, 2.0f);
+        contentDrawer.setStyle(Color.RED, Color.LIGHT_GRAY, 1.0f);
 
-        List<CursorTrace> leftCursorTraces = page.getGap().getLeft();
-        for (CursorTrace cursorTrace : leftCursorTraces) {
-            contentDrawer.strokeLine(new Line2D.Double(cursorTrace.x1, cursorTrace.y1, cursorTrace.x2, cursorTrace.y2));
-        }
-
-        contentDrawer.setStyle(Color.RED, null, 2.0f);
-
-        List<CursorTrace> rightCursorTrace = page.getGap().getRight();
-        for (CursorTrace cursorTrace : rightCursorTrace) {
-            contentDrawer.strokeLine(new Line2D.Double(cursorTrace.x1, cursorTrace.y1, cursorTrace.x2, cursorTrace.y2));
+        for (Rectangle2D rect:page.getGaps()) {
+            //contentDrawer.fillRectangle(rect);
+            contentDrawer.strokeRectangle(rect);
         }
     }
 
