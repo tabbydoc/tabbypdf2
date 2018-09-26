@@ -83,7 +83,7 @@ public final class DebuggingDrawer {
         contentDrawer.startPage(pageIndex);
 
         drawCursorTraces(page, contentDrawer);
-        drawImageBounds(page, contentDrawer);
+        //drawImageBounds(page, contentDrawer);
 
         drawBlocks(page, contentDrawer);
         drawWords(page, contentDrawer);
