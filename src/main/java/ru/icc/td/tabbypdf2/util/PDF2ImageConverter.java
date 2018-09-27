@@ -38,6 +38,13 @@ public final class PDF2ImageConverter {
     private File outputFile;
     private Path outputPath;
 
+    @Option(name = "-f",
+            aliases = {"--format"},
+            metaVar = "FORMAT",
+            usage = "specify the file format for generated page images (e.g. png, jpg, gif)")
+    private String imageFileFormatArg;
+    private String imageFileFormat;
+
     public static void main(String[] args) {
         new PDF2ImageConverter().run(args);
     }
@@ -80,6 +87,11 @@ public final class PDF2ImageConverter {
             outputFile.mkdirs();
             outputPath = outputFile.toPath();
 
+            if (isEmptyArg(imageFileFormatArg))
+                imageFileFormat = "png";
+            else
+                imageFileFormat = imageFileFormatArg;
+
             final String[] extensions = {"pdf", "PDF"};
 
             if (inputFile.isFile()) {
@@ -120,13 +132,13 @@ public final class PDF2ImageConverter {
             PDFRenderer pdfRenderer = new PDFRenderer(document);
 
             for (int i = 0; i < document.getNumberOfPages(); i ++) {
-                BufferedImage image = pdfRenderer.renderImageWithDPI(i, 300, ImageType.RGB);
+                BufferedImage image = pdfRenderer.renderImageWithDPI(i, 150, ImageType.RGB);
 
                 String pdfFileBaseName = FilenameUtils.getBaseName(pdfFile.getName());
-                String imageFileName = String.format("%s_%03d.jpg", pdfFileBaseName, i);
+                String imageFileName = String.format("%s_%03d.%s", pdfFileBaseName, i, imageFileFormat);
                 Path outputImagePath = Paths.get(outputFile.getCanonicalPath(), imageFileName);
 
-                ImageIOUtil.writeImage(image, outputImagePath.toString(), 300);
+                ImageIOUtil.writeImage(image, outputImagePath.toString(), 150);
             }
 
             document.close();
