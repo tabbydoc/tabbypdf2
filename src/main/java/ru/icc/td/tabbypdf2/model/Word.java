@@ -5,8 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class Word extends Rectangle2D.Float {
-    private String text;
+
     private final List<CharPosition> charPositions;
+    private String text;
+
+    float minSpaceWidth = 0f;
+    float maxSpaceWidth = 0f;
+    float averageSpaceWidth = 0f;
+
     private Line line;
 
     {
@@ -15,14 +21,18 @@ public final class Word extends Rectangle2D.Float {
 
     public Word(List<CharPosition> charPositions) {
         this.charPositions.addAll(charPositions);
-        update();
+        setAll();
     }
 
-    private void update() {
+    private void setAll() {
         float minX = java.lang.Float.MAX_VALUE;
         float minY = java.lang.Float.MAX_VALUE;
         float maxX = java.lang.Float.MIN_VALUE;
         float maxY = java.lang.Float.MIN_VALUE;
+
+        float minSpaceWidth = java.lang.Float.MAX_VALUE;
+        float maxSpaceWidth = java.lang.Float.MIN_VALUE;
+        float sumSpaceWidth = 0f;
 
         StringBuilder sb = new StringBuilder(charPositions.size());
 
@@ -41,11 +51,25 @@ public final class Word extends Rectangle2D.Float {
             if (cp.y + cp.height > maxY)
                 maxY = cp.y + cp.height;
 
+            float spaceWidth = cp.getSpaceWidth();
+
+            if  (spaceWidth < minSpaceWidth)
+                minSpaceWidth = spaceWidth;
+
+            if  (spaceWidth > maxSpaceWidth)
+                maxSpaceWidth = spaceWidth;
+
+            sumSpaceWidth += spaceWidth;
+
             sb.append(cp.getUnicode());
         }
 
         setRect(minX, minY, maxX - minX, maxY - minY);
         setText(sb.toString());
+
+        this.minSpaceWidth = minSpaceWidth;
+        this.maxSpaceWidth = maxSpaceWidth;
+        this.averageSpaceWidth = sumSpaceWidth / charPositions.size();
     }
 
     private void setText(String text) {
@@ -71,5 +95,17 @@ public final class Word extends Rectangle2D.Float {
 
     public int getStartChunkID() {
         return charPositions.get(0).getChunkId();
+    }
+
+    public float getMaxSpaceWidth() {
+        return maxSpaceWidth;
+    }
+
+    public float getMinSpaceWidth() {
+        return minSpaceWidth;
+    }
+
+    public float getAverageSpaceWidth() {
+        return averageSpaceWidth;
     }
 }

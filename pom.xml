@@ -64,6 +64,11 @@
             <version>${pdfbox.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox-tools</artifactId>
+            <version>${pdfbox.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.kohsuke.args4j</groupId>
             <artifactId>args4j-maven-plugin</artifactId>
             <version>${org.kohsuke.args4j}</version>

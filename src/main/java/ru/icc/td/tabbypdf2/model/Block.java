@@ -6,26 +6,36 @@ import java.util.Collection;
 import java.util.List;
 
 public class Block extends Rectangle2D.Float {
-    private List<Line> lines;
-    private Page page;
+
     private final List<Word> words;
+    private List<Line> lines;
+
+    float minSpaceWidth = 0f;
+    float maxSpaceWidth = 0f;
+    float averageSpaceWidth = 0f;
+
+    private Page page;
 
     {
         words = new ArrayList<>(3000);
     }
 
-    public Block(List<Word> words){
+    public Block(List<Word> words) {
         this.words.addAll(words);
-        update() ;
+        setAll() ;
     }
 
-    private void update(){
-        double minX = java.lang.Float.MAX_VALUE;
-        double minY = java.lang.Float.MAX_VALUE;
-        double maxX = java.lang.Float.MIN_VALUE;
-        double maxY = java.lang.Float.MIN_VALUE;
+    private void setAll() {
+        float minX = java.lang.Float.MAX_VALUE;
+        float minY = java.lang.Float.MAX_VALUE;
+        float maxX = java.lang.Float.MIN_VALUE;
+        float maxY = java.lang.Float.MIN_VALUE;
 
-        for(Word word : words){
+        float minSpaceWidth = java.lang.Float.MAX_VALUE;
+        float maxSpaceWidth = java.lang.Float.MIN_VALUE;
+        float sumSpaceWidth = 0f;
+
+        for(Word word : words) {
             if(word.x < minX)
                 minX = word.x;
 
@@ -37,9 +47,23 @@ public class Block extends Rectangle2D.Float {
 
             if(word.y + word.height > maxY)
                 maxY = word.y + word.height;
+
+            float spaceWidth = word.getAverageSpaceWidth();
+
+            if  (spaceWidth < minSpaceWidth)
+                minSpaceWidth = spaceWidth;
+
+            if  (spaceWidth > maxSpaceWidth)
+                maxSpaceWidth = spaceWidth;
+
+            sumSpaceWidth += spaceWidth;
         }
 
         setRect(minX, minY, maxX - minX, maxY - minY);
+
+        this.minSpaceWidth = minSpaceWidth;
+        this.maxSpaceWidth = maxSpaceWidth;
+        this.averageSpaceWidth = sumSpaceWidth / words.size();
     }
 
     public List<Word> getWords() {
@@ -49,17 +73,21 @@ public class Block extends Rectangle2D.Float {
     //Добавляем новые слова в блок и пересчитываем рамку блока
     public void addWords(Collection<Word> words){
         this.words.addAll(words);
-        update();
+        setAll();
     }
 
     //Убираем слово из блока и пересчитываем рамку блока
     public void removeWord(Word word) {
         words.remove(word);
-        update();
+        setAll();
     }
 
     public void removeWords(Collection<Word> words) {
         this.words.removeAll(words);
-        update();
+        setAll();
+    }
+
+    public float getAverageSpaceWidth() {
+        return averageSpaceWidth;
     }
 }

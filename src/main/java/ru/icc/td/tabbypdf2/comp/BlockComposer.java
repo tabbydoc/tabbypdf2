@@ -75,7 +75,8 @@ public class BlockComposer {
      */
     private void hasWordIntersections(Word word) {
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
-        float height = 2f*word.height;
+        //float height = 2f*word.height;
+        float height = word.height;
 
         rectangle.setRect(word.x, word.y - height, word.width, 3*height);
 
@@ -260,7 +261,10 @@ public class BlockComposer {
                 continue;
 
             blocks.remove(i);
-            rectangle.setRect(0, blockI.y, page.width, blockI.height);
+            //rectangle.setRect(0, blockI.y, page.width, blockI.height);
+            final float w = blockI.getAverageSpaceWidth();
+            rectangle.setRect(blockI.x - w, blockI.y, blockI.width + w, blockI.height);
+
             float idI = blockI.getWords().get(0).getStartChunkID();
 
             for(int j = 0; j < blocks.size(); j++){

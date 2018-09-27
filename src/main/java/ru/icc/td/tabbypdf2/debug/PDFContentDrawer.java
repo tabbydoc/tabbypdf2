@@ -47,7 +47,7 @@ final class PDFContentDrawer {
 
     void startPage(int pageIndex) throws IOException {
         PDPage page = pdDocument.getPage(pageIndex);
-        contentStream = new PDPageContentStream(pdDocument, page, PDPageContentStream.AppendMode.APPEND, true, true);
+        contentStream = new PDPageContentStream(pdDocument, page, PDPageContentStream.AppendMode.OVERWRITE, true, true);
         setStyle(strokeColor, fillColor, lineWidth);
         contentStream.setFont(FONT, FONT_SIZE);
     }
