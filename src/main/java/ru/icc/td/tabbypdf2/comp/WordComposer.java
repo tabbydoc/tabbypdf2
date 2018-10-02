@@ -25,6 +25,31 @@ public final class WordComposer {
 
     private final List<CharPosition> wordCharPositions = new ArrayList<>(25);
     private final List<Word> words = new ArrayList<>(400);
+    private static final char[] FILLLINES;
+
+    static{
+        FILLLINES = new char[]{
+                '\u005F', // low line
+                '\u0332', // combining low line
+                '\uFE4D', // dashed low line
+                '\u2013', // en dash
+                '\u2014', // em dash
+                '\u2012', // figure dash
+                '\uFE58', // small em dash
+                '\u2212', // minus sign
+                '\u2796', // heavy minus sign
+                '\u02D7', // modifier letter minus sign
+                '\u002D', // hyphen-minus
+                '\u2010', // hyphen
+                '\u00AD', // soft hyphen
+                '\u2011', // non-breaking hyphen
+                '\uFF0D', // fullwidth hyphen-minus
+                '\uFE63', // small hyphen-minus
+                '\u058A', // armenian hyphen
+                '\u207B', // superscript minus
+        };
+    }
+
 
     private List<Word> composeWords(List<CharPosition> charPositions) {
 
@@ -96,13 +121,24 @@ public final class WordComposer {
             if (interCharacterDistance > epsilon || k == i) {
                 word = new Word(wordCharPositions);
 
-                if(!word.getText().replace("_", "").isEmpty())
+                if(!isFillSymbols(word))
                     words.add(word);
 
                 wordCharPositions.clear();
             }
         }
         return words;
+    }
+
+    private boolean isFillSymbols(Word word) {
+            for (char wordSeparator : FILLLINES) {
+                String s = word.getText().replace(String.valueOf(wordSeparator), "");
+
+                if (s.isEmpty())
+                    return true;
+            }
+
+        return false;
     }
 
 }
