@@ -3,6 +3,7 @@ package ru.icc.td.tabbypdf2.comp;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.CharPosition;
 import ru.icc.td.tabbypdf2.model.Word;
+
 import static ru.icc.td.tabbypdf2.model.Constants.TOLERANCE;
 
 import java.util.ArrayList;
@@ -25,31 +26,6 @@ public final class WordComposer {
 
     private final List<CharPosition> wordCharPositions = new ArrayList<>(25);
     private final List<Word> words = new ArrayList<>(400);
-    private static final char[] FILLLINES;
-
-    static{
-        FILLLINES = new char[]{
-                '\u005F', // low line
-                '\u0332', // combining low line
-                '\uFE4D', // dashed low line
-                '\u2013', // en dash
-                '\u2014', // em dash
-                '\u2012', // figure dash
-                '\uFE58', // small em dash
-                '\u2212', // minus sign
-                '\u2796', // heavy minus sign
-                '\u02D7', // modifier letter minus sign
-                '\u002D', // hyphen-minus
-                '\u2010', // hyphen
-                '\u00AD', // soft hyphen
-                '\u2011', // non-breaking hyphen
-                '\uFF0D', // fullwidth hyphen-minus
-                '\uFE63', // small hyphen-minus
-                '\u058A', // armenian hyphen
-                '\u207B', // superscript minus
-        };
-    }
-
 
     private List<Word> composeWords(List<CharPosition> charPositions) {
 
@@ -121,7 +97,8 @@ public final class WordComposer {
             if (interCharacterDistance > epsilon || k == i) {
                 word = new Word(wordCharPositions);
 
-                if(!isFillSymbols(word))
+                // Check if the word is not an itemization or padding text
+                if (!isItemizationText(word) && !isPaddingText(word))
                     words.add(word);
 
                 wordCharPositions.clear();
@@ -130,13 +107,94 @@ public final class WordComposer {
         return words;
     }
 
-    private boolean isFillSymbols(Word word) {
-            for (char wordSeparator : FILLLINES) {
-                String s = word.getText().replace(String.valueOf(wordSeparator), "");
+    private static final String[] PADDING_CHARACTERS;
 
-                if (s.isEmpty())
+    static {
+        PADDING_CHARACTERS = new String[]{
+                "\u005F", // low line
+                "\u0332", // combining low line
+                "\uFE4D", // dashed low line
+                "\u2013", // en dash
+                "\u2014", // em dash
+                "\u2012", // figure dash
+                "\uFE58", // small em dash
+                "\u2212", // minus sign
+                "\u2796", // heavy minus sign
+                "\u02D7", // modifier letter minus sign
+                "\u002D", // hyphen-minus
+                "\u2010", // hyphen
+                "\u00AD", // soft hyphen
+                "\u2011", // non-breaking hyphen
+                "\uFF0D", // full width hyphen-minus
+                "\uFE63", // small hyphen-minus
+                "\u058A", // armenian hyphen
+                "\u207B", // superscript minus
+        };
+    }
+
+    private static final String[] ITEMIZATION_CHARACTERS;
+
+    static {
+        ITEMIZATION_CHARACTERS = new String[]{
+                "\u2022", // bullet
+                "\u2023", // triangular bullet
+                "\u25E6", // white bullet
+                "\u2043", // hyphen bullet
+                "\u204C", // black leftwards bullet
+                "\u204D", // black rightwards bullet
+                "\u2219", // bullet operator
+                "\u00B7", // middle dot
+                "\u2024", // one dot leader
+                "\u25D8", // inverse bullet
+                "\u220E", // end of proof
+                "\u25B8", // black right-pointing small triangle
+                "\u2027", // hyphenation point
+                "\u2043", // hyphen bullet
+                "\u25A0", // black square
+                "\u25A1", // white square
+                "\u25A2", // white square with rounded corners
+                "\u25AA", // black small square
+                "\u25AB", // white small square
+                "\u25CB", // white circle
+                "\u25CC", // dotted circle
+                "\u25CD", // circle with vertical fill
+                "\u25CF", // black circle
+                "\u25FB", // white medium square
+                "\u25FC", // black medium square
+                "\u25FD", // white medium small square
+                "\u25FE", // black medium small square
+                "\u25CA", // lozenge
+                "\u2311", // square lozenge
+                "\u28EB", // black lozenge
+        };
+    }
+
+    private boolean isPaddingText(Word word) {
+        String text = word.getText();
+
+        if (null == text || text.isEmpty())
+            return false;
+
+        if (text.length() > 5) {
+            for (String paddingCharacter : PADDING_CHARACTERS)
+                if(text.matches(paddingCharacter.concat("+")))
                     return true;
-            }
+        }
+
+        return false;
+    }
+
+    private boolean isItemizationText(Word word) {
+        String text = word.getText();
+
+        if (null == text || text.isEmpty())
+            return false;
+
+        if (text.length() == 1) {
+            for (String itemizationCharacter : ITEMIZATION_CHARACTERS)
+                if (text.equalsIgnoreCase(itemizationCharacter))
+                    return true;
+        }
 
         return false;
     }

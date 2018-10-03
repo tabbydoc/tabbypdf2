@@ -56,42 +56,6 @@ public final class PDFTextExtractor {
     }
 
     private static final char[] WHITESPACES;
-    private static final char[] BULLETS;
-
-    static {
-        BULLETS = new char[]{
-                '\u2022', // bullet
-                '\u2023', // triangular bullet
-                '\u25E6', // white bullet
-                '\u2043', // hyphen bullet
-                '\u204C', // black leftwards bullet
-                '\u204D', // black rightwards bullet
-                '\u2219', // bullet operator
-                '\u00B7', // middle dot
-                '\u2024', // one dot leader
-                '\u25D8', // inverse bullet
-                '\u220E', // end of proof
-                '\u25B8', // black right-pointing small triangle
-                '\u2027', // hyphenation point
-                '\u2043', // hyphen bullet
-                '\u25A0', // black square
-                '\u25A1', // white square
-                '\u25A2', // white square with rounded corners
-                '\u25AA', // black small square
-                '\u25AB', // white small square
-                '\u25CB', // white circle
-                '\u25CC', // dotted circle
-                '\u25CD', // circle with vertical fill
-                '\u25CF', // black circle
-                '\u25FB', // white medium square
-                '\u25FC', // black medium square
-                '\u25FD', // white medium small square
-                '\u25FE', // black medium small square
-                '\u25CA', // lozenge
-                '\u2311', // square lozenge
-                '\u28EB', // black lozenge
-        };
-    }
 
     static {
         WHITESPACES = new char[]{
@@ -284,15 +248,6 @@ public final class PDFTextExtractor {
             return false;
         }
 
-        private boolean isBullet(String text){
-            for (char c : text.toCharArray())
-                for (char wordSeparator : BULLETS)
-                    if (c == wordSeparator)
-                        return true;
-
-            return false;
-        }
-
         @Override
         protected void writeString(String string, List<TextPosition> textPositions) throws IOException {
             // The invocation of this method signals a new text chunk in the PDF document.
@@ -311,7 +266,7 @@ public final class PDFTextExtractor {
             for (TextPosition textPos : textPositions) {
                 String unicode = textPos.getUnicode();
                 if (unicode == null || StringUtils.isBlank(unicode)) continue;
-                if (isWhitespace(unicode) || isBullet(unicode)) continue;
+                if (isWhitespace(unicode)) continue;
 
                 // Check if the text position is not rotated
                 if (textPos.getDir() != 0) {
