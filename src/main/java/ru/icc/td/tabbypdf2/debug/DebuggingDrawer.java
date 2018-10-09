@@ -85,10 +85,11 @@ public final class DebuggingDrawer {
         //drawCursorTraces(page, contentDrawer);
         //drawImageBounds(page, contentDrawer);
 
-        drawBlocks(page, contentDrawer);
+        //drawBlocks(page, contentDrawer);
         //drawWords(page, contentDrawer);
         //drawCharPositions(page, contentDrawer);
         //drawGaps(page, contentDrawer);
+        drawRulings(page, contentDrawer);
 
         contentDrawer.endPage();
     }
@@ -140,6 +141,14 @@ public final class DebuggingDrawer {
         for (Rectangle2D rect:page.getGaps()) {
             //contentDrawer.fillRectangle(rect);
             contentDrawer.strokeRectangle(rect);
+        }
+    }
+
+    private void drawRulings(Page page, PDFContentDrawer contentDrawer) throws IOException {
+        contentDrawer.setStyle(Color.green, Color.lightGray, 1.0f);
+
+        for (Ruling ruling:page.getHorizontalRulings()) {
+            contentDrawer.strokeLine(ruling);
         }
     }
 

@@ -15,6 +15,7 @@ public final class DocumentLoader {
 
     private PDFTextExtractor PDFTextExtractor;
     private PDFGraphicsExtractor PDFGraphicsExtractor;
+    private PDFRulingExtractor PDFRulingExtractor;
 
     public Document load(Path path) throws IllegalArgumentException, IOException {
         if (null == path) {
@@ -30,6 +31,7 @@ public final class DocumentLoader {
 
                 PDFTextExtractor = new PDFTextExtractor(pdDocument);
                 PDFGraphicsExtractor = new PDFGraphicsExtractor(pdDocument);
+                PDFRulingExtractor = new PDFRulingExtractor(pdDocument);
 
                 Document document = createDocument(file, pdDocument);
                 pdDocument.close();
@@ -72,6 +74,7 @@ public final class DocumentLoader {
 
             PDFTextExtractor.readTo(pageIndex, page);
             PDFGraphicsExtractor.readTo(pageIndex, page);
+            PDFRulingExtractor.readTo(pageIndex, page);
 
             return page;
         }

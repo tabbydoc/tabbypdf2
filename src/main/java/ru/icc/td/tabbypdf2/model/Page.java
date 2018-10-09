@@ -14,6 +14,7 @@ public final class Page extends Rectangle2D.Float {
     private List<CursorTrace> cursorTraces;
     private List<Rectangle2D> imageBounds;
     private List<Rectangle2D> gaps;
+    private List<Ruling> visibleRulings;
 
     /*********/
     /*private List<CursorTrace> left;
@@ -41,6 +42,7 @@ public final class Page extends Rectangle2D.Float {
         blocks = new ArrayList<>(30);
         cursorTraces = new ArrayList<>(100);
         imageBounds = new ArrayList<>(5);
+        visibleRulings = new ArrayList<>();
         //left = new ArrayList<>();
         //right = new ArrayList<>();
     }
@@ -102,4 +104,8 @@ public final class Page extends Rectangle2D.Float {
     public void setGap (List<Rectangle2D> value) {
         this.gaps = value;
     }
+
+    public List<Ruling> getHorizontalRulings() { return visibleRulings; }
+
+    public void addVisibleRulings(List<Ruling> rulings) { this.visibleRulings.addAll(rulings); }
 }
