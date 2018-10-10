@@ -10,9 +10,9 @@ public class Block extends Rectangle2D.Float {
     private final List<Word> words;
     private List<Line> lines;
 
-    float minSpaceWidth = 0f;
-    float maxSpaceWidth = 0f;
-    float averageSpaceWidth = 0f;
+    private float minSpaceWidth = 0f;
+    private float maxSpaceWidth = 0f;
+    private float averageSpaceWidth = 0f;
 
     private Page page;
 
@@ -70,13 +70,11 @@ public class Block extends Rectangle2D.Float {
         return words;
     }
 
-    //Добавляем новые слова в блок и пересчитываем рамку блока
     public void addWords(Collection<Word> words){
         this.words.addAll(words);
         setAll();
     }
 
-    //Убираем слово из блока и пересчитываем рамку блока
     public void removeWord(Word word) {
         words.remove(word);
         setAll();
@@ -85,6 +83,14 @@ public class Block extends Rectangle2D.Float {
     public void removeWords(Collection<Word> words) {
         this.words.removeAll(words);
         setAll();
+    }
+
+    public float getMinSpaceWidth() {
+        return minSpaceWidth;
+    }
+
+    public float getMaxSpaceWidth() {
+        return maxSpaceWidth;
     }
 
     public float getAverageSpaceWidth() {

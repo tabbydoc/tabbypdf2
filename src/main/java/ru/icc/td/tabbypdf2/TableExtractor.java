@@ -11,6 +11,7 @@ import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Table;
 import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.Collection;
