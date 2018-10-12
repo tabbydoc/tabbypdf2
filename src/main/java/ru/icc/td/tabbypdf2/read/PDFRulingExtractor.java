@@ -89,15 +89,15 @@ public class PDFRulingExtractor {
             horizontalRulings = Utils.collapseOrientedRulings(horizontalRulings, 5);
             verticalRulings = Utils.collapseOrientedRulings(verticalRulings, 5);
 
-            double pageHeight = page.getHeight();
+            float pageHeight = (float) Math.abs(page.getHeight());
 
             visibleRulings.clear();
             if (horizontalRulings != null) {
                 for (Ruling ruling: horizontalRulings) {
                     float x1 = ruling.x1 / 2;
                     float x2 = ruling.x2 / 2;
-                    float y1 = Math.abs((float) pageHeight + ruling.y1 / 2);
-                    float y2 = Math.abs((float) pageHeight + ruling.y2 / 2);
+                    float y1 = pageHeight - ruling.y1 / 2;
+                    float y2 = pageHeight - ruling.y2 / 2;
                     ruling.setLine(x1, y1, x2, y2);
                 }
                 visibleRulings.addAll(horizontalRulings);
@@ -106,8 +106,8 @@ public class PDFRulingExtractor {
                 for (Ruling ruling: verticalRulings) {
                     float x1 = ruling.x1 / 2;
                     float x2 = ruling.x2 / 2;
-                    float y1 = Math.abs((float) pageHeight - ruling.y1 / 2);
-                    float y2 = Math.abs((float) pageHeight - ruling.y2 / 2);
+                    float y1 = pageHeight - ruling.y1 / 2;
+                    float y2 = pageHeight - ruling.y2 / 2;
                     ruling.setLine(x1, y1, x2, y2);
                 }
                 visibleRulings.addAll(verticalRulings);

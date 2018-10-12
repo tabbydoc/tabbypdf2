@@ -80,7 +80,7 @@ public class BlockComposer {
             word1 = words.get(j);
 
             boolean isOrder = Math.abs(word.getStartChunkID() - word1.getStartChunkID()) <= 1;
-            boolean isRuling = isThereLine2D(word, word1, page.getHorizontalRulings(), HORIZONTAL);
+            boolean isRuling = isThereLine2D(word, word1, page.getRulings(), HORIZONTAL);
             //boolean isCursorTrace = isThereLine2D(word, word1, page.getCursorTraces());
             //boolean isThereInterColumnGap = isThereInterColumnGap(word, word1);
 

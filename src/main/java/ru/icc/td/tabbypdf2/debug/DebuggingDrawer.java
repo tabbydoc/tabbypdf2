@@ -82,14 +82,14 @@ public final class DebuggingDrawer {
         int pageIndex = page.getIndex();
         contentDrawer.startPage(pageIndex);
 
-        //drawCursorTraces(page, contentDrawer);
+        drawCursorTraces(page, contentDrawer);
         //drawImageBounds(page, contentDrawer);
 
         drawBlocks(page, contentDrawer);
         //drawWords(page, contentDrawer);
         //drawCharPositions(page, contentDrawer);
         //drawGaps(page, contentDrawer);
-        //drawRulings(page, contentDrawer);
+        drawRulings(page, contentDrawer);
 
         contentDrawer.endPage();
     }
@@ -145,9 +145,9 @@ public final class DebuggingDrawer {
     }
 
     private void drawRulings(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.green, Color.lightGray, 1.0f);
+        contentDrawer.setStyle(Color.MAGENTA, null, 1.0f);
 
-        for (Ruling ruling : page.getHorizontalRulings()) {
+        for (Ruling ruling : page.getRulings()) {
             contentDrawer.strokeLine(ruling);
         }
     }
