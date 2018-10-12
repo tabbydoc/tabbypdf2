@@ -62,6 +62,7 @@ public class BlockComposer {
         return blocks;
     }
 
+    // Начальная сборка блоков
     private void addWord(Word word) {
         blockWords.add(word);
         words.remove(word);
@@ -82,15 +83,17 @@ public class BlockComposer {
             boolean isOrder = Math.abs(word.getStartChunkID() - word1.getStartChunkID()) <= 1;
             boolean isRuling = isThereLine2D(word, word1, page.getRulings(), HORIZONTAL);
             //boolean isCursorTrace = isThereLine2D(word, word1, page.getCursorTraces());
+            boolean isCursorTrace = isThereLine2D(word, word1, page.getCursorTraces(), VERTICAL);
             //boolean isThereInterColumnGap = isThereInterColumnGap(word, word1);
 
-            if (rectangle.intersects(word1) && isOrder && (!isRuling)){
+            if (rectangle.intersects(word1) && isOrder && (!isRuling && !isCursorTrace)){
                 addWord(word1);
                 j = -1;
             }
         }
     }
 
+    // Наша постобработка
     private void separateByChunkId() {
         List<Word> blockWordsI = new ArrayList<>();
         Block blockI;
@@ -161,6 +164,7 @@ public class BlockComposer {
         }
     }
 
+    // Наша постобработка
     private void unionIntersectedBlocks() {
         Block blockI;
         Block blockJ;
@@ -203,6 +207,7 @@ public class BlockComposer {
         return false;
     }
 
+    // Постобработка T-RECS (Section 3.1)
     private void unionWronglyIsolatedBlocks() {
         updatedBlocks.clear();
         blockWords.clear();
@@ -276,6 +281,7 @@ public class BlockComposer {
         return false;
     }
 
+    // Постобработка T-RECS (Section 3.3)
     private void unionSeparatedWords(){
         Block blockI;
         Block blockJ;

@@ -124,8 +124,10 @@ public final class DebuggingDrawer {
     private void drawCursorTraces(Page page, PDFContentDrawer contentDrawer) throws IOException {
         contentDrawer.setStyle(Color.GREEN, null, 0.5f);
 
-        for (CursorTrace cursorTrace : page.getCursorTraces())
-            contentDrawer.strokeLine(cursorTrace);
+        for (CursorTrace cursorTrace : page.getCursorTraces()) {
+            if (cursorTrace.isVertical())
+                contentDrawer.strokeLine(cursorTrace);
+        }
     }
 
     private void drawImageBounds(Page page, PDFContentDrawer contentDrawer) throws IOException {
