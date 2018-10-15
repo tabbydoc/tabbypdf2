@@ -106,7 +106,7 @@ public final class Page extends Rectangle2D.Float {
         this.gaps = value;
     }
 
-    public List<Ruling> getHorizontalRulings() { return visibleRulings; }
+    public List<Ruling> getRulings() { return visibleRulings; }
 
     public void addVisibleRulings(List<Ruling> rulings) { this.visibleRulings.addAll(rulings); }
 

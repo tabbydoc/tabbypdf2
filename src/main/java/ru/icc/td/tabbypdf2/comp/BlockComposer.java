@@ -1,5 +1,6 @@
 package ru.icc.td.tabbypdf2.comp;
 
+import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import ru.icc.td.tabbypdf2.model.*;
 
@@ -86,7 +87,10 @@ public class BlockComposer {
             word1 = words.get(j);
 
             boolean isOrder = Math.abs(word.getStartChunkID() - word1.getStartChunkID()) <= 1;
-            boolean isRuling = isThereLine2D(word, word1, page.getHorizontalRulings(), HORIZONTAL);
+            boolean isRuling = isThereLine2D(word, word1, page.getRulings(), HORIZONTAL);
+            //boolean isCursorTrace = isThereLine2D(word, word1, page.getCursorTraces());
+            boolean isCursorTrace = isThereLine2D(word, word1, page.getCursorTraces(), VERTICAL);
+            //boolean isThereInterColumnGap = isThereInterColumnGap(word, word1);
 
             if (rectangle.intersects(word1) && isOrder && (!isRuling)){
                 addWord(word1);
