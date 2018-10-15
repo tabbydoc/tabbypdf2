@@ -9,7 +9,7 @@ import java.util.List;
 public final class Page extends Rectangle2D.Float {
     private List<CharPosition> charPositions;
     private List<Word> words;
-    private List<Word> lines;
+    private List<Line> lines;
     private List<Block> blocks;
     private List<CursorTrace> cursorTraces;
     private List<Rectangle2D> imageBounds;
@@ -43,6 +43,7 @@ public final class Page extends Rectangle2D.Float {
         cursorTraces = new ArrayList<>(100);
         imageBounds = new ArrayList<>(5);
         visibleRulings = new ArrayList<>();
+        lines = new ArrayList<>(3000);
         //left = new ArrayList<>();
         //right = new ArrayList<>();
     }
@@ -108,4 +109,12 @@ public final class Page extends Rectangle2D.Float {
     public List<Ruling> getHorizontalRulings() { return visibleRulings; }
 
     public void addVisibleRulings(List<Ruling> rulings) { this.visibleRulings.addAll(rulings); }
+
+    public boolean addLines(List<Line> lines){
+        return this.lines.addAll(lines);
+    }
+
+    public List<Line> getLines(){
+        return this.lines;
+    }
 }

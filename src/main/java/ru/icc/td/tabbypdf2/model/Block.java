@@ -6,9 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class Block extends Rectangle2D.Float {
-
     private final List<Word> words;
-    private List<Line> lines;
 
     private float minSpaceWidth = 0f;
     private float maxSpaceWidth = 0f;

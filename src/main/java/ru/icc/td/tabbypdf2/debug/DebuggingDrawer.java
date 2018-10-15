@@ -86,6 +86,7 @@ public final class DebuggingDrawer {
         //drawImageBounds(page, contentDrawer);
 
         drawBlocks(page, contentDrawer);
+        //drawLines(page, contentDrawer);
         //drawWords(page, contentDrawer);
         //drawCharPositions(page, contentDrawer);
         //drawGaps(page, contentDrawer);
@@ -117,6 +118,16 @@ public final class DebuggingDrawer {
 
         for (Block block : page.getBlocks()) {
             contentDrawer.strokeRectangle(block);
+            //contentDrawer.fillRectangle(block);
+        }
+    }
+
+    private void drawLines(Page page, PDFContentDrawer contentDrawer) throws IOException {
+        contentDrawer.setStyle(Color.ORANGE, null, 0.5f);
+        //contentDrawer.setStyle(null, Color.BLACK, 0f);
+
+        for (Line line : page.getLines()) {
+            contentDrawer.strokeRectangle(line);
             //contentDrawer.fillRectangle(block);
         }
     }

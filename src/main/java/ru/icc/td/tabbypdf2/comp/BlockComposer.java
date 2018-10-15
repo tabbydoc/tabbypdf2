@@ -1,6 +1,5 @@
 package ru.icc.td.tabbypdf2.comp;
 
-import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import ru.icc.td.tabbypdf2.model.*;
 
@@ -13,12 +12,18 @@ public class BlockComposer {
     private final int VERTICAL = 0;
     private final int HORIZONTAL = 1;
     private float lineSpace;
+    private float c = 1.5f;
+
 
     public void composeBlocks(Page page) {
         this.page = page;
-        words.addAll(page.getWords());
+        words.clear();
+        lines.clear();
 
-        if (words.isEmpty())
+        words.addAll(page.getWords());
+        lines.addAll(page.getLines());
+
+        if (words.isEmpty() || lines.isEmpty())
             return;
 
         List<Block> blocks = composeBlocks();
@@ -34,9 +39,9 @@ public class BlockComposer {
     private List<Block> composeBlocks() {
         blocks.clear();
         blockWords.clear();
+        updatedBlocks.clear();
 
-        //lines.addAll(composeLines());
-        //lineSpace = calculateLineSpacing();
+        //lineSpace = calculateLineSpacingFirst();
 
         Block block;
         Word word;
@@ -58,6 +63,7 @@ public class BlockComposer {
         separateByChunkId();
 
         unionWronglyIsolatedBlocks();
+        unionSeparatedWords();
 
         return blocks;
     }
@@ -70,10 +76,10 @@ public class BlockComposer {
 
     private void hasWordIntersections(Word word) {
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
+        //float height = Math.max(word.height, lineSpace);
         float height = word.height;
-        //float height = lineSpace;
 
-        rectangle.setRect(word.x, word.y - height, word.width, 3*height);
+        rectangle.setRect(word.x, word.y - c * height, word.width, (1 + 2 * c) * height);
 
         Word word1;
         for (int j = 0; j < words.size(); j++) {
@@ -81,8 +87,6 @@ public class BlockComposer {
 
             boolean isOrder = Math.abs(word.getStartChunkID() - word1.getStartChunkID()) <= 1;
             boolean isRuling = isThereLine2D(word, word1, page.getHorizontalRulings(), HORIZONTAL);
-            //boolean isCursorTrace = isThereLine2D(word, word1, page.getCursorTraces());
-            //boolean isThereInterColumnGap = isThereInterColumnGap(word, word1);
 
             if (rectangle.intersects(word1) && isOrder && (!isRuling)){
                 addWord(word1);
@@ -362,15 +366,15 @@ public class BlockComposer {
         return false;
     }
 
-    private <T extends Line2D.Float, S extends Rectangle2D.Float> boolean isThereLine2D(S rec1, S rec2, List<T> list, int param) {
+    private <T extends Line2D.Float, S extends Rectangle2D.Float> boolean isThereLine2D(S rec1, S rec2, List<T> list, int orientation) {
         Rectangle2D rectangle = rec1.createUnion(rec2);
         boolean condition = false;
 
         for (T line2D : list) {
 
-            if(param == HORIZONTAL)
+            if(orientation == HORIZONTAL)
                 condition = line2D.y1 == line2D.y2;
-            if(param == VERTICAL)
+            if(orientation == VERTICAL)
                 condition = line2D.x1 == line2D.x2;
 
             if (condition && line2D.intersects(rectangle))
@@ -393,5 +397,66 @@ public class BlockComposer {
             }
         }
         return false;
+    }
+
+    private float calculateLineSpacingFirst(){
+        Line line1, line2;
+        float space, t, y1, y2, height2;
+        DescriptiveStatistics ds = new DescriptiveStatistics();
+        Set<Float> floats = new HashSet<>();
+        Set<Float> cFloats = new HashSet<>();
+
+        for(int i = 0; i < lines.size(); i++){
+            line1 = lines.get(i);
+            y1 = line1.y;
+
+            space = Math.abs(page.height);
+
+            for(int j = 0; j < lines.size(); j++){
+                line2 = lines.get(j);
+                y2 = line2.y;
+                height2 = line2.height;
+
+                if(line1.equals(line2) || !(y1 > y2 + height2))
+                    continue;
+
+                t = y1 - (y2 + height2);
+
+                if(t < space)
+                    space = t;
+            }
+
+            if(space < Math.abs(page.height)) {
+                //ds.addValue(space);
+                floats.add(space);
+                cFloats.add(space/line1.height);
+            }
+
+        }
+
+        for(Float f : cFloats)
+            ds.addValue(f);
+
+        c = (float) ds.getPercentile(50);
+
+        ds.clear();
+
+        for(Float f : floats)
+            ds.addValue(f);
+
+        return (float) ds.getMean();
+    }
+
+    private float calculateLineSpacing(){
+        Line lineI;
+        float space = 0, height = Math.abs(page.height);
+
+        for(int i = 0; i < lines.size(); i++){
+            lineI = lines.get(i);
+            space += Math.abs(lineI.height);
+        }
+
+        return (height - space)/(lines.size() - 1);
+
     }
 }
