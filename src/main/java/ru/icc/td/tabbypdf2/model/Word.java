@@ -1,12 +1,16 @@
 package ru.icc.td.tabbypdf2.model;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public final class Word extends Rectangle2D.Float {
 
     private final List<CharPosition> charPositions;
+    private final Set<Font> fonts;
     private String text;
 
     float minSpaceWidth = 0f;
@@ -16,6 +20,7 @@ public final class Word extends Rectangle2D.Float {
     private Line line;
 
     {
+        fonts = new HashSet<>(10);
         charPositions = new ArrayList<>(10);
     }
 
@@ -38,6 +43,7 @@ public final class Word extends Rectangle2D.Float {
 
         for (CharPosition cp : charPositions) {
             cp.setWord(this);
+            fonts.add(cp.getFont());
 
             if (cp.x < minX)
                 minX = cp.x;
@@ -75,6 +81,10 @@ public final class Word extends Rectangle2D.Float {
     private void setText(String text) {
         assert (null != text && !text.isEmpty());
         this.text = text;
+    }
+
+    public Set<Font> getFonts() {
+        return fonts;
     }
 
     public String getText() {

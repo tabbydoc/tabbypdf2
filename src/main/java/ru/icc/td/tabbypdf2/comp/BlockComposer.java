@@ -1,19 +1,20 @@
 package ru.icc.td.tabbypdf2.comp;
 
-import org.apache.commons.math3.stat.StatUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import org.apache.commons.math3.util.Precision;
 import ru.icc.td.tabbypdf2.model.*;
 
+import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
+import java.util.List;
 
 public class BlockComposer {
     private Page page;
     private final int VERTICAL = 0;
     private final int HORIZONTAL = 1;
-    private float lineSpace;
-    private float c = 1.5f;
+    private float lineCoefficient;
 
 
     public void composeBlocks(Page page) {
@@ -27,6 +28,7 @@ public class BlockComposer {
         if (words.isEmpty() || lines.isEmpty())
             return;
 
+        lineCoefficient = calculateCoefficient();
         List<Block> blocks = composeBlocks();
         page.addBlocks(blocks);
     }
@@ -41,8 +43,6 @@ public class BlockComposer {
         blocks.clear();
         blockWords.clear();
         updatedBlocks.clear();
-
-        //lineSpace = calculateLineSpacingFirst();
 
         Block block;
         Word word;
@@ -59,12 +59,11 @@ public class BlockComposer {
 
         unionIntersectedBlocks();
         unionWronglyIsolatedBlocks();
-        unionSeparatedWords();
 
         separateByChunkId();
 
-        unionWronglyIsolatedBlocks();
         unionSeparatedWords();
+        unionWronglyIsolatedBlocks();
 
         return blocks;
     }
@@ -77,10 +76,9 @@ public class BlockComposer {
 
     private void hasWordIntersections(Word word) {
         Rectangle2D.Float rectangle = new Rectangle2D.Float();
-        //float height = Math.max(word.height, lineSpace);
         float height = word.height;
 
-        rectangle.setRect(word.x, word.y - c * height, word.width, (1 + 2 * c) * height);
+        rectangle.setRect(word.x, word.y - lineCoefficient * height, word.width, (1 + 2 * lineCoefficient) * height);
 
         Word word1;
         for (int j = 0; j < words.size(); j++) {
@@ -88,11 +86,10 @@ public class BlockComposer {
 
             boolean isOrder = Math.abs(word.getStartChunkID() - word1.getStartChunkID()) <= 1;
             boolean isRuling = isThereLine2D(word, word1, page.getRulings(), HORIZONTAL);
-            //boolean isCursorTrace = isThereLine2D(word, word1, page.getCursorTraces());
             boolean isCursorTrace = isThereLine2D(word, word1, page.getCursorTraces(), VERTICAL);
-            //boolean isThereInterColumnGap = isThereInterColumnGap(word, word1);
+            boolean isFont = areTheSameFonts(word1, word);
 
-            if (rectangle.intersects(word1) && isOrder && (!isRuling)){
+            if (rectangle.intersects(word1) && isOrder && !isRuling && !isCursorTrace && isFont){
                 addWord(word1);
                 j = -1;
             }
@@ -227,7 +224,7 @@ public class BlockComposer {
             for (int i = 0; i < blocks.size(); i++) {
                 blockI = blocks.get(i);
 
-                spaceI = blockI.getMaxSpaceWidth();
+                spaceI = calculateSpace(blockI);
                 rectangle1.setRect(blockI.x - spaceI, blockI.y, blockI.width + 2 * spaceI, blockI.height);
 
                 for (int j = 0; j < blocks.size(); j++) {
@@ -236,10 +233,10 @@ public class BlockComposer {
                     if (blockJ.equals(blockI))
                         continue;
 
-                    spaceJ = blockJ.getMaxSpaceWidth();
+                    spaceJ = calculateSpace(blockJ);
                     rectangle2.setRect(blockJ.x - spaceJ, blockJ.y, blockJ.width + 2 * spaceJ, blockJ.height);
 
-                    if (rectangle1.intersects(rectangle2)) {
+                    if (rectangle1.intersects(rectangle2) && !isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL)) {
                         blocks.remove(j);
                         i = -1;
                         j--;
@@ -264,7 +261,7 @@ public class BlockComposer {
         for (int i = 0; i < blocks.size(); i++) {
             blockI = blocks.get(i);
 
-            spaceI = blockI.getMaxSpaceWidth();
+            spaceI = calculateSpace(blockI);
             rectangle1.setRect(blockI.x - spaceI, blockI.y, blockI.width + 2 * spaceI, blockI.height);
 
             for (int j = 0; j < blocks.size(); j++) {
@@ -273,10 +270,10 @@ public class BlockComposer {
                 if (blockJ.equals(blockI))
                     continue;
 
-                spaceJ = blockJ.getMaxSpaceWidth();
+                spaceJ = calculateSpace(blockJ);
                 rectangle2.setRect(blockJ.x - spaceJ, blockJ.y, blockJ.width + 2 * spaceJ, blockJ.height);
 
-                if (rectangle1.intersects(rectangle2)) {
+                if (rectangle1.intersects(rectangle2) && !isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL)) {
                     return true;
                 }
             }
@@ -299,14 +296,17 @@ public class BlockComposer {
                     continue;
 
                 blocks.remove(i);
-                //rectangle.setRect(0, blockI.y, page.width, blockI.height);
-                final float w = blockI.getMaxSpaceWidth();
+
+                float w = calculateSpace(blockI);
                 rectangle.setRect(blockI.x - w, blockI.y, blockI.width + w, blockI.height);
 
                 float idI = blockI.getWords().get(0).getStartChunkID();
 
                 for (int j = 0; j < blocks.size(); j++) {
                     blockJ = blocks.get(j);
+
+                    if(blockJ.getWords().size() != 1)
+                        continue;
 
                     boolean areIdsEqual = false;
 
@@ -341,8 +341,8 @@ public class BlockComposer {
             if (blockI.getWords().size() != 1)
                 continue;
 
-            //rectangle.setRect(0, blockI.y, page.width, blockI.height);
-            final float w = blockI.getMaxSpaceWidth();
+            float w = calculateSpace(blockI);
+
             rectangle.setRect(blockI.x - w, blockI.y, blockI.width + w, blockI.height);
 
             float idI = blockI.getWords().get(0).getStartChunkID();
@@ -370,6 +370,22 @@ public class BlockComposer {
         return false;
     }
 
+    private float calculateSpace(Block block){
+        DescriptiveStatistics ds = new DescriptiveStatistics();
+
+        for (Word aWb : block.getWords()) {
+
+            for (Line line : lines) {
+                List<Word> lw = line.getWords();
+
+                if (lw.contains(aWb))
+                    ds.addValue(line.getSpace());
+            }
+        }
+
+        return (float) ds.getMax();
+    }
+
     private <T extends Line2D.Float, S extends Rectangle2D.Float> boolean isThereLine2D(S rec1, S rec2, List<T> list, int orientation) {
         Rectangle2D rectangle = rec1.createUnion(rec2);
         boolean condition = false;
@@ -377,9 +393,9 @@ public class BlockComposer {
         for (T line2D : list) {
 
             if(orientation == HORIZONTAL)
-                condition = line2D.y1 == line2D.y2;
+                condition = line2D.y1 == line2D.y2 && (line2D.y1 != rectangle.getMinY() && line2D.y1 != rectangle.getMaxY());
             if(orientation == VERTICAL)
-                condition = line2D.x1 == line2D.x2;
+                condition = line2D.x1 == line2D.x2 && (line2D.x1 != rectangle.getMinX() && line2D.x1 != rectangle.getMaxX());
 
             if (condition && line2D.intersects(rectangle))
                 return true;
@@ -403,11 +419,10 @@ public class BlockComposer {
         return false;
     }
 
-    private float calculateLineSpacingFirst(){
+    private float calculateCoefficient(){
         Line line1, line2;
         float space, t, y1, y2, height2;
         DescriptiveStatistics ds = new DescriptiveStatistics();
-        Set<Float> floats = new HashSet<>();
         Set<Float> cFloats = new HashSet<>();
 
         for(int i = 0; i < lines.size(); i++){
@@ -431,8 +446,7 @@ public class BlockComposer {
             }
 
             if(space < Math.abs(page.height)) {
-                //ds.addValue(space);
-                floats.add(space);
+                space = Precision.round(space, 2);
                 cFloats.add(space/line1.height);
             }
 
@@ -441,26 +455,20 @@ public class BlockComposer {
         for(Float f : cFloats)
             ds.addValue(f);
 
-        c = (float) ds.getPercentile(50);
-
-        ds.clear();
-
-        for(Float f : floats)
-            ds.addValue(f);
-
         return (float) ds.getMean();
     }
 
-    private float calculateLineSpacing(){
-        Line lineI;
-        float space = 0, height = Math.abs(page.height);
+    private boolean areTheSameFonts(Word word1, Word word2){
+        Set<Font> fonts1 = word1.getFonts();
+        Set<Font> fonts2 = word2.getFonts();
 
-        for(int i = 0; i < lines.size(); i++){
-            lineI = lines.get(i);
-            space += Math.abs(lineI.height);
+        for(Font f1 : fonts1){
+
+            if(fonts2.contains(f1))
+                return true;
+
         }
 
-        return (height - space)/(lines.size() - 1);
-
+        return false;
     }
 }
