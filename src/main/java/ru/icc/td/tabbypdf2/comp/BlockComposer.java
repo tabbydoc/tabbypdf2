@@ -85,7 +85,8 @@ public class BlockComposer {
             word1 = words.get(j);
 
             boolean isOrder = Math.abs(word.getStartChunkID() - word1.getStartChunkID()) <= 1;
-            boolean isRuling = isThereLine2D(word, word1, page.getRulings(), HORIZONTAL);
+            boolean isRuling = isThereLine2D(word, word1, page.getRulings(), HORIZONTAL) ||
+                    isThereLine2D(word, word1, page.getRulings(), VERTICAL);
             boolean isCursorTrace = isThereLine2D(word, word1, page.getCursorTraces(), VERTICAL);
             boolean isFont = areTheSameFonts(word1, word);
 
@@ -236,7 +237,11 @@ public class BlockComposer {
                     spaceJ = calculateSpace(blockJ);
                     rectangle2.setRect(blockJ.x - spaceJ, blockJ.y, blockJ.width + 2 * spaceJ, blockJ.height);
 
-                    if (rectangle1.intersects(rectangle2) && !isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL)) {
+                    boolean isRuling = isThereLine2D(blockI, blockJ, page.getRulings(), HORIZONTAL) ||
+                            isThereLine2D(blockI, blockJ, page.getRulings(), VERTICAL);
+                    boolean isCursorTrace = isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL);
+
+                    if (rectangle1.intersects(rectangle2) && !isRuling && !isCursorTrace) {
                         blocks.remove(j);
                         i = -1;
                         j--;
@@ -273,7 +278,11 @@ public class BlockComposer {
                 spaceJ = calculateSpace(blockJ);
                 rectangle2.setRect(blockJ.x - spaceJ, blockJ.y, blockJ.width + 2 * spaceJ, blockJ.height);
 
-                if (rectangle1.intersects(rectangle2) && !isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL)) {
+                boolean isRuling = isThereLine2D(blockI, blockJ, page.getRulings(), HORIZONTAL) ||
+                        isThereLine2D(blockI, blockJ, page.getRulings(), VERTICAL);
+                boolean isCursorTrace = isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL);
+
+                if (rectangle1.intersects(rectangle2) && !isRuling && !isCursorTrace) {
                     return true;
                 }
             }
@@ -317,7 +326,11 @@ public class BlockComposer {
                             areIdsEqual = true;
                     }
 
-                    if (rectangle.intersects(blockJ) && areIdsEqual && !isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL)) {
+                    boolean isRuling = isThereLine2D(blockI, blockJ, page.getRulings(), HORIZONTAL) ||
+                            isThereLine2D(blockI, blockJ, page.getRulings(), VERTICAL);
+                    boolean isCursorTrace = isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL);
+
+                    if (rectangle.intersects(blockJ) && areIdsEqual && !isRuling && !isCursorTrace) {
                         blocks.remove(j);
                         j--;
                         i = -1;
@@ -361,8 +374,11 @@ public class BlockComposer {
                     if (idI == word.getStartChunkID())
                         areIdsEqual = true;
                 }
+                boolean isRuling = isThereLine2D(blockI, blockJ, page.getRulings(), HORIZONTAL) ||
+                        isThereLine2D(blockI, blockJ, page.getRulings(), VERTICAL);
+                boolean isCursorTrace = isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL);
 
-                if (rectangle.intersects(blockJ) && areIdsEqual && !isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL)) {
+                if (rectangle.intersects(blockJ) && areIdsEqual && !isRuling && !isCursorTrace) {
                    return true;
                 }
             }
@@ -387,17 +403,27 @@ public class BlockComposer {
     }
 
     private <T extends Line2D.Float, S extends Rectangle2D.Float> boolean isThereLine2D(S rec1, S rec2, List<T> list, int orientation) {
-        Rectangle2D rectangle = rec1.createUnion(rec2);
         boolean condition = false;
+        boolean isIntersected = false;
 
         for (T line2D : list) {
 
-            if(orientation == HORIZONTAL)
-                condition = line2D.y1 == line2D.y2 && (line2D.y1 != rectangle.getMinY() && line2D.y1 != rectangle.getMaxY());
-            if(orientation == VERTICAL)
-                condition = line2D.x1 == line2D.x2 && (line2D.x1 != rectangle.getMinX() && line2D.x1 != rectangle.getMaxX());
+            if(orientation == HORIZONTAL) {
+                condition = line2D.y1 == line2D.y2;
 
-            if (condition && line2D.intersects(rectangle))
+                isIntersected = (rec1.getMaxY() < line2D.y1 && line2D.y1 < rec2.getMinY()) ||
+                        (rec2.getMaxY() < line2D.y1 && line2D.y1 < rec1.getMinY());
+            }
+
+            if(orientation == VERTICAL) {
+                condition = line2D.x1 == line2D.x2;
+
+                isIntersected = (rec1.getMaxX() < line2D.x1 && line2D.x1 < rec2.getMinX()) ||
+                        (rec2.getMaxX() < line2D.x1 && line2D.x1 < rec1.getMinX());
+            }
+
+
+            if (condition && isIntersected)
                 return true;
         }
 
