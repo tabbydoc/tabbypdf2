@@ -4,119 +4,156 @@ import ru.icc.td.tabbypdf2.util.Utils;
 
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.*;
 
 public final class Ruling extends Line2D.Float {
 
-    public static int DISTANCE_TOLERANCE = 5;
+    private static int PERPENDICULAR_PIXEL_EXPAND_AMOUNT = 2;
+    private static int COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT = 1;
+    private enum SOType { VERTICAL, HRIGHT, HLEFT }
 
     private Page page;
 
     public Ruling(Point2D p1, Point2D p2) {
         super(p1, p2);
     }
+    public Ruling(Point2D p1, Point2D p2, Page page) {
+        super(p1, p2);
+        this.page = page;
+    }
 
     public Ruling(float x1, float y1, float x2, float y2) {
         super(x1, y1, x2, y2);
     }
 
-    public RenderingType getRenderingType() {
-        return renderingType;
+    /**
+     * Normalize almost horizontal or almost vertical lines
+     */
+    public void normalize() {
+
+        double angle = this.getAngle();
+        if (Utils.within(angle, 0, 1) || Utils.within(angle, 180, 1)) { // almost horizontal
+            this.setLine(this.x1, this.y1, this.x2, this.y1);
+        }
+        else if (Utils.within(angle, 90, 1) || Utils.within(angle, 270, 1)) { // almost vertical
+            this.setLine(this.x1, this.y1, this.x1, this.y2);
+        }
+//        else {
+//            System.out.println("oblique: " + this + " ("+ this.getAngle() + ")");
+//        }
     }
 
-    public float getLength() {
-        return this.getEnd() - this.getStart();
+    public boolean vertical() {
+        return this.length() > 0 && Utils.feq(this.x1, this.x2); //diff < ORIENTATION_CHECK_THRESHOLD;
     }
 
-    public void setRenderingType(RenderingType renderingType) {
-        this.renderingType = renderingType;
+    public boolean horizontal() {
+        return this.length() > 0 && Utils.feq(this.y1, this.y2); //diff < ORIENTATION_CHECK_THRESHOLD;
     }
 
-    private enum SOType { VERTICAL, H_RIGHT, H_LEFT }
-    public enum RenderingType {UNKNOWN, VISIBLE, INVISIBLE}
+    public boolean oblique() {
+        return !(this.vertical() || this.horizontal());
+    }
 
-    //private Point2D.Float startPoint;
-    //private Point2D.Float endPoint;
-
-    private RenderingType renderingType;
+    // attributes that make sense only for non-oblique lines
+    // these are used to have a single collapse method (in page, currently)
 
     public float getPosition() {
-        return (float) (this.isVertical() ? super.getP1().getX() : super.getP2().getY());
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        return this.vertical() ? this.getLeft() : this.getTop();
     }
 
-    public Point2D.Float getStartPoint() {
-        return (Point2D.Float) super.getP1(); // startPoint;
-    }
-
-    public Point2D.Float getEndPoint() {
-        return (Point2D.Float) super.getP2(); //  endPoint;
-    }
-
-    private void setTop(float value) {
-        setLine(this.getLeft(), value, this.getRight(), this.getBottom());
-    }
-
-    private void setLeft(float value) {
-        setLine(value, this.getTop(), this.getRight(), this.getBottom());
-    }
-
-    private void setBottom(float value) {
-        setLine(this.getLeft(), this.getTop(), this.getRight(), value);
-    }
-
-    private void setRight(float value) {
-        setLine(this.getLeft(), this.getTop(), value, this.getBottom());
-    }
-
-    public void setStart(float value) {
-        if (this.isVertical()) {
-            this.setTop(value);
-        } else if (this.isHorizontal()) {
-            this.setLeft(value);
+    public void setPosition(float v) {
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        if (this.vertical()) {
+            this.setLeft(v);
+            this.setRight(v);
+        }
+        else {
+            this.setTop(v);
+            this.setBottom(v);
         }
     }
 
-    public void setEnd(float value) {
-        if (this.isVertical()) {
-            this.setBottom(value);
-        } else if (this.isHorizontal()) {
-            this.setRight(value);
+    public float getStart() {
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        return this.vertical() ? this.getTop() : this.getLeft();
+    }
+
+    public void setStart(float v) {
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        if (this.vertical()) {
+            this.setTop(v);
+        }
+        else {
+            this.setLeft(v);
         }
     }
 
-    public void setStartEnd(float start, float end) {
-        if (this.isVertical()) {
+    public float getEnd() {
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        return this.vertical() ? this.getBottom() : this.getRight();
+    }
+
+    public void setEnd(float v) {
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        if (this.vertical()) {
+            this.setBottom(v);
+        }
+        else {
+            this.setRight(v);
+        }
+    }
+
+    private void setStartEnd(float start, float end) {
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        if (this.vertical()) {
             this.setTop(start);
             this.setBottom(end);
         }
-        else if (this.isHorizontal()) {
+        else {
             this.setLeft(start);
             this.setRight(end);
         }
     }
 
-    public float getRight() {
-        return this.x2;
+    // -----
+
+    public boolean perpendicularTo(Ruling other) {
+        return this.vertical() == other.horizontal();
     }
 
-    public float getLeft() {
-        return this.x1;
+    public boolean colinear(Point2D point) {
+        return point.getX() >= this.x1
+                && point.getX() <= this.x2
+                && point.getY() >= this.y1
+                && point.getY() <= this.y2;
     }
 
-    public float getBottom() {
-        return this.y2;
-    }
-
-    public float getTop() {
-        return this.y1;
-    }
-
-    public float getStart() {
-        return this.isVertical() ? this.getTop() : this.getLeft();
-    }
-
-    public float getEnd() {
-        return this.isVertical() ? this.getBottom() : this.getRight();
+    // if the lines we're comparing are colinear or parallel, we expand them by a only 1 pixel,
+    // because the expansions are additive
+    // (e.g. two vertical lines, at x = 100, with one having y2 of 98 and the other having y1 of 102 would
+    // erroneously be said to nearlyIntersect if they were each expanded by 2 (since they'd both terminate at 100).
+    // By default the COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT is only 1 so the total expansion is 2.
+    // A total expansion amount of 2 is empirically verified to work sometimes. It's not a magic number from any
+    // source other than a little bit of experience.)
+    public boolean nearlyIntersects(Ruling another) {
+        return this.nearlyIntersects(another, COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT);
     }
 
     public boolean nearlyIntersects(Ruling another, int colinearOrParallelExpandAmount) {
@@ -127,8 +164,9 @@ public final class Ruling extends Line2D.Float {
         boolean rv = false;
 
         if (this.perpendicularTo(another)) {
-            rv = this.expand(DISTANCE_TOLERANCE).intersectsLine(another);
-        } else {
+            rv = this.expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT).intersectsLine(another);
+        }
+        else {
             rv = this.expand(colinearOrParallelExpandAmount)
                     .intersectsLine(another.expand(colinearOrParallelExpandAmount));
         }
@@ -136,8 +174,20 @@ public final class Ruling extends Line2D.Float {
         return rv;
     }
 
-    public boolean perpendicularTo(Ruling other) {
-        return this.isVertical() == other.isHorizontal();
+    public double length() {
+        return Math.sqrt(Math.pow(this.x1 - this.x2, 2) + Math.pow(this.y1 - this.y2, 2));
+    }
+
+    public Ruling intersect(Rectangle2D clip) {
+        Line2D.Float clipee = (Line2D.Float) this.clone();
+        boolean clipped = new Utils.CohenSutherlandClipping(clip).clip(clipee);
+
+        if (clipped) {
+            return new Ruling(clipee.getP1(), clipee.getP2());
+        }
+        else {
+            return this;
+        }
     }
 
     public Ruling expand(float amount) {
@@ -147,10 +197,117 @@ public final class Ruling extends Line2D.Float {
         return r;
     }
 
-    public boolean oblique() {
-        return !(this.isVertical() || this.isHorizontal());
+    public Point2D intersectionPoint(Ruling other) {
+        Ruling this_l = this.expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT);
+        Ruling other_l = other.expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT);
+        Ruling horizontal, vertical;
+
+        if (!this_l.intersectsLine(other_l)) {
+            return null;
+        }
+
+        if (this_l.horizontal() && other_l.vertical()) {
+            horizontal = this_l; vertical = other_l;
+        }
+        else if (this_l.vertical() && other_l.horizontal()) {
+            vertical = this_l; horizontal = other_l;
+        }
+        else {
+            throw new IllegalArgumentException("lines must be orthogonal, vertical and horizontal");
+        }
+        return new Point2D.Float(vertical.getLeft(), horizontal.getTop());
     }
 
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+
+        if (!(other instanceof Ruling))
+            return false;
+
+        Ruling o = (Ruling) other;
+        return this.getP1().equals(o.getP1()) && this.getP2().equals(o.getP2());
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    public float getTop() {
+        return this.y1;
+    }
+
+    public void setTop(float v) {
+        setLine(this.getLeft(), v, this.getRight(), this.getBottom());
+    }
+
+    public float getLeft() {
+        return this.x1;
+    }
+
+    public void setLeft(float v) {
+        setLine(v, this.getTop(), this.getRight(), this.getBottom());
+    }
+
+    public float getBottom() {
+        return this.y2;
+    }
+
+    public void setBottom(float v) {
+        setLine(this.getLeft(), this.getTop(), this.getRight(), v);
+    }
+
+    public float getRight() {
+        return this.x2;
+    }
+
+    public void setRight(float v) {
+        setLine(this.getLeft(), this.getTop(), v, this.getBottom());
+    }
+
+    public float getWidth() {
+        return this.getRight() - this.getLeft();
+    }
+
+    public float getHeight() {
+        return this.getBottom() - this.getTop();
+    }
+
+    public double getAngle() {
+        double angle = Math.toDegrees(Math.atan2(this.getP2().getY() - this.getP1().getY(),
+                this.getP2().getX() - this.getP1().getX()));
+
+        if (angle < 0) {
+            angle += 360;
+        }
+        return angle;
+    }
+
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        Formatter formatter = new Formatter(sb);
+        String rv = formatter.format("%s[x1=%f y1=%f x2=%f y2=%f]", this.getClass().toString(), this.x1, this.y1, this.x2, this.y2).toString();
+        formatter.close();
+        return rv;
+    }
+
+    public static List<Ruling> cropRulingsToArea(List<Ruling> rulings, Rectangle2D area) {
+        ArrayList<Ruling> rv = new ArrayList<>();
+        for (Ruling r : rulings) {
+            if (r.intersects(area)) {
+                rv.add(r.intersect(area));
+            }
+        }
+        return rv;
+    }
+
+    // log(n) implementation of find_intersections
+    // based on http://people.csail.mit.edu/indyk/6.838-old/handouts/lec2.pdf
     public static Map<Point2D, Ruling[]> findIntersections(List<Ruling> horizontals, List<Ruling> verticals) {
 
         class SortObject {
@@ -173,7 +330,7 @@ public final class Ruling extends Line2D.Float {
                 return java.lang.Double.compare(o1.getTop(), o2.getTop());
             }});
 
-        TreeMap<Point2D, Ruling[]> result = new TreeMap<>(new Comparator<Point2D>() {
+        TreeMap<Point2D, Ruling[]> rv = new TreeMap<>(new Comparator<Point2D>() {
             @Override
             public int compare(Point2D o1, Point2D o2) {
                 if (o1.getY() > o2.getY()) return  1;
@@ -185,8 +342,8 @@ public final class Ruling extends Line2D.Float {
         });
 
         for (Ruling h : horizontals) {
-            sos.add(new SortObject(SOType.H_LEFT, h.getLeft() - DISTANCE_TOLERANCE, h));
-            sos.add(new SortObject(SOType.H_RIGHT, h.getRight() + DISTANCE_TOLERANCE, h));
+            sos.add(new SortObject(SOType.HLEFT, h.getLeft() - PERPENDICULAR_PIXEL_EXPAND_AMOUNT, h));
+            sos.add(new SortObject(SOType.HRIGHT, h.getRight() + PERPENDICULAR_PIXEL_EXPAND_AMOUNT, h));
         }
 
         for (Ruling v : verticals) {
@@ -198,16 +355,16 @@ public final class Ruling extends Line2D.Float {
             public int compare(SortObject a, SortObject b) {
                 int rv;
                 if (Utils.feq(a.position, b.position)) {
-                    if (a.type == SOType.VERTICAL && b.type == SOType.H_LEFT) {
+                    if (a.type == SOType.VERTICAL && b.type == SOType.HLEFT) {
                         rv = 1;
                     }
-                    else if (a.type == SOType.VERTICAL && b.type == SOType.H_RIGHT) {
+                    else if (a.type == SOType.VERTICAL && b.type == SOType.HRIGHT) {
                         rv = -1;
                     }
-                    else if (a.type == SOType.H_LEFT && b.type == SOType.VERTICAL) {
+                    else if (a.type == SOType.HLEFT && b.type == SOType.VERTICAL) {
                         rv = -1;
                     }
-                    else if (a.type == SOType.H_RIGHT && b.type == SOType.VERTICAL) {
+                    else if (a.type == SOType.HRIGHT && b.type == SOType.VERTICAL) {
                         rv = 1;
                     }
                     else {
@@ -229,97 +386,65 @@ public final class Ruling extends Line2D.Float {
                         if (i == null) {
                             continue;
                         }
-                        result.put(i,
-                                new Ruling[] { h.getKey().expand(DISTANCE_TOLERANCE),
-                                        so.ruling.expand(DISTANCE_TOLERANCE) });
+                        rv.put(i,
+                                new Ruling[] { h.getKey().expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT),
+                                        so.ruling.expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT) });
                     }
                     break;
-                case H_RIGHT:
+                case HRIGHT:
                     tree.remove(so.ruling);
                     break;
-                case H_LEFT:
+                case HLEFT:
                     tree.put(so.ruling, true);
                     break;
             }
         }
 
-        return result;
+        return rv;
+
     }
 
-    public Point2D intersectionPoint(Ruling other) {
-        Ruling this_l = this.expand(DISTANCE_TOLERANCE);
-        Ruling other_l = other.expand(DISTANCE_TOLERANCE);
-        Ruling horizontal, vertical;
-
-        if (!this_l.intersectsLine(other_l)) {
-            return null;
-        }
-
-        if (this_l.isHorizontal() && other_l.isVertical()) {
-            horizontal = this_l; vertical = other_l;
-        } else if (this_l.isVertical() && other_l.isHorizontal()) {
-            vertical = this_l; horizontal = other_l;
-        } else {
-            throw new IllegalArgumentException("lines must be orthogonal, vertical and horizontal");
-        }
-        return new Point2D.Float(vertical.getLeft(), horizontal.getTop());
+    public static List<Ruling> collapseOrientedRulings(List<Ruling> lines) {
+        return collapseOrientedRulings(lines, COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT);
     }
 
-    public double length() {
-        return Math.sqrt(Math.pow(this.x1 - this.x2, 2) + Math.pow(this.y1 - this.y2, 2));
-    }
+    public static List<Ruling> collapseOrientedRulings(List<Ruling> lines, int expandAmount) {
+        ArrayList<Ruling> rv = new ArrayList<>();
+        Collections.sort(lines, new Comparator<Ruling>() {
+            @Override
+            public int compare(Ruling a, Ruling b) {
+                final float diff = a.getPosition() - b.getPosition();
+                return java.lang.Float.compare(diff == 0 ? a.getStart() - b.getStart() : diff, 0f);
+            }
+        });
 
-    public boolean isVertical() {
-        return this.length() > 0 && Utils.feq(super.getP1().getX(), super.getP2().getX());
-    }
+        for (Ruling next_line : lines) {
+            Ruling last = rv.isEmpty() ? null : rv.get(rv.size() - 1);
+            // if current line colinear with next, and are "close enough": expand current line
+            if (last != null && Utils.feq(next_line.getPosition(), last.getPosition()) && last.nearlyIntersects(next_line, expandAmount)) {
+                final float lastStart = last.getStart();
+                final float lastEnd = last.getEnd();
 
-    public boolean isHorizontal() {
-        return this.length() > 0 && Utils.feq(super.getP1().getY(), super.getP2().getY());
-    }
+                final boolean lastFlipped = lastStart            > lastEnd;
+                final boolean nextFlipped = next_line.getStart() > next_line.getEnd();
 
-    public Ruling join(Ruling ruling) {
-        return new Ruling((Point2D.Float) this.getP1(), (Point2D.Float) ruling.getP2());
-    }
+                boolean differentDirections = nextFlipped != lastFlipped;
+                float nextS = differentDirections ? next_line.getEnd()   : next_line.getStart();
+                float nextE = differentDirections ? next_line.getStart() : next_line.getEnd();
 
-    public double getAngle() {
-        double angle = Math.toDegrees(Math.atan2(this.getP2().getY() - this.getP1().getY(),
-                this.getP2().getX() - this.getP1().getX()));
-
-        if (angle < 0) {
-            angle += 360;
+                final float newStart = lastFlipped ? Math.max(nextS, lastStart) : Math.min(nextS, lastStart);
+                final float newEnd   = lastFlipped ? Math.min(nextE, lastEnd)   : Math.max(nextE, lastEnd);
+                last.setStartEnd(newStart, newEnd);
+                assert !last.oblique();
+            }
+            else if (next_line.length() == 0) {
+                continue;
+            }
+            else {
+                rv.add(next_line);
+            }
         }
-        return angle;
-    }
-
-    public void normalize() {
-
-        double angle = this.getAngle();
-        if (Utils.within(angle, 0, 1) || Utils.within(angle, 180, 1)) { // almost horizontal
-            this.setLine(this.x1, this.y1, this.x2, this.y1);
-        }
-        else if (Utils.within(angle, 90, 1) || Utils.within(angle, 270, 1)) { // almost vertical
-            this.setLine(this.x1, this.y1, this.x1, this.y2);
-        }
-    }
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        Ruling other = (Ruling) obj;
-        if (!this.getP1().equals(other.getP1())) {
-            return false;
-        }
-        if (!this.getP2().equals(other.getP2())) {
-            return false;
-        }
-        return true;
+        return rv;
     }
 
 }

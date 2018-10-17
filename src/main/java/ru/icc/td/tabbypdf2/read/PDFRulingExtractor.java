@@ -1,41 +1,34 @@
 package ru.icc.td.tabbypdf2.read;
 
-import org.apache.pdfbox.contentstream.PDContentStream;
 import org.apache.pdfbox.contentstream.operator.Operator;
-import org.apache.pdfbox.cos.COSBase;
-import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDStream;
-import org.apache.pdfbox.pdmodel.graphics.PDXObject;
-import org.apache.pdfbox.pdmodel.graphics.form.PDFormXObject;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.pdmodel.graphics.pattern.PDAbstractPattern;
-import org.apache.pdfbox.pdmodel.graphics.pattern.PDTilingPattern;
 import org.apache.pdfbox.rendering.ImageType;
 
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Ruling;
 import ru.icc.td.tabbypdf2.util.Utils;
 
+import java.awt.*;
+import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.*;
+import java.util.List;
 
 public class PDFRulingExtractor {
 
     private static final int GRAYSCALE_INTENSITY_THRESHOLD = 25;
-    private static final int VERTICAL_EDGE_HEIGHT_MINIMUM = 10;
     private static final int HORIZONTAL_EDGE_WIDTH_MINIMUM = 50;
-    private static final int EXPAND_AMOUNT = 1;
+    private static final int VERTICAL_EDGE_HEIGHT_MINIMUM = 10;
+    private static final float POINT_SNAP_DISTANCE_THRESHOLD = 8f;
 
     private final PDDocument pdDocument;
     private final List<Ruling> visibleRulings;
@@ -49,32 +42,59 @@ public class PDFRulingExtractor {
         visibleRulings = new ArrayList<>(200);
     }
 
-    public void readTo(int pageIndex, Page page) throws IOException {
+    public void readTo(int pageIndex, Page page) {
+        page.addVisibleRulings(detect(page));
 
-        release();
+    }
 
+    public List<Ruling> detect(Page page) {
+
+        // get horizontal & vertical lines
+        // we get these from an image of the PDF and not the PDF itself because sometimes there are invisible PDF
+        // instructions that are interpreted incorrectly as visible elements - we really want to capture what a
+        // person sees when they look at the PDF
         BufferedImage image;
-        PDPage pdPage = pdDocument.getPage(pageIndex);
+        PDPage pdfPage = pdDocument.getPage(page.getIndex());
 
-        List<Object> newTokens = createTokensWithoutText(pdPage);
-        PDStream newContents = new PDStream(pdDocument);
-        writeTokensToStream(newContents, newTokens);
-        pdPage.setContents(newContents);
-        PDResources resources = pdPage.getResources();
-        if (resources != null) {
-            processResources(resources);
-            removeAllImages(resources);
+        try {
+            image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
+        } catch (IOException e) {
+            return new ArrayList<>();
         }
-        image = Utils.convertPageToImage(pdPage, 144, ImageType.GRAY);
-        List<Ruling> horizontalRulings = getHorizontalRulings(image);
-        List<Ruling> verticalRulings = getVerticalRulings(image);
+
+        List<Ruling> horizontalRulings = this.getHorizontalRulings(image);
+
+        // now check the page for vertical lines, but remove the text first to make things less confusing
+        PDDocument removeTextDocument = null;
+        try {
+            removeTextDocument = this.removeText(pdfPage);
+            image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
+        } catch (Exception e) {
+            return new ArrayList<>();
+        } finally {
+            if (removeTextDocument != null) {
+                try {
+                    removeTextDocument.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        List<Ruling> verticalRulings = this.getVerticalRulings(image);
 
         List<Ruling> allEdges = new ArrayList<>(horizontalRulings);
         allEdges.addAll(verticalRulings);
 
-        if (allEdges.size() > 0) {
-            Utils.snapPoints(allEdges, Utils.POINT_SNAP_DISTANCE_THRESHOLD, Utils.POINT_SNAP_DISTANCE_THRESHOLD);
+        List<Rectangle> tableAreas = new ArrayList<>();
 
+        // if we found some edges, try to find some tables based on them
+        if (allEdges.size() > 0) {
+            // now we need to snap edge endpoints to a grid
+            Utils.snapPoints(allEdges, POINT_SNAP_DISTANCE_THRESHOLD, POINT_SNAP_DISTANCE_THRESHOLD);
+
+            // normalize the rulings to make sure snapping didn't create any wacky non-horizontal/vertical rulings
             for (List<Ruling> rulings : Arrays.asList(horizontalRulings, verticalRulings)) {
                 for (Iterator<Ruling> iterator = rulings.iterator(); iterator.hasNext(); ) {
                     Ruling ruling = iterator.next();
@@ -86,124 +106,38 @@ public class PDFRulingExtractor {
                 }
             }
 
-            horizontalRulings = Utils.collapseOrientedRulings(horizontalRulings, 5);
-            verticalRulings = Utils.collapseOrientedRulings(verticalRulings, 5);
-
-            float pageHeight = (float) Math.abs(page.getHeight());
-
-            visibleRulings.clear();
-            if (horizontalRulings != null) {
-                for (Ruling ruling: horizontalRulings) {
-                    float x1 = ruling.x1 / 2;
-                    float x2 = ruling.x2 / 2;
-                    float y1 = pageHeight - ruling.y1 / 2;
-                    float y2 = pageHeight - ruling.y2 / 2;
-                    ruling.setLine(x1, y1, x2, y2);
-                }
-                visibleRulings.addAll(horizontalRulings);
-            }
-            if (verticalRulings != null) {
-                for (Ruling ruling: verticalRulings) {
-                    float x1 = ruling.x1 / 2;
-                    float x2 = ruling.x2 / 2;
-                    float y1 = pageHeight - ruling.y1 / 2;
-                    float y2 = pageHeight - ruling.y2 / 2;
-                    ruling.setLine(x1, y1, x2, y2);
-                }
-                visibleRulings.addAll(verticalRulings);
-            }
-            page.addVisibleRulings(visibleRulings);
+            horizontalRulings = Ruling.collapseOrientedRulings(horizontalRulings, 5);
+            verticalRulings = Ruling.collapseOrientedRulings(verticalRulings, 5);
         }
+
+        List<Ruling> allRulings = new ArrayList<>();
+
+        float pageHeight = (float) Math.abs(page.getHeight());
+
+        for (Line2D.Float ruling : horizontalRulings) {
+            ruling.x1 = ruling.x1 / 2;
+            ruling.y1 = pageHeight - ruling.y1 / 2;
+            ruling.x2 = ruling.x2 / 2;
+            ruling.y2 = pageHeight - ruling.y2 / 2;
+            allRulings.add(new Ruling(ruling.getP1(), ruling.getP2(), page));
+        }
+
+        for (Line2D.Float ruling : verticalRulings) {
+            ruling.x1 = ruling.x1 / 2;
+            ruling.y1 = pageHeight - ruling.y1 / 2;
+            ruling.x2 = ruling.x2 / 2;
+            ruling.y2 = pageHeight - ruling.y2 / 2;
+            allRulings.add((Ruling) ruling);
+        }
+
+        //List<Ruling> rulings = new ArrayList<>();
+        return allRulings;
     }
 
-    private void removeAllImages(PDResources resources) throws IOException {
-        for (COSName objectName: resources.getXObjectNames()) {
-            PDXObject xObject = resources.getXObject(objectName);
-            if (xObject != null && xObject instanceof PDImageXObject) {
-                PDImageXObject image = (PDImageXObject) xObject;
-                COSStream cosStream = image.getCOSObject();
-                image.setHeight(1);
-                image.setWidth(1);
-                //deleteObjects(cosStream);
-                //if (cosStream != null) {
-                //    cosStream.clear();
-                //}
-            }
-        }
-    }
+    private List<Ruling> getHorizontalRulings(BufferedImage image) {
 
-    private void deleteObjects(COSDictionary cosStream) {
-        Iterator<COSName> cosNameIterator = cosStream.keySet().iterator();
-        while (cosNameIterator.hasNext()) {
-            COSName cosName = cosNameIterator.next();
-            COSBase object = cosStream.getDictionaryObject(cosName);
-            if (object instanceof COSDictionary) {
-                deleteObjects((COSDictionary) object);
-            }
-            cosNameIterator.remove();
-        }
-    }
-
-    private static void processResources(PDResources resources) throws IOException {
-        for (COSName name : resources.getXObjectNames()) {
-            PDXObject xObject = resources.getXObject(name);
-            if (xObject != null && xObject instanceof PDFormXObject) {
-                PDFormXObject formXObject = (PDFormXObject) xObject;
-                writeTokensToStream(formXObject.getContentStream(),
-                        createTokensWithoutText(formXObject));
-                if (formXObject.getResources() != null) {
-                    processResources(formXObject.getResources());
-                }
-            }
-        }
-        for (COSName name : resources.getPatternNames()) {
-            PDAbstractPattern pattern = resources.getPattern(name);
-            if (pattern != null && pattern instanceof PDTilingPattern) {
-                PDTilingPattern tilingPattern = (PDTilingPattern) pattern;
-                writeTokensToStream(tilingPattern.getContentStream(),
-                        createTokensWithoutText(tilingPattern));
-                processResources(tilingPattern.getResources());
-            }
-        }
-    }
-
-    private static void writeTokensToStream(PDStream newContents, List<Object> newTokens) throws IOException {
-        if (newContents != null) {
-            try (OutputStream out = newContents.createOutputStream(COSName.FLATE_DECODE)) {
-                ContentStreamWriter writer = new ContentStreamWriter(out);
-                writer.writeTokens(newTokens);
-                out.close();
-            }
-        }
-    }
-
-    private static List<Object> createTokensWithoutText(PDContentStream contentStream) throws IOException {
-
-        PDFStreamParser parser = new PDFStreamParser(contentStream);
-        Object token = parser.parseNextToken();
-        List<Object> newTokens = new ArrayList<>();
-
-        while (token != null) {
-            if (token instanceof Operator) {
-                Operator operation = (Operator) token;
-                if ("TJ".equals(operation.getName())
-                        || "Tj".equals(operation.getName())
-                        || "'".equals(operation.getName())
-                        || "\"".equals(operation.getName()))
-                {
-                    newTokens.remove(newTokens.size() - 1);
-                    token = parser.parseNextToken();
-                    continue;
-                }
-            }
-            newTokens.add(token);
-            token = parser.parseNextToken();
-        }
-        return newTokens;
-    }
-
-    public List<Ruling> getHorizontalRulings(BufferedImage image) {
-
+        // get all horizontal edges, which we'll define as a change in grayscale colour
+        // along a straight line of a certain length
         ArrayList<Ruling> horizontalRulings = new ArrayList<>();
 
         Raster r = image.getRaster();
@@ -220,11 +154,11 @@ public class PDFRulingExtractor {
 
                 int diff = Math.abs(currPixel[0] - lastPixel[0]);
                 if (diff > GRAYSCALE_INTENSITY_THRESHOLD) {
+                    // we hit what could be a line
+                    // don't bother scanning it if we've hit a pixel in the line before
                     boolean alreadyChecked = false;
-                    for (Ruling line : horizontalRulings) {
-                        if (y == line.getP1().getY()
-                                && x >= line.getP1().getX()
-                                && x <= line.getP2().getX()) {
+                    for (Line2D.Float line : horizontalRulings) {
+                        if (y == line.getY1() && x >= line.getX1() && x <= line.getX2()) {
                             alreadyChecked = true;
                             break;
                         }
@@ -234,6 +168,7 @@ public class PDFRulingExtractor {
                         lastPixel = currPixel;
                         continue;
                     }
+
                     int lineX = x + 1;
 
                     while (lineX < width) {
@@ -244,20 +179,28 @@ public class PDFRulingExtractor {
                                 || Math.abs(currPixel[0] - linePixel[0]) > GRAYSCALE_INTENSITY_THRESHOLD) {
                             break;
                         }
+
                         lineX++;
                     }
+
                     int endX = lineX - 1;
                     int lineWidth = endX - x;
                     if (lineWidth > HORIZONTAL_EDGE_WIDTH_MINIMUM) {
                         horizontalRulings.add(new Ruling(new Point2D.Float(x, y), new Point2D.Float(endX, y)));
                     }
                 }
+
                 lastPixel = currPixel;
             }
         }
+
         return horizontalRulings;
     }
-    public List<Ruling> getVerticalRulings(BufferedImage image) {
+
+    private List<Ruling> getVerticalRulings(BufferedImage image) {
+
+        // get all vertical edges, which we'll define as a change in grayscale colour
+        // along a straight line of a certain length
         ArrayList<Ruling> verticalRulings = new ArrayList<>();
 
         Raster r = image.getRaster();
@@ -274,11 +217,11 @@ public class PDFRulingExtractor {
 
                 int diff = Math.abs(currPixel[0] - lastPixel[0]);
                 if (diff > GRAYSCALE_INTENSITY_THRESHOLD) {
+                    // we hit what could be a line
+                    // don't bother scanning it if we've hit a pixel in the line before
                     boolean alreadyChecked = false;
-                    for (Ruling line : verticalRulings) {
-                        if (x == line.getP1().getX()
-                                && y >= line.getP1().getY()
-                                && y <= line.getP2().getY()) {
+                    for (Line2D.Float line : verticalRulings) {
+                        if (x == line.getX1() && y >= line.getY1() && y <= line.getY2()) {
                             alreadyChecked = true;
                             break;
                         }
@@ -315,5 +258,39 @@ public class PDFRulingExtractor {
         }
 
         return verticalRulings;
+    }
+
+
+    // taken from http://www.docjar.com/html/api/org/apache/pdfbox/examples/util/RemoveAllText.java.html
+    private PDDocument removeText(PDPage page) throws IOException {
+
+        PDFStreamParser parser = new PDFStreamParser(page);
+        parser.parse();
+        List<Object> tokens = parser.getTokens();
+        List<Object> newTokens = new ArrayList<>();
+        for (Object token : tokens) {
+            if (token instanceof Operator) {
+                Operator op = (Operator) token;
+                if (op.getName().equals("TJ") || op.getName().equals("Tj")) {
+                    //remove the one argument to this operator
+                    newTokens.remove(newTokens.size() - 1);
+                    continue;
+                }
+            }
+            newTokens.add(token);
+        }
+
+        PDDocument document = new PDDocument();
+        document.addPage(page);
+
+        PDStream newContents = new PDStream(document);
+        OutputStream out = newContents.createOutputStream(COSName.FLATE_DECODE);
+        ContentStreamWriter writer = new ContentStreamWriter(out);
+        writer.writeTokens(newTokens);
+        out.close();
+        page.setContents(newContents);
+
+        return document;
+
     }
 }
