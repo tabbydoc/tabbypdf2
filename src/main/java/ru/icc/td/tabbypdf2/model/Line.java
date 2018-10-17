@@ -16,7 +16,7 @@ public class Line extends Block {
     private float calculateSpace(){
         Word wordI, wordJ;
         List<Word> words = super.getWords();
-        float w, space, averageWidth = 0; //maxWidth = java.lang.Float.MIN_VALUE;
+        float w, space, averageWidth = 0, maxWidth = java.lang.Float.MIN_VALUE;
         DescriptiveStatistics ds1 = new DescriptiveStatistics();
         DescriptiveStatistics ds2 = new DescriptiveStatistics();
 
@@ -38,18 +38,18 @@ public class Line extends Block {
 
             }
 
-            //maxWidth = Math.max(wordI.width, maxWidth);
-            ds2.addValue(Precision.round(wordI.width, 1));
+            maxWidth = Math.max(wordI.width, maxWidth);
+            //ds2.addValue(Precision.round(wordI.width, 1));
             if(space < super.width) {
                 ds1.addValue(Precision.round(space, 1));
             }
         }
 
-        //maxWidth = Precision.round(maxWidth, 1);
+        maxWidth = Precision.round(maxWidth, 1);
         space = (float) ds1.getMax();
-        averageWidth = (float) Precision.round(ds2.getMean(), 1);
+        //averageWidth = (float) Precision.round(ds2.getMean(), 0);
 
-        if(Precision.round(space, 1) > averageWidth)
+        if(Precision.round(space, 0) > maxWidth)
             space = super.getMaxSpaceWidth();
         else
             space = (float) ds1.getMean();
