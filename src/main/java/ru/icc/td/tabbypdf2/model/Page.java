@@ -117,4 +117,13 @@ public final class Page extends Rectangle2D.Float {
     public List<Line> getLines(){
         return this.lines;
     }
+
+    private Orientation orientation;
+
+    public Orientation getOrientation() { return orientation; }
+    public void setOrientation(Orientation value) { this.orientation = value; }
+
+    public enum Orientation {
+        PORTRAIT, LANDSCAPE, NEITHER
+    }
 }

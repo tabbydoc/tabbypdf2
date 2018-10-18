@@ -113,21 +113,52 @@ public class PDFRulingExtractor {
         List<Ruling> allRulings = new ArrayList<>();
 
         float pageHeight = (float) Math.abs(page.getHeight());
+        float pageWidth = (float) Math.abs(page.getWidth());
 
         for (Line2D.Float ruling : horizontalRulings) {
-            ruling.x1 = ruling.x1 / 2;
-            ruling.y1 = pageHeight - ruling.y1 / 2;
-            ruling.x2 = ruling.x2 / 2;
-            ruling.y2 = pageHeight - ruling.y2 / 2;
-            allRulings.add(new Ruling(ruling.getP1(), ruling.getP2(), page));
+
+            float x1;
+            float y1;
+            float x2;
+            float y2;
+
+            if (page.getOrientation() == Page.Orientation.LANDSCAPE) {
+                x1 = ruling.y1 / 2;
+                y1 = ruling.x1 / 2;
+                x2 = ruling.y2 / 2;
+                y2 = ruling.x2 / 2;
+                //newRuling = new Ruling(ruling.y1, ruling.x1, ruling.y2, ruling.x2);
+            } else {
+                x1 = ruling.x1 / 2;
+                y1 = pageHeight - ruling.y1 / 2;
+                x2 = ruling.x2 / 2;
+                y2 = pageHeight - ruling.y2 / 2;
+            }
+
+            allRulings.add(new Ruling(x1, y1, x2, y2, page));
+            //allRulings.add(new Ruling(ruling.getP1(), ruling.getP2(), page));
         }
 
         for (Line2D.Float ruling : verticalRulings) {
-            ruling.x1 = ruling.x1 / 2;
-            ruling.y1 = pageHeight - ruling.y1 / 2;
-            ruling.x2 = ruling.x2 / 2;
-            ruling.y2 = pageHeight - ruling.y2 / 2;
-            allRulings.add((Ruling) ruling);
+            float x1;
+            float y1;
+            float x2;
+            float y2;
+
+            if (page.getOrientation() == Page.Orientation.LANDSCAPE) {
+                x1 = ruling.y1 / 2;
+                y1 = ruling.x1 / 2;
+                x2 = ruling.y2 / 2;
+                y2 = ruling.x2 / 2;
+                //newRuling = new Ruling(ruling.y1, ruling.x1, ruling.y2, ruling.x2);
+            } else {
+                x1 = ruling.x1 / 2;
+                y1 = pageHeight - ruling.y1 / 2;
+                x2 = ruling.x2 / 2;
+                y2 = pageHeight - ruling.y2 / 2;
+            }
+
+            allRulings.add(new Ruling(x1, y1, x2, y2, page));
         }
 
         //List<Ruling> rulings = new ArrayList<>();

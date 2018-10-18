@@ -113,7 +113,7 @@ public final class DebuggingDrawer {
     }
 
     private void drawBlocks(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.BLUE, null, 1.0f);
+        contentDrawer.setStyle(Color.CYAN, null, 1.0f);
         //contentDrawer.setStyle(null, Color.BLACK, 0f);
 
         for (Block block : page.getBlocks()) {

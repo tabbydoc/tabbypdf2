@@ -26,7 +26,14 @@ public final class Ruling extends Line2D.Float {
     public Ruling(float x1, float y1, float x2, float y2) {
         super(x1, y1, x2, y2);
     }
+    public Ruling(float x1, float y1, float x2, float y2, Page page) {
+        super(x1, y1, x2, y2);
+        this.page = page;
+    }
 
+    public void setPage(Page page) {
+        this.page = page;
+    }
     /**
      * Normalize almost horizontal or almost vertical lines
      */
