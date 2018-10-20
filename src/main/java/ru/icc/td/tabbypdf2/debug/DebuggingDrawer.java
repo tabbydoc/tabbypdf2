@@ -5,21 +5,50 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 
 import ru.icc.td.tabbypdf2.model.*;
 
-import java.awt.geom.Line2D;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.util.List;
+import java.util.*;
 
 public final class DebuggingDrawer {
     private static final String SUFFIX_SEPARATOR = "_";
+
+    private final Properties properties = new Properties();
+    private final Hashtable<String, Boolean> elements = new Hashtable<>();
+    private final Class obj = this.getClass();
+    private String[] order;
+    private Method[] methods;
 
     private Document document;
     private Path debugDirectoryPath;
 
     public DebuggingDrawer() {
+        loadProperties();
+        this.methods = obj.getDeclaredMethods();
+    }
+
+    private void loadProperties() {
+        ClassLoader classLoader = getClass().getClassLoader();
+
+        try (InputStream inputStream = classLoader.getResourceAsStream("dd.properties")) {
+            properties.load(inputStream);
+
+            for(String key : properties.stringPropertyNames()){
+                boolean value = properties.getProperty(key).toLowerCase().equals("true");
+                elements.put(key, value);
+            }
+
+            order = properties.getProperty("order").split(",\\s");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     public void drawTo(Document document, Path debugDirectoryPath) throws IOException {
@@ -82,29 +111,55 @@ public final class DebuggingDrawer {
         int pageIndex = page.getIndex();
         contentDrawer.startPage(pageIndex);
 
-        drawCursorTraces(page, contentDrawer);
-        //drawImageBounds(page, contentDrawer);
+        Color strokeColor, fillColor;
+        Field f;
+        float lineWidth;
 
-        drawBlocks(page, contentDrawer);
-        //drawLines(page, contentDrawer);
-        //drawWords(page, contentDrawer);
-        //drawCharPositions(page, contentDrawer);
-        //drawGaps(page, contentDrawer);
-        drawRulings(page, contentDrawer);
+        for(String o : order){
+
+            for(Method m : methods){
+
+                if(m.getName().toLowerCase().contains(o.toLowerCase()) && elements.get(o)){
+                    m.setAccessible(true);
+                    String strokeC = properties.getProperty(o + " StrokeColor");
+                    String fillC = properties.getProperty(o + " FillColor");
+                    String lineW = properties.getProperty(o + " LineWidth");
+
+                    try {
+                        if(!strokeC.contains("null")) {
+                            f = Color.class.getField(strokeC);
+                            strokeColor = (Color) f.get(null);
+                        } else
+                            strokeColor = null;
+
+                        if(!fillC.contains("null")) {
+                            f = Color.class.getField(fillC);
+                            fillColor = (Color) f.get(null);
+                        } else
+                            fillColor = null;
+
+                        lineWidth = Float.valueOf(lineW);
+                        contentDrawer.setStyle(strokeColor, fillColor, lineWidth);
+
+                        m.invoke(obj.newInstance(), page, contentDrawer);
+                    } catch (Exception e){
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
+
+                }
+            }
+        }
 
         contentDrawer.endPage();
     }
 
     private void drawCharPositions(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.BLACK, null, 0.25f);
-
         for (CharPosition charPosition : page.getCharPositions())
             contentDrawer.strokeRectangle(charPosition);
     }
 
     private void drawWords(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.BLUE, Color.RED, 0.25f);
-
         for (Word word : page.getWords()) {
             contentDrawer.strokeRectangle(word);
             String text = String.valueOf(word.getStartChunkID());
@@ -113,7 +168,6 @@ public final class DebuggingDrawer {
     }
 
     private void drawBlocks(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.CYAN, null, 1.0f);
         //contentDrawer.setStyle(null, Color.BLACK, 0f);
 
         for (Block block : page.getBlocks()) {
@@ -123,18 +177,11 @@ public final class DebuggingDrawer {
     }
 
     private void drawLines(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.ORANGE, null, 0.5f);
-        //contentDrawer.setStyle(null, Color.BLACK, 0f);
-
-        for (Line line : page.getLines()) {
+        for (Line line : page.getLines())
             contentDrawer.strokeRectangle(line);
-            //contentDrawer.fillRectangle(block);
-        }
     }
 
     private void drawCursorTraces(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.GREEN, null, 0.5f);
-
         for (CursorTrace cursorTrace : page.getCursorTraces()) {
             if (cursorTrace.isVertical())
                 contentDrawer.strokeLine(cursorTrace);
@@ -142,15 +189,11 @@ public final class DebuggingDrawer {
     }
 
     private void drawImageBounds(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.PINK, null, 2.0f);
-
         for (Rectangle2D imageBBox : page.getImageBounds())
             contentDrawer.strokeRectangle(imageBBox);
     }
 
     private void drawGaps(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.RED, Color.LIGHT_GRAY, 1.0f);
-
         for (Rectangle2D rect : page.getGaps()) {
             //contentDrawer.fillRectangle(rect);
             contentDrawer.strokeRectangle(rect);
@@ -158,11 +201,8 @@ public final class DebuggingDrawer {
     }
 
     private void drawRulings(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        contentDrawer.setStyle(Color.MAGENTA, null, 1.0f);
-
-        for (Ruling ruling : page.getRulings()) {
+        for (Ruling ruling : page.getRulings())
             contentDrawer.strokeLine(ruling);
-        }
     }
 
 }
