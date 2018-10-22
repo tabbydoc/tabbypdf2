@@ -25,7 +25,7 @@ import java.util.List;
 
 public class PDFRulingExtractor {
 
-    private static final int GRAYSCALE_INTENSITY_THRESHOLD = 25;
+    private static final int GRAYSCALE_INTENSITY_THRESHOLD = 50;
     private static final int HORIZONTAL_EDGE_WIDTH_MINIMUM = 50;
     private static final int VERTICAL_EDGE_HEIGHT_MINIMUM = 10;
     private static final float POINT_SNAP_DISTANCE_THRESHOLD = 8f;
@@ -42,12 +42,13 @@ public class PDFRulingExtractor {
         visibleRulings = new ArrayList<>(200);
     }
 
-    public void readTo(int pageIndex, Page page) {
-        page.addVisibleRulings(detect(page));
-
+    public void readTo(Page page) throws IOException {
+        release();
+        detect(page);
+        page.addVisibleRulings(visibleRulings);
     }
 
-    public List<Ruling> detect(Page page) {
+    public void detect(Page page) throws IOException {
 
         // get horizontal & vertical lines
         // we get these from an image of the PDF and not the PDF itself because sometimes there are invisible PDF
@@ -56,11 +57,8 @@ public class PDFRulingExtractor {
         BufferedImage image;
         PDPage pdfPage = pdDocument.getPage(page.getIndex());
 
-        try {
-            image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
-        } catch (IOException e) {
-            return new ArrayList<>();
-        }
+        image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
+
 
         List<Ruling> horizontalRulings = this.getHorizontalRulings(image);
 
@@ -70,7 +68,7 @@ public class PDFRulingExtractor {
             removeTextDocument = this.removeText(pdfPage);
             image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
         } catch (Exception e) {
-            return new ArrayList<>();
+            e.printStackTrace();
         } finally {
             if (removeTextDocument != null) {
                 try {
@@ -87,7 +85,7 @@ public class PDFRulingExtractor {
         List<Ruling> allEdges = new ArrayList<>(horizontalRulings);
         allEdges.addAll(verticalRulings);
 
-        List<Rectangle> tableAreas = new ArrayList<>();
+        //List<Rectangle> tableAreas = new ArrayList<>();
 
         // if we found some edges, try to find some tables based on them
         if (allEdges.size() > 0) {
@@ -110,10 +108,10 @@ public class PDFRulingExtractor {
             verticalRulings = Ruling.collapseOrientedRulings(verticalRulings, 5);
         }
 
-        List<Ruling> allRulings = new ArrayList<>();
+        //List<Ruling> allRulings = new ArrayList<>();
 
         float pageHeight = (float) Math.abs(page.getHeight());
-        float pageWidth = (float) Math.abs(page.getWidth());
+        //float pageWidth = (float) Math.abs(page.getWidth());
 
         for (Line2D.Float ruling : horizontalRulings) {
 
@@ -127,7 +125,6 @@ public class PDFRulingExtractor {
                 y1 = ruling.x1 / 2;
                 x2 = ruling.y2 / 2;
                 y2 = ruling.x2 / 2;
-                //newRuling = new Ruling(ruling.y1, ruling.x1, ruling.y2, ruling.x2);
             } else {
                 x1 = ruling.x1 / 2;
                 y1 = pageHeight - ruling.y1 / 2;
@@ -135,8 +132,7 @@ public class PDFRulingExtractor {
                 y2 = pageHeight - ruling.y2 / 2;
             }
 
-            allRulings.add(new Ruling(x1, y1, x2, y2, page));
-            //allRulings.add(new Ruling(ruling.getP1(), ruling.getP2(), page));
+            visibleRulings.add(new Ruling(x1, y1, x2, y2, page));
         }
 
         for (Line2D.Float ruling : verticalRulings) {
@@ -150,7 +146,6 @@ public class PDFRulingExtractor {
                 y1 = ruling.x1 / 2;
                 x2 = ruling.y2 / 2;
                 y2 = ruling.x2 / 2;
-                //newRuling = new Ruling(ruling.y1, ruling.x1, ruling.y2, ruling.x2);
             } else {
                 x1 = ruling.x1 / 2;
                 y1 = pageHeight - ruling.y1 / 2;
@@ -158,11 +153,8 @@ public class PDFRulingExtractor {
                 y2 = pageHeight - ruling.y2 / 2;
             }
 
-            allRulings.add(new Ruling(x1, y1, x2, y2, page));
+            visibleRulings.add(new Ruling(x1, y1, x2, y2, page));
         }
-
-        //List<Ruling> rulings = new ArrayList<>();
-        return allRulings;
     }
 
     private List<Ruling> getHorizontalRulings(BufferedImage image) {

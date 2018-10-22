@@ -81,7 +81,7 @@ public final class DocumentLoader {
 
             PDFTextExtractor.readTo(pageIndex, page);
             PDFGraphicsExtractor.readTo(pageIndex, page);
-            PDFRulingExtractor.readTo(pageIndex, page);
+            PDFRulingExtractor.readTo(page);
 
             return page;
         }
