@@ -44,6 +44,7 @@ public final class PDFTextExtractor {
         else {
             try {
                 innerTextStripper.stripPage(pageIndex);
+                translateCoordinates(page);
                 page.addCharPositions(charPositions);
             }
             catch (IOException e) {
@@ -269,15 +270,15 @@ public final class PDFTextExtractor {
                 if (isWhitespace(unicode)) continue;
 
                 // Check if the text position is not rotated
-                if (textPos.getDir() != 0) {
+                /*if (textPos.getDir() != 0) {
                     System.err.println("WARNING: a directed text position was ignored");
-                    continue;
-                }
+                    //continue;
+                }*/
 
                 Character c = unicode.charAt(0);
 
                 // Text position coordinates
-                final float x = textPos.getX();
+                final float x = textPos.getX();;
                 final float y = textPos.getPageHeight() - textPos.getY();
                 final float w = textPos.getWidth();
                 final float h = textPos.getHeight();
@@ -297,6 +298,19 @@ public final class PDFTextExtractor {
 
                 CharPosition charPosition = new CharPosition(chunkCount, c, bbox, spaceWidth, font, color);
                 charPositions.add(charPosition);
+            }
+        }
+    }
+
+    private void translateCoordinates(Page page) {
+        if (page.getOrientation() == Page.Orientation.LANDSCAPE) {
+            for (CharPosition charPosition:charPositions) {
+                double x = page.getHeight() - (charPosition.getY() + charPosition.getHeight());
+                double y = charPosition.getX();
+                double w = charPosition.getHeight();
+                double h = charPosition.getWidth();
+
+                charPosition.setRect(x, y, w, h);
             }
         }
     }
