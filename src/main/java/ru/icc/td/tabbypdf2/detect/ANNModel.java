@@ -29,7 +29,7 @@ public class ANNModel {
         this.pathToLabelMap = pathToLabelMap;
     }
 
-    public boolean Init() throws Exception {
+    public boolean init() throws Exception {
         try {
             labels = loadLabels(pathToLabelMap);
             model = SavedModelBundle.load(pathToModel.toFile().getName(), "serve");
