@@ -4,7 +4,7 @@ import java.awt.Font;
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 
-public class CharPosition extends Rectangle2D.Float {
+public final class CharPosition extends Rectangle2D.Float {
     private int chunkId;
     private Character unicode;
     private float spaceWidth;
@@ -13,13 +13,13 @@ public class CharPosition extends Rectangle2D.Float {
 
     private Word word;
 
-    public CharPosition(int chunkId, Character unicode, Rectangle2D.Float bbox, float spaceWidth, Font font, Color color) {
+    public CharPosition(int chunkId, Character unicode, Rectangle2D bbox, float spaceWidth, Font font, Color color) {
         setChunkId(chunkId);
         setUnicode(unicode);
         setSpaceWidth(spaceWidth);
         setFont(font);
         setColor(color);
-        setRect(bbox.x, bbox.y, bbox.width, bbox.height);
+        setRect(bbox);
     }
 
     private void setChunkId(int id) {

@@ -11,22 +11,21 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import ru.icc.td.tabbypdf2.model.CursorTrace;
 import ru.icc.td.tabbypdf2.model.Page;
-import ru.icc.td.tabbypdf2.model.Ruling;
 
-public class PDFGraphicsExtractor {
+public final class PDFGraphicsExtractor {
 
-    private final PDDocument pdDocument; // A source untagged PDF document that needs to be processed
-    private final List<Ruling> rulings;  // Rulings extracted from the PDF document
-    private final List<Rectangle2D> imageRegions;
+    private final PDDocument pdDocument;          // A source untagged PDF document that needs to be processed
+    private final List<CursorTrace> cursorTraces; // Cursor traces extracted from the PDF document
+    private final List<Rectangle2D> imageBounds;  // Image bounding boxes extracted from the PDF document
 
     public PDFGraphicsExtractor(PDDocument pdDocument) throws IOException {
         this.pdDocument = pdDocument;
-        rulings = new ArrayList<>(1000);
-        imageRegions = new ArrayList<>();
+        cursorTraces = new ArrayList<>(1000);
+        imageBounds = new ArrayList<>(10);
     }
 
     public void readTo(final int pageIndex, Page page) {
@@ -35,8 +34,10 @@ public class PDFGraphicsExtractor {
         } else {
             try {
                 PDPage pdPage = pdDocument.getPage(pageIndex);
-                new RulingAndImageStreamEngine(pdPage).run();
-                page.addRulings(rulings);
+                new InnerStreamEngine(pdPage).run();
+
+                page.addCursorTraces(cursorTraces);
+                page.addImageBounds(imageBounds);
             } finally {
                 clearAll();
             }
@@ -44,14 +45,14 @@ public class PDFGraphicsExtractor {
     }
 
     private void clearAll() {
-        rulings.clear();
-        imageRegions.clear();
+        cursorTraces.clear();
+        imageBounds.clear();
     }
 
-    private class RulingAndImageStreamEngine extends PDFGraphicsStreamEngine {
+    private final class InnerStreamEngine extends PDFGraphicsStreamEngine {
         private float x, y;
 
-        private RulingAndImageStreamEngine(PDPage page) {
+        private InnerStreamEngine(PDPage page) {
             super(page);
         }
 
@@ -65,12 +66,18 @@ public class PDFGraphicsExtractor {
 
         @Override
         public void appendRectangle(Point2D p0, Point2D p1, Point2D p2, Point2D p3) throws IOException {
-            rulings.addAll(Arrays.asList(
-                    new Ruling(p0, p1),
-                    new Ruling(p1, p2),
-                    new Ruling(p2, p3),
-                    new Ruling(p3, p0)
-            ));
+
+            if (canAddCursorTrace(p0, p1))
+                cursorTraces.add(new CursorTrace(p0, p1));
+
+            if (canAddCursorTrace(p1, p2))
+                cursorTraces.add(new CursorTrace(p1, p2));
+
+            if (canAddCursorTrace(p2, p3))
+                cursorTraces.add(new CursorTrace(p2, p3));
+
+            if (canAddCursorTrace(p3, p0))
+                cursorTraces.add(new CursorTrace(p3, p0));
         }
 
         @Override
@@ -79,8 +86,8 @@ public class PDFGraphicsExtractor {
             at.scale(1d, -1d);
             at.translate(0d, -1d);
 
-            Rectangle2D imageBounds = at.createTransformedShape(new Rectangle2D.Double(0d, 0d, 1d, 1d)).getBounds2D();
-            imageRegions.add(imageBounds);
+            Rectangle2D imageBBox = at.createTransformedShape(new Rectangle2D.Double(0d, 0d, 1d, 1d)).getBounds2D();
+            imageBounds.add(imageBBox);
         }
 
         @Override
@@ -95,7 +102,10 @@ public class PDFGraphicsExtractor {
 
         @Override
         public void lineTo(float x, float y) throws IOException {
-            rulings.add(new Ruling(this.x, this.y, x, y));
+
+            if (canAddCursorTrace(this.x, this.y, x, y))
+                cursorTraces.add(new CursorTrace(this.x, this.y, x, y));
+
             this.x = x;
             this.y = y;
         }
@@ -131,6 +141,24 @@ public class PDFGraphicsExtractor {
 
         @Override
         public void shadingFill(COSName shadingName) throws IOException {
+        }
+
+        private final static double MIN_CURSOR_TRACE_LONG = 10.0; 
+
+        // Check if these coordinates can be used to register a new cursor trace,
+        // assuming that the cursor trace is oriented and longer then <code>MIN_CURSOR_TRACE_LONG</code>
+        private boolean canAddCursorTrace(double x1, double y1, double x2, double y2) {
+            if (x1 == x2)
+                return Math.abs(y1 - y2) > MIN_CURSOR_TRACE_LONG;
+            else if (y1 == y2)
+                return Math.abs(x1 - x2) > MIN_CURSOR_TRACE_LONG;
+            else
+                return false;
+        }
+
+        // Check if these points can be used to register a new cursor trace
+        private boolean canAddCursorTrace(Point2D p1, Point2D p2) {
+            return canAddCursorTrace(p1.getX(), p1.getY(), p2.getX(), p2.getY());
         }
     }
 }

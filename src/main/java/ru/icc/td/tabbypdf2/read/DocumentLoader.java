@@ -11,10 +11,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class DocumentLoader {
+public final class DocumentLoader {
 
     private PDFTextExtractor PDFTextExtractor;
     private PDFGraphicsExtractor PDFGraphicsExtractor;
+    private PDFRulingExtractor PDFRulingExtractor;
 
     public Document load(Path path) throws IllegalArgumentException, IOException {
         if (null == path) {
@@ -30,6 +31,7 @@ public class DocumentLoader {
 
                 PDFTextExtractor = new PDFTextExtractor(pdDocument);
                 PDFGraphicsExtractor = new PDFGraphicsExtractor(pdDocument);
+                PDFRulingExtractor = new PDFRulingExtractor(pdDocument);
 
                 Document document = createDocument(file, pdDocument);
                 pdDocument.close();
@@ -60,18 +62,26 @@ public class DocumentLoader {
         PDPage pdPage = pdDocument.getPage(pageIndex);
 
         if (null != pdPage) {
+
             PDRectangle rect = pdPage.getBBox();
 
             float lt = rect.getLowerLeftX();
-            float tp = rect.getUpperRightY();
+            //float tp = rect.getUpperRightY();
+            float tp = rect.getLowerLeftY();
             float rt = rect.getUpperRightX();
-            float bm = rect.getLowerLeftY();
+            //float bm = rect.getLowerLeftY();
+            float bm = rect.getUpperRightY();
 
             Rectangle2D.Float bbox = new Rectangle2D.Float(lt, tp, rt - lt, bm - tp);
             Page page = new Page(document, pageIndex, bbox);
 
+            if (pdPage.getRotation() == 90) {
+                page.setOrientation(Page.Orientation.LANDSCAPE);
+            }
+
             PDFTextExtractor.readTo(pageIndex, page);
             PDFGraphicsExtractor.readTo(pageIndex, page);
+            PDFRulingExtractor.readTo(page);
 
             return page;
         }

@@ -1,23 +1,22 @@
-package ru.icc.td.tabbypdf2;
+package ru.icc.td.tabbypdf2.util;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
-import ru.icc.td.tabbypdf2.debug.DebuggingDrawer;
-import ru.icc.td.tabbypdf2.comp.DocumentComposer;
-import ru.icc.td.tabbypdf2.model.Document;
-import ru.icc.td.tabbypdf2.model.Table;
-import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
-import java.awt.*;
-import java.io.*;
-import java.nio.file.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.List;
 
-public final class TableExtractor {
+public final class PDF2ImageConverter {
 
     // CLI params
 
@@ -33,24 +32,20 @@ public final class TableExtractor {
     @Option(name = "-o",
             aliases = {"--output"},
             metaVar = "PATH",
-            usage = "specify the path to a directory for extracted data")
+            usage = "specify the path to a directory for generated page images")
     private String outputArg;
     private File outputFile;
     private Path outputPath;
 
-    @Option(name = "-d",
-            aliases = {"--debug"},
-            usage = "enable debug")
-    private boolean useDebug = true;
-    private Path debugPath;
-
-    @Option(name = "-?",
-            aliases = {"--help"},
-            usage = "show this message")
-    private boolean help = false;
+    @Option(name = "-f",
+            aliases = {"--format"},
+            metaVar = "FORMAT",
+            usage = "specify the file format for generated page images (e.g. png, jpg, gif)")
+    private String imageFileFormatArg;
+    private String imageFileFormat;
 
     public static void main(String[] args) {
-        new TableExtractor().run(args);
+        new PDF2ImageConverter().run(args);
     }
 
     private void throwIfEmpty(String arg) {
@@ -66,11 +61,6 @@ public final class TableExtractor {
         CmdLineParser parser = new CmdLineParser(this);
         try {
             parser.parseArgument(args);
-
-            if (help) {
-                parser.printUsage(System.err);
-                System.exit(0);
-            }
 
             throwIfEmpty(inputArg);
 
@@ -89,22 +79,24 @@ public final class TableExtractor {
             inputPath = inputFile.isFile() ? inputFile.getParentFile().toPath() : inputFile.toPath();
 
             if (isEmptyArg(outputArg))
-                outputFile = inputPath.resolve("extracted").toFile();
+                outputFile = inputPath.resolve("images").toFile();
             else
                 outputFile = new File(outputArg);
 
             outputFile.mkdirs();
             outputPath = outputFile.toPath();
 
-            if (useDebug)
-                debugPath = outputPath.resolve("debug");
+            if (isEmptyArg(imageFileFormatArg))
+                imageFileFormat = "png";
+            else
+                imageFileFormat = imageFileFormatArg;
 
             final String[] extensions = {"pdf", "PDF"};
 
             if (inputFile.isFile()) {
                 if (FilenameUtils.isExtension(inputFile.getName(), extensions)) {
                     System.out.println(inputFile.getCanonicalPath());
-                    processDocument(inputFile);
+                    convertDocument(inputFile);
                 } else {
                     System.err.println("The extension of the specified file is not PDF");
                     System.exit(0);
@@ -116,7 +108,7 @@ public final class TableExtractor {
                 } else {
                     for (File file : files) {
                         System.out.println(file.getCanonicalPath());
-                        processDocument(file);
+                        convertDocument(file);
                     }
                 }
             } else {
@@ -132,45 +124,28 @@ public final class TableExtractor {
         }
     }
 
-    private Document loadDocument(File file) throws IOException {
-        return new DocumentLoader().load(file.toPath());
-    }
-
-    private Document recomposeDocument(Document originDocument) {
-        return null;
-    }
-
-    private List<Table> extractTables(Document recomposedDocument) {
-        //Extract all tables from the document
-        return null;
-    }
-
-    private void writeTables(List<Table> tables) {
-    }
-
-    private void processDocument(File file) {
-        Document originDocument = null;
-        Document recomposedDocument = null;
-
+    private void convertDocument(File pdfFile) {
+        PDDocument document;
         try {
-            originDocument = loadDocument(file);
+            document = PDDocument.load(pdfFile);
+            PDFRenderer pdfRenderer = new PDFRenderer(document);
 
-            DocumentComposer documentComposer = new DocumentComposer();
-            documentComposer.compose(originDocument);
+            for (int i = 0; i < document.getNumberOfPages(); i ++) {
+                BufferedImage image = pdfRenderer.renderImageWithDPI(i, 150, ImageType.RGB);
 
-            recomposedDocument = recomposeDocument(originDocument);
-            List<Table> tables = extractTables(recomposedDocument);
-            writeTables(tables);
+                String pdfFileBaseName = FilenameUtils.getBaseName(pdfFile.getName());
+                String imageFileName = String.format("%s_%03d.%s", pdfFileBaseName, i, imageFileFormat);
+                Path outputImagePath = Paths.get(outputFile.getCanonicalPath(), imageFileName);
 
-            if (useDebug) {
-                DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
-                debuggingDrawer.drawTo(originDocument, debugPath);
+                //ImageIOUtil.writeImage(image, outputImagePath.toString(), 150);
             }
+
+            document.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 }
-
 
 
