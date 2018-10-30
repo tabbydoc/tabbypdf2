@@ -47,5 +47,6 @@ data/
 .idea/
 *.iml
 .vscode/
+*.properties
 
 src/main/NOTICE
