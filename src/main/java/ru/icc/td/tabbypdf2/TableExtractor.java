@@ -2,22 +2,33 @@ package ru.icc.td.tabbypdf2;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.rendering.ImageType;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import ru.icc.td.tabbypdf2.config.AppConfig;
 import ru.icc.td.tabbypdf2.debug.DebuggingDrawer;
 import ru.icc.td.tabbypdf2.comp.DocumentComposer;
+import ru.icc.td.tabbypdf2.detect.ITableDetector;
+import ru.icc.td.tabbypdf2.detect.RcnnTableDetector;
 import ru.icc.td.tabbypdf2.model.Document;
+import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Table;
 import ru.icc.td.tabbypdf2.read.DocumentLoader;
+import ru.icc.td.tabbypdf2.util.Utils;
 
-import java.awt.*;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public final class TableExtractor {
+
+    ITableDetector tableDetector;
 
     // CLI params
 
@@ -47,9 +58,10 @@ public final class TableExtractor {
     @Option(name = "-?",
             aliases = {"--help"},
             usage = "show this message")
+
     private boolean help = false;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         new TableExtractor().run(args);
     }
 
@@ -62,7 +74,7 @@ public final class TableExtractor {
         return arg == null || arg.isEmpty();
     }
 
-    public void run(String[] args) {
+    public void run(String[] args) throws Exception {
         CmdLineParser parser = new CmdLineParser(this);
         try {
             parser.parseArgument(args);
@@ -98,6 +110,15 @@ public final class TableExtractor {
 
             if (useDebug)
                 debugPath = outputPath.resolve("debug");
+
+            boolean useAnnModel = AppConfig.isUseANNModel();
+            if (useAnnModel) {
+                Path pathToModel = Paths.get(AppConfig.getPathToANNModel());
+                Path pathToLabelMap = Paths.get(AppConfig.getPathToLabelMap());
+                tableDetector = new RcnnTableDetector(pathToModel, pathToLabelMap);
+            } else {
+                tableDetector = null;
+            }
 
             final String[] extensions = {"pdf", "PDF"};
 
@@ -140,8 +161,20 @@ public final class TableExtractor {
         return null;
     }
 
-    private List<Table> extractTables(Document recomposedDocument) {
+    private List<Table> extractTables(Document recomposedDocument) throws IOException {
         //Extract all tables from the document
+        if (recomposedDocument == null)
+            return null;
+        ArrayList<Page> pages = (ArrayList<Page>) recomposedDocument.getPages();
+        if (pages.isEmpty())
+            return null;
+
+        List<Rectangle2D> tables;
+        for (Page page: pages) {
+            BufferedImage img = Utils.convertPageToImage(recomposedDocument.getPDDocument().getPage(0), 150, ImageType.RGB);
+            tables = tableDetector.detectTables(page);
+        }
+
         return null;
     }
 
@@ -159,7 +192,7 @@ public final class TableExtractor {
             documentComposer.compose(originDocument);
 
             recomposedDocument = recomposeDocument(originDocument);
-            List<Table> tables = extractTables(recomposedDocument);
+            List<Table> tables = extractTables(originDocument);
             writeTables(tables);
 
             if (useDebug) {

@@ -1,5 +1,7 @@
 package ru.icc.td.tabbypdf2.model;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
 import ru.icc.td.tabbypdf2.comp.InterColumnGapExtractor;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -11,10 +13,13 @@ public final class Page extends Rectangle2D.Float {
     private List<Word> words;
     private List<Line> lines;
     private List<Block> blocks;
+    private List<Rectangle2D> tables;
     private List<CursorTrace> cursorTraces;
     private List<Rectangle2D> imageBounds;
     private List<Rectangle2D> gaps;
     private List<Ruling> visibleRulings;
+
+    private Orientation orientation;
 
     /*********/
     /*private List<CursorTrace> left;
@@ -118,10 +123,24 @@ public final class Page extends Rectangle2D.Float {
         return this.lines;
     }
 
-    private Orientation orientation;
+    public boolean addTables(List<Rectangle2D> tables) {
+        return this.tables.addAll(tables);
+    }
+
+    public List<Rectangle2D> getTables() {
+        return tables;
+    }
 
     public Orientation getOrientation() { return orientation; }
     public void setOrientation(Orientation value) { this.orientation = value; }
+
+    public PDPage getPDPage() {
+        return document.getPDDocument().getPage(index);
+    }
+
+    public PDDocument getPDDocument() {
+        return document.getPDDocument();
+    }
 
     public enum Orientation {
         PORTRAIT, LANDSCAPE, NEITHER

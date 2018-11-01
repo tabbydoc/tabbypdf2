@@ -115,6 +115,18 @@ public class Utils {
         return ret;
     }
 
+    public static BufferedImage convertPageToImage(PDPage page, int dpi, ImageType imageType) {
+        try (PDDocument document = new PDDocument()) {
+            document.addPage(page);
+            PDFRenderer renderer = new PDFRenderer(document);
+            document.close();
+            return renderer.renderImageWithDPI(0, dpi, imageType);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     private static boolean useCustomQuickSort() {
         // taken from PDFBOX:
 

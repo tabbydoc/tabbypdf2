@@ -205,4 +205,10 @@ public final class DebuggingDrawer {
             contentDrawer.strokeLine(ruling);
     }
 
+    private void drawTables(Page page, PDFContentDrawer contentDrawer) throws IOException {
+        for (Rectangle2D table: page.getTables()) {
+            contentDrawer.strokeRectangle(table);
+        }
+    }
+
 }

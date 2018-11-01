@@ -6,9 +6,9 @@ import java.util.Properties;
 
 public class AppConfig {
 
-    public static boolean useANNModel;
-    public static String pathToANNModel;
-    public static String pathToLabelMap;
+    private static boolean useANNModel;
+    private static String pathToANNModel;
+    private static String pathToLabelMap;
 
     static {
         Properties properties = new Properties();
@@ -22,5 +22,17 @@ public class AppConfig {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean isUseANNModel() {
+        return useANNModel;
+    }
+
+    public static String getPathToANNModel() {
+        return pathToANNModel;
+    }
+
+    public static String getPathToLabelMap() {
+        return pathToLabelMap;
     }
 }

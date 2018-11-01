@@ -17,16 +17,25 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ANNModel {
+public class AnnModel {
 
+    private static AnnModel instance;
     private Path pathToModel;
     private Path pathToLabelMap;
     private String[] labels;
     private SavedModelBundle model;
 
-    public ANNModel(Path pathToModel, Path pathToLabelMap) {
+    private AnnModel(Path pathToModel, Path pathToLabelMap) {
         this.pathToModel = pathToModel;
         this.pathToLabelMap = pathToLabelMap;
+    }
+
+    public static AnnModel getInstance(Path pathToModel, Path pathToLabelMap) throws Exception {
+        if (instance == null) {
+            instance = new AnnModel(pathToModel, pathToLabelMap);
+            instance.init();
+        }
+        return instance;
     }
 
     public boolean init() throws Exception {
