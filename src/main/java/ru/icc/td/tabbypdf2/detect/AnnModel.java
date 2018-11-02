@@ -40,8 +40,8 @@ public class AnnModel {
 
     public boolean init() throws Exception {
         try {
-            labels = loadLabels(pathToLabelMap);
             model = SavedModelBundle.load(pathToModel.toFile().getName(), "serve");
+            labels = loadLabels(pathToLabelMap);
         } catch (Exception e) {
             return false;
         }

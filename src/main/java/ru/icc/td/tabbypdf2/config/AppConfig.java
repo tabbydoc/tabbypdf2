@@ -17,8 +17,8 @@ public class AppConfig {
             InputStream inputStream = classLoader.getResourceAsStream("application.properties");
             properties.load(inputStream);
             useANNModel = Boolean.parseBoolean(properties.getProperty("model.use_model"));
-            pathToANNModel = properties.getProperty("model.path_to_label_map");
-            pathToLabelMap = properties.getProperty("model.path_to_model");
+            pathToANNModel = properties.getProperty("model.path_to_model");
+            pathToLabelMap = properties.getProperty("model.path_to_label_map");
         } catch (IOException e) {
             e.printStackTrace();
         }
