@@ -135,7 +135,7 @@ public final class Page extends Rectangle2D.Float {
     public void setOrientation(Orientation value) { this.orientation = value; }
 
     public PDPage getPDPage() {
-        return document.getPDDocument().getPage(index);
+        return getPDDocument().getPage(index);
     }
 
     public PDDocument getPDDocument() {

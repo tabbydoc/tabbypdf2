@@ -2,21 +2,18 @@ package ru.icc.td.tabbypdf2;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.rendering.ImageType;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import ru.icc.td.tabbypdf2.config.AppConfig;
 import ru.icc.td.tabbypdf2.debug.DebuggingDrawer;
 import ru.icc.td.tabbypdf2.comp.DocumentComposer;
-import ru.icc.td.tabbypdf2.detect.ITableDetector;
+import ru.icc.td.tabbypdf2.detect.PdfToImage;
 import ru.icc.td.tabbypdf2.detect.RcnnTableDetector;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Table;
 import ru.icc.td.tabbypdf2.read.DocumentLoader;
-import ru.icc.td.tabbypdf2.util.Utils;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -28,7 +25,7 @@ import java.util.List;
 
 public final class TableExtractor {
 
-    ITableDetector tableDetector;
+    RcnnTableDetector tableDetector;
 
     // CLI params
 
@@ -165,14 +162,17 @@ public final class TableExtractor {
         //Extract all tables from the document
         if (recomposedDocument == null)
             return null;
+
         ArrayList<Page> pages = (ArrayList<Page>) recomposedDocument.getPages();
         if (pages.isEmpty())
             return null;
 
+        PdfToImage pdfToImage = new PdfToImage(recomposedDocument.getSourceFile());
+
         List<Rectangle2D> tables;
         for (Page page: pages) {
-            BufferedImage img = Utils.convertPageToImage(recomposedDocument.getPDDocument().getPage(0), 150, ImageType.RGB);
-            tables = tableDetector.detectTables(page);
+            BufferedImage img = pdfToImage.getImageForPage(page.getIndex());
+            tables = tableDetector.detectTables(img);
         }
 
         return null;

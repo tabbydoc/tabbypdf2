@@ -1,11 +1,12 @@
 package ru.icc.td.tabbypdf2.detect;
 
 import com.google.protobuf.TextFormat;
+import object_detection.protos.StringIntLabelMapOuterClass;
+import object_detection.protos.StringIntLabelMapOuterClass.StringIntLabelMap;
+import org.apache.pdfbox.rendering.ImageType;
 import org.tensorflow.SavedModelBundle;
 import org.tensorflow.Tensor;
 import org.tensorflow.types.UInt8;
-import ru.icc.td.tabbypdf2.protos.StringIntLabelMapOuterClass.StringIntLabelMap;
-import ru.icc.td.tabbypdf2.protos.StringIntLabelMapOuterClass.StringIntLabelMapItem;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferByte;
@@ -40,7 +41,7 @@ public class AnnModel {
 
     public boolean init() throws Exception {
         try {
-            model = SavedModelBundle.load(pathToModel.toFile().getName(), "serve");
+            model = SavedModelBundle.load(pathToModel.toString(), "serve");
             labels = loadLabels(pathToLabelMap);
         } catch (Exception e) {
             return false;
@@ -92,13 +93,13 @@ public class AnnModel {
         TextFormat.merge(text, builder);
         StringIntLabelMap proto = builder.build();
         int maxId = 0;
-        for (StringIntLabelMapItem item : proto.getItemList()) {
+        for (StringIntLabelMapOuterClass.StringIntLabelMapItem item : proto.getItemList()) {
             if (item.getId() > maxId) {
                 maxId = item.getId();
             }
         }
         String[] ret = new String[maxId + 1];
-        for (StringIntLabelMapItem item : proto.getItemList()) {
+        for (StringIntLabelMapOuterClass.StringIntLabelMapItem item : proto.getItemList()) {
             ret[item.getId()] = item.getDisplayName();
         }
         return ret;

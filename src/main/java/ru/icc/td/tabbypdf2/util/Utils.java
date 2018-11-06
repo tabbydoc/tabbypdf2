@@ -14,6 +14,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.tools.PDFToImage;
 
 public class Utils {
 
@@ -116,11 +117,13 @@ public class Utils {
     }
 
     public static BufferedImage convertPageToImage(PDPage page, int dpi, ImageType imageType) {
-        try (PDDocument document = new PDDocument()) {
+        PDDocument document;
+        try {
+            document = new PDDocument();
             document.addPage(page);
             PDFRenderer renderer = new PDFRenderer(document);
-            document.close();
-            return renderer.renderImageWithDPI(0, dpi, imageType);
+            BufferedImage img = renderer.renderImageWithDPI(0, dpi, imageType);
+            return img;
         } catch (IOException e) {
             e.printStackTrace();
             return null;

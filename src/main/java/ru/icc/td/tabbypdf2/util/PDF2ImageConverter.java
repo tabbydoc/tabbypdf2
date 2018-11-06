@@ -5,6 +5,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.tools.imageio.ImageIOUtil;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
@@ -137,7 +138,7 @@ public final class PDF2ImageConverter {
                 String imageFileName = String.format("%s_%03d.%s", pdfFileBaseName, i, imageFileFormat);
                 Path outputImagePath = Paths.get(outputFile.getCanonicalPath(), imageFileName);
 
-                //ImageIOUtil.writeImage(image, outputImagePath.toString(), 150);
+                ImageIOUtil.writeImage(image, outputImagePath.toString(), 150);
             }
 
             document.close();
