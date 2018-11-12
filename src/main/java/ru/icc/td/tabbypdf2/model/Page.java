@@ -49,6 +49,7 @@ public final class Page extends Rectangle2D.Float {
         imageBounds = new ArrayList<>(5);
         visibleRulings = new ArrayList<>();
         lines = new ArrayList<>(3000);
+        tables = new ArrayList<>(10);
         //left = new ArrayList<>();
         //right = new ArrayList<>();
     }
@@ -124,7 +125,11 @@ public final class Page extends Rectangle2D.Float {
     }
 
     public boolean addTables(List<Rectangle2D> tables) {
-        return this.tables.addAll(tables);
+        if (tables != null) {
+            return this.tables.addAll(tables);
+        } else {
+            return false;
+        }
     }
 
     public List<Rectangle2D> getTables() {

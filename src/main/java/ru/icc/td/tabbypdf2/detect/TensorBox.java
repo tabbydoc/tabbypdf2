@@ -40,10 +40,10 @@ public class TensorBox {
     public TensorBox(float score, String label, float[] box) {
         this.score = score;
         this.label = label;
-        minX = box[0];
-        minY = box[1];
-        maxX = box[2];
-        maxY = box[3];
+        minY = box[0];
+        minX = box[1];
+        maxY = box[2];
+        maxX = box[3];
     }
 
 }

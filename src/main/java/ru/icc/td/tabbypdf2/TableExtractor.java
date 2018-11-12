@@ -173,6 +173,7 @@ public final class TableExtractor {
         for (Page page: pages) {
             BufferedImage img = pdfToImage.getImageForPage(page.getIndex());
             tables = tableDetector.detectTables(img);
+            page.addTables(tables);
         }
 
         return null;

@@ -21,15 +21,22 @@ public class RcnnTableDetector {
     }
 
     public List<Rectangle2D> detectTables(BufferedImage img) throws IOException {
+        float w = img.getWidth();
+        float h = img.getHeight();
         List<TensorBox> tables = rcnnModel.detectTables(img);
+        if (tables == null) {
+            return null;
+        }
         List<Rectangle2D> result = new ArrayList<Rectangle2D>();
         for (TensorBox tbox: tables) {
-            Rectangle2D rect = new Rectangle2D.Float(
-                    tbox.getMinX(),
-                    tbox.getMinX(),
-                    tbox.getMaxX(),
-                    tbox.getMaxY());
-            result.add(rect);
+            if (tbox.getScore() > 0.95) {
+                int ymin = Math.round(tbox.getMinY() * h);
+                int xmin = Math.round(tbox.getMinX() * w);
+                int ymax = Math.round(tbox.getMaxY() * h);
+                int xmax = Math.round(tbox.getMaxX() * w);
+                Rectangle2D rect = new Rectangle2D.Float(w-xmax, h-ymax, xmax - xmin, ymax - ymin);
+                result.add(rect);
+            }
         }
         return result;
     }

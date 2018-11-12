@@ -20,11 +20,10 @@ public class PdfToImage {
         PDDocument document;
         document = PDDocument.load(pdf);
         renderer = new PDFRenderer(document);
-
     }
 
     public BufferedImage getImageForPage(int pageNumber) throws IOException {
-        BufferedImage img = renderer.renderImageWithDPI(pageNumber, 150, ImageType.RGB);
+        BufferedImage img = renderer.renderImageWithDPI(pageNumber, 72, ImageType.RGB);
         BufferedImage convertedImg = new BufferedImage(img.getWidth(), img.getHeight(), BufferedImage.TYPE_3BYTE_BGR);
         convertedImg.getGraphics().drawImage(img, 0, 0, null);
         return convertedImg;
