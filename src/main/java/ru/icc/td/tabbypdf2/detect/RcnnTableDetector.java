@@ -34,7 +34,7 @@ public class RcnnTableDetector {
                 int xmin = Math.round(tbox.getMinX() * w);
                 int ymax = Math.round(tbox.getMaxY() * h);
                 int xmax = Math.round(tbox.getMaxX() * w);
-                Rectangle2D rect = new Rectangle2D.Float(w-xmax, h-ymax, xmax - xmin, ymax - ymin);
+                Rectangle2D rect = new Rectangle2D.Float(w - xmax, h - ymax, xmax - xmin, ymax - ymin);
                 result.add(rect);
             }
         }
