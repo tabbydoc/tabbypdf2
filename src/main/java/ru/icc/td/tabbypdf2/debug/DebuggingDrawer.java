@@ -6,6 +6,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import ru.icc.td.tabbypdf2.model.*;
 
 import java.awt.Color;
+import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
@@ -209,6 +210,11 @@ public final class DebuggingDrawer {
         for (Rectangle2D table: page.getTables()) {
             contentDrawer.strokeRectangle(table);
         }
+    }
+
+    private void drawTitles(Page page, PDFContentDrawer contentDrawer) throws IOException {
+        contentDrawer.strokeLine(new Line2D.Double(page.getMinX(), page.getPageFooter(), page.getMaxX(), page.getPageFooter()));
+        contentDrawer.strokeLine(new Line2D.Double(page.getMinX(), page.getPageHeader(), page.getMaxX(), page.getPageHeader()));
     }
 
 }

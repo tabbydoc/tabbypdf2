@@ -60,4 +60,17 @@ public class Line extends Block {
     public float getSpace() {
         return space;
     }
+
+    public String getText() {
+        StringBuilder sb = new StringBuilder();
+        int wordsCount = getWords().size();
+
+        for (int i=0; i < wordsCount; i++) {
+            Word word = getWords().get(i);
+            sb.append(word.getText());
+            if (i < wordsCount - 1) sb.append(" ");
+        }
+
+        return sb.toString();
+    }
 }

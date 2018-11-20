@@ -21,6 +21,9 @@ public final class Page extends Rectangle2D.Float {
 
     private Orientation orientation;
 
+    private double pageHeader;
+    private double pageFooter;
+
     /*********/
     /*private List<CursorTrace> left;
     private List<CursorTrace> right;
@@ -58,6 +61,8 @@ public final class Page extends Rectangle2D.Float {
         this.document = document;
         this.index = index;
         setRect(bbox);
+        setPageHeader(bbox.getMaxY());
+        setPageFooter(bbox.getMinY());
     }
 
     public boolean addCharPositions(Collection<CharPosition> charPositions) {
@@ -150,4 +155,16 @@ public final class Page extends Rectangle2D.Float {
     public enum Orientation {
         PORTRAIT, LANDSCAPE, NEITHER
     }
+
+    public double getPageHeader() {
+        return pageHeader;
+    }
+
+    public void setPageHeader(double value) {
+        pageHeader = value;
+    }
+
+    public double getPageFooter() { return pageFooter; }
+
+    public void setPageFooter(double value) { pageFooter = value; }
 }

@@ -7,6 +7,7 @@ import java.util.List;
 
 public final class DocumentComposer {
     private final PageComposer pageComposer = new PageComposer();
+    private final RunningTitleComposer runningTitleComposer = new RunningTitleComposer();
 
     public void compose(Document document) {
         if (null == document)
@@ -20,5 +21,7 @@ public final class DocumentComposer {
         for (Page page : pages) {
             pageComposer.compose(page);
         }
+
+        runningTitleComposer.detectTitles(document.getPages());
     }
 }
