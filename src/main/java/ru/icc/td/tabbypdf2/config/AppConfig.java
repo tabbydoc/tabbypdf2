@@ -1,5 +1,7 @@
 package ru.icc.td.tabbypdf2.config;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
@@ -9,6 +11,7 @@ public class AppConfig {
     private static boolean useANNModel;
     private static String pathToANNModel;
     private static String pathToLabelMap;
+    private static boolean saveToIcdar;
 
     static {
         Properties properties = new Properties();
@@ -19,6 +22,7 @@ public class AppConfig {
             useANNModel = Boolean.parseBoolean(properties.getProperty("model.use_model"));
             pathToANNModel = properties.getProperty("model.path_to_model");
             pathToLabelMap = properties.getProperty("model.path_to_label_map");
+            saveToIcdar = Boolean.parseBoolean(properties.getProperty("debug.save_to_icdar"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -34,5 +38,9 @@ public class AppConfig {
 
     public static String getPathToLabelMap() {
         return pathToLabelMap;
+    }
+
+    public static boolean isSaveToIcdar() {
+        return saveToIcdar;
     }
 }

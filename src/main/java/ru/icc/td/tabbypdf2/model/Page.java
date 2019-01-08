@@ -13,7 +13,7 @@ public final class Page extends Rectangle2D.Float {
     private List<Word> words;
     private List<Line> lines;
     private List<Block> blocks;
-    private List<Rectangle2D> tables;
+    private List<Table> tables;
     private List<CursorTrace> cursorTraces;
     private List<Rectangle2D> imageBounds;
     private List<Rectangle2D> gaps;
@@ -124,7 +124,7 @@ public final class Page extends Rectangle2D.Float {
         return this.lines;
     }
 
-    public boolean addTables(List<Rectangle2D> tables) {
+    public boolean addTables(List<Table> tables) {
         if (tables != null) {
             return this.tables.addAll(tables);
         } else {
@@ -132,7 +132,15 @@ public final class Page extends Rectangle2D.Float {
         }
     }
 
-    public List<Rectangle2D> getTables() {
+    public boolean addTable(Table table) {
+        if (table != null) {
+            return this.tables.add(table);
+        } else {
+            return false;
+        }
+    }
+
+    public List<Table> getTables() {
         return tables;
     }
 

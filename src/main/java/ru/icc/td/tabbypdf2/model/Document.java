@@ -43,4 +43,8 @@ public final class Document implements Closeable {
     public void close() throws IOException {
         pdDocument.close();
     }
+
+    public String getFileName() {
+        return sourceFile.getName();
+    }
 }

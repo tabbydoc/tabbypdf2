@@ -11,13 +11,16 @@ public abstract class Writer {
     private List<Table> tables;
     private String fileName;
 
-    public void Writer(List<Table> tables, String fileName) {
+    public Writer(List<Table> tables, String fileName) {
         out = new ArrayList<String>();
         this.tables = tables;
         this.fileName = fileName;
     }
 
     public List<String> write() {
+        if (tables == null) {
+            return null;
+        }
         writeHeader(fileName);
         writeBody();
         writeFooter();
@@ -35,6 +38,7 @@ public abstract class Writer {
 
     protected void writeString(String s) {
         out.add(s);
+        out.add("\n");
     }
 
     abstract void writeFooter();

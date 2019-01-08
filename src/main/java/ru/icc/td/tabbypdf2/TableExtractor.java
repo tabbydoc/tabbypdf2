@@ -13,6 +13,8 @@ import ru.icc.td.tabbypdf2.detect.RcnnTableDetector;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Table;
+import ru.icc.td.tabbypdf2.out.Writer;
+import ru.icc.td.tabbypdf2.out.XmlWriter;
 import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
 import java.awt.geom.Rectangle2D;
@@ -22,6 +24,8 @@ import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static ru.icc.td.tabbypdf2.util.Utils.createOutputFile;
 
 public final class TableExtractor {
 
@@ -158,14 +162,14 @@ public final class TableExtractor {
         return null;
     }
 
-    private List<Table> extractTables(Document recomposedDocument) throws IOException {
+    private boolean extractTables(Document recomposedDocument) throws IOException {
         //Extract all tables from the document
         if (recomposedDocument == null)
-            return null;
+            return false;
 
         ArrayList<Page> pages = (ArrayList<Page>) recomposedDocument.getPages();
         if (pages.isEmpty())
-            return null;
+            return false;
 
         PdfToImage pdfToImage = new PdfToImage(recomposedDocument.getSourceFile());
 
@@ -173,13 +177,31 @@ public final class TableExtractor {
         for (Page page: pages) {
             BufferedImage img = pdfToImage.getImageForPage(page.getIndex());
             tables = tableDetector.detectTables(img);
-            page.addTables(tables);
+            if (tables == null)
+                continue;
+            if (tables.isEmpty())
+                continue;
+            for (Rectangle2D rect: tables) {
+                page.addTable(new Table(rect, page.getIndex()));
+            }
         }
 
-        return null;
+        return true;
     }
 
-    private void writeTables(List<Table> tables) {
+
+
+    private void writeTables(List<Table> tables, File file) throws IOException {
+        XmlWriter xmlWriter = new XmlWriter(tables, file.getName());
+        List<String> icdarTables =  xmlWriter.write();
+        if (icdarTables != null) {
+            File out = createOutputFile(file, "xml", debugPath, "xml");
+            FileWriter fileWriter = new FileWriter(out);
+            String iTables = String.join(" ", icdarTables);
+            fileWriter.write(iTables);
+            fileWriter.flush();
+            fileWriter.close();
+        }
     }
 
     private void processDocument(File file) {
@@ -193,12 +215,15 @@ public final class TableExtractor {
             documentComposer.compose(originDocument);
 
             recomposedDocument = recomposeDocument(originDocument);
-            List<Table> tables = extractTables(originDocument);
-            writeTables(tables);
 
             if (useDebug) {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
                 debuggingDrawer.drawTo(originDocument, debugPath);
+                if (extractTables(originDocument)) {
+                    for (Page page: originDocument.getPages()) {
+                        writeTables(page.getTables(), originDocument.getSourceFile());
+                    }
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();

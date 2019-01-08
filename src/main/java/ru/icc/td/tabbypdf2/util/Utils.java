@@ -5,11 +5,14 @@ import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.List;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.rendering.ImageType;
@@ -398,5 +401,18 @@ public class Utils {
         }
     }
 
+    public static File createOutputFile(File file, String subDirName, Path debugDirectoryPath, String fileExt) {
+        // Make the specified output directory
+        Path outputDirectoryPath = debugDirectoryPath;
+
+        if (null != subDirName)
+            outputDirectoryPath = debugDirectoryPath.resolve(subDirName);
+
+        outputDirectoryPath.toFile().mkdirs();
+
+        String fileName = FilenameUtils.removeExtension(file.getName());
+
+        return new File(String.format("%s/%s.%s", outputDirectoryPath, fileName, fileExt));
+    }
 
 }
