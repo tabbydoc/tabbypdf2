@@ -191,16 +191,13 @@ public final class TableExtractor {
 
 
 
-    private void writeTables(List<Table> tables, File file) throws IOException {
-        XmlWriter xmlWriter = new XmlWriter(tables, file.getName());
+    private void writeTables(List<Table> tables, FileWriter file, String fileName) throws IOException {
+        XmlWriter xmlWriter = new XmlWriter(tables, fileName);
         List<String> icdarTables =  xmlWriter.write();
         if (icdarTables != null) {
-            File out = createOutputFile(file, "xml", debugPath, "xml");
-            FileWriter fileWriter = new FileWriter(out);
             String iTables = String.join(" ", icdarTables);
-            fileWriter.write(iTables);
-            fileWriter.flush();
-            fileWriter.close();
+            file.write(iTables);
+            file.flush();
         }
     }
 
@@ -220,9 +217,14 @@ public final class TableExtractor {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
                 debuggingDrawer.drawTo(originDocument, debugPath);
                 if (extractTables(originDocument)) {
+                    File out = createOutputFile(file, "xml", debugPath, "xml");
+                    FileWriter fileWriter = new FileWriter(out);
+                    List<Table> tables = new ArrayList<Table>();
                     for (Page page: originDocument.getPages()) {
-                        writeTables(page.getTables(), originDocument.getSourceFile());
+                        tables.addAll(page.getTables());
                     }
+                    writeTables(tables, fileWriter, originDocument.getFileName());
+                    fileWriter.close();
                 }
             }
         } catch (IOException e) {

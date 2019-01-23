@@ -28,11 +28,13 @@ public class XmlWriter extends Writer {
     @Override
     void writeTable(Table table, int tableId) {
         writeString(String.format("<table id='%s'>", String.valueOf(tableId)));
-        writeString(String.format("<region id='0' page='%s'>", table.getPage()));
+        writeString(String.format("<region id='1' page='%s'>", table.getPage() + 1));
         int x1 = (int) table.getMinX();
         int y1 = (int) table.getMinY();
         int x2 = (int) table.getMaxX();
         int y2 = (int) table.getMaxY();
         writeString(String.format("<bounding-box x1='%d' y1='%d' x2='%d' y2='%d'/>", x1, y1, x2, y2));
+        writeString("</region>");
+        writeString("</table>");
     }
 }

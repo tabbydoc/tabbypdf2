@@ -1,7 +1,5 @@
 package ru.icc.td.tabbypdf2.config;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;

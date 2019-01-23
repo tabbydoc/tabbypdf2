@@ -32,7 +32,7 @@ public abstract class Writer {
     private void writeBody() {
         for (int i = 0; i <  tables.size(); i++) {
             Table table = tables.get(i);
-            writeTable(table, i);
+            writeTable(table, i + 1);
         }
     }
 
