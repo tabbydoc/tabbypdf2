@@ -5,6 +5,11 @@ import org.apache.commons.io.FilenameUtils;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import ru.icc.td.tabbypdf2.config.AppConfig;
 import ru.icc.td.tabbypdf2.debug.DebuggingDrawer;
 import ru.icc.td.tabbypdf2.comp.DocumentComposer;
@@ -19,15 +24,20 @@ import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static ru.icc.td.tabbypdf2.util.Utils.createOutputFile;
+import static ru.icc.td.tabbypdf2.util.Utils.*;
 
 public final class TableExtractor {
+
+    static {
+        nu.pattern.OpenCV.loadLocally();
+    }
 
     RcnnTableDetector tableDetector;
 
@@ -176,6 +186,22 @@ public final class TableExtractor {
         List<Rectangle2D> tables;
         for (Page page: pages) {
             BufferedImage img = pdfToImage.getImageForPage(page.getIndex());
+            Mat imgResult = matify(img);
+            Mat bw = new Mat();
+            Imgproc.cvtColor(imgResult, bw, Imgproc.COLOR_BGR2GRAY);
+            Imgproc.threshold(bw, bw, 40, 255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
+            Mat r = new Mat();
+            Mat g = new Mat();
+            Mat b = new Mat();
+            List<Mat> results = new ArrayList<>();
+            Imgproc.distanceTransform(bw, r, Imgproc.DIST_L2, 5);
+            Imgproc.distanceTransform(bw, g, Imgproc.DIST_L1, 5);
+            Imgproc.distanceTransform(bw, b, Imgproc.DIST_C, 5);
+            results.add(r);
+            results.add(g);
+            results.add(b);
+            Core.merge(results, imgResult);
+            img = mat2BufferedImage(imgResult);
             tables = tableDetector.detectTables(img);
             if (tables == null)
                 continue;
