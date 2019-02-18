@@ -208,7 +208,7 @@ public final class TableExtractor {
             if (tables.isEmpty())
                 continue;
             for (Rectangle2D rect: tables) {
-                page.addTable(new Table(rect, page.getIndex()));
+                    page.addTable(new Table(rect, page.getIndex()));
             }
         }
 
@@ -240,10 +240,8 @@ public final class TableExtractor {
             recomposedDocument = recomposeDocument(originDocument);
 
             if (useDebug) {
-                DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
-                debuggingDrawer.drawTo(originDocument, debugPath);
                 if (extractTables(originDocument)) {
-                    File out = createOutputFile(file, "xml", debugPath, "xml");
+                    File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
                     FileWriter fileWriter = new FileWriter(out);
                     List<Table> tables = new ArrayList<Table>();
                     for (Page page: originDocument.getPages()) {
@@ -252,6 +250,8 @@ public final class TableExtractor {
                     writeTables(tables, fileWriter, originDocument.getFileName());
                     fileWriter.close();
                 }
+                DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
+                debuggingDrawer.drawTo(originDocument, debugPath);
             }
         } catch (IOException e) {
             e.printStackTrace();
