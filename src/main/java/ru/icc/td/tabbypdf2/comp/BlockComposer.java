@@ -449,7 +449,7 @@ public class BlockComposer {
         Line line1, line2;
         float space, t, y1, y2, height2;
         DescriptiveStatistics ds = new DescriptiveStatistics();
-        Set<Float> cFloats = new HashSet<>();
+        List<Float> cFloats = new ArrayList<>();
 
         for(int i = 0; i < lines.size(); i++){
             line1 = lines.get(i);
@@ -472,7 +472,7 @@ public class BlockComposer {
             }
 
             if(space < Math.abs(page.height)) {
-                space = Precision.round(space, 2);
+                //space = Precision.round(space, 2);
                 cFloats.add(space/line1.height);
             }
 

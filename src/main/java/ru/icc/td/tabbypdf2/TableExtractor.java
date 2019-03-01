@@ -14,6 +14,7 @@ import ru.icc.td.tabbypdf2.config.AppConfig;
 import ru.icc.td.tabbypdf2.debug.DebuggingDrawer;
 import ru.icc.td.tabbypdf2.comp.DocumentComposer;
 import ru.icc.td.tabbypdf2.detect.PdfToImage;
+import ru.icc.td.tabbypdf2.detect.PostProcessing;
 import ru.icc.td.tabbypdf2.detect.RcnnTableDetector;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
@@ -208,7 +209,7 @@ public final class TableExtractor {
             if (tables.isEmpty())
                 continue;
             for (Rectangle2D rect: tables) {
-                    page.addTable(new Table(rect, page.getIndex()));
+                page.addTable(new Table(rect, page));
             }
         }
 
@@ -239,20 +240,25 @@ public final class TableExtractor {
 
             recomposedDocument = recomposeDocument(originDocument);
 
-            if (useDebug) {
-                if (extractTables(originDocument)) {
-                    File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
-                    FileWriter fileWriter = new FileWriter(out);
-                    List<Table> tables = new ArrayList<Table>();
-                    for (Page page: originDocument.getPages()) {
-                        tables.addAll(page.getTables());
-                    }
-                    writeTables(tables, fileWriter, originDocument.getFileName());
-                    fileWriter.close();
+            if (extractTables(originDocument) && useDebug) {
+                File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
+                FileWriter fileWriter = new FileWriter(out);
+                List<Table> tables = new ArrayList<Table>();
+                for (Page page: originDocument.getPages()) {
+                    tables.addAll(page.getTables());
                 }
+                writeTables(tables, fileWriter, originDocument.getFileName());
+                fileWriter.close();
+            }
+
+            PostProcessing postProcessing = new PostProcessing();
+            postProcessing.process(originDocument);
+
+            if (useDebug) {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
                 debuggingDrawer.drawTo(originDocument, debugPath);
             }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
