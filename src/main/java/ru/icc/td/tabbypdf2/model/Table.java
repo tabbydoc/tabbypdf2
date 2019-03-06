@@ -10,16 +10,9 @@ public class Table extends Rectangle2D.Float {
     private Rectangle2D box;
 
     public Table(Rectangle2D box, Page page) {
-        setRect(box);
         this.box = box;
         this.page = page;
         setBlocks(box);
-    }
-
-    public Table(List<Block> blocks, Page page) {
-        this.page = page;
-        this.blocks = blocks;
-        setAll();
     }
 
     public List<Block> getBlocks() {
@@ -31,7 +24,7 @@ public class Table extends Rectangle2D.Float {
             if (block.intersects(box))
                 blocks.add(block);
         }
-        //setAll();
+        setAll();
     }
 
     public Rectangle2D getBox() {
@@ -58,7 +51,8 @@ public class Table extends Rectangle2D.Float {
                 maxY = block.y + block.height;
         }
 
-        setRect(minX, minY, maxX - minX, maxY - minY);
+        Rectangle2D rectangle2D = new Rectangle2D.Float(minX, minY, maxX - minX, maxY - minY);
+        setRect(rectangle2D.createUnion(box));
     }
 
     public int getPage() {
