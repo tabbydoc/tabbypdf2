@@ -213,7 +213,7 @@ public final class TableExtractor {
                 PostProcessing postProcessing = new PostProcessing(table);
 
                 if(postProcessing.isTable())
-                    page.addTable(table);
+                    page.addTable(postProcessing.getNewTable());
             }
         }
 

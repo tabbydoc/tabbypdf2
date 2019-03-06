@@ -30,7 +30,14 @@ public class PostProcessing {
         return processTable();
     }
 
+    public Table getNewTable() {
+        return newTable;
+    }
+
+    private Table newTable;
+
     private boolean processTable() {
+        //TODO: изображения; разряжённые области;
         Processing processing = new Processing(blocks);
         processing.processBlocks();
         List<Rectangle2D> unions = processing.getUnions();
@@ -39,6 +46,7 @@ public class PostProcessing {
             return false;
         } else {
             if (unions.size() == 1) {
+                //TODO: возвращать обновлённую таблицу
                 boolean exit = false;
                 List<Rectangle2D> uni;
                 List<Block> blocks = new ArrayList<>(this.blocks);
@@ -55,8 +63,13 @@ public class PostProcessing {
                     uni = processing1.getUnions();
                 } while (uni.size() == 1);
 
+                if(!exit) {
+                    this.newTable = new Table(blocks, table.getPage(), table.getBox());
+                }
+
                 return !exit;
             } else {
+                this.newTable = table;
                 return true;
             }
         }

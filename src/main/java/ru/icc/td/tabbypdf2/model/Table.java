@@ -16,6 +16,12 @@ public class Table extends Rectangle2D.Float {
         setBlocks(box);
     }
 
+    public Table(List<Block> blocks, Page page, Rectangle2D box) {
+        this.blocks = blocks;
+        this.page = page;
+        setBlocks(box);
+    }
+
     public List<Block> getBlocks() {
         return blocks;
     }
