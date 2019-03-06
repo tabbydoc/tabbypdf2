@@ -209,7 +209,11 @@ public final class TableExtractor {
             if (tables.isEmpty())
                 continue;
             for (Rectangle2D rect: tables) {
-                page.addTable(new Table(rect, page));
+                Table table = new Table(rect, page);
+                PostProcessing postProcessing = new PostProcessing(table);
+
+                if(postProcessing.isTable())
+                    page.addTable(table);
             }
         }
 
@@ -251,8 +255,7 @@ public final class TableExtractor {
                 fileWriter.close();
             }
 
-            PostProcessing postProcessing = new PostProcessing();
-            postProcessing.process(originDocument);
+
 
             if (useDebug) {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();

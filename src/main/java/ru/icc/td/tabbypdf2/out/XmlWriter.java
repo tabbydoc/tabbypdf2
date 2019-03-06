@@ -28,7 +28,7 @@ public class XmlWriter extends Writer {
     @Override
     void writeTable(Table table, int tableId) {
         writeString(String.format("<table id='%s'>", String.valueOf(tableId)));
-        writeString(String.format("<region id='1' page='%s'>", table.getPage() + 1));
+        writeString(String.format("<region id='1' page='%s'>", table.getPage().getIndex() + 1));
         int x1 = (int) table.getMinX();
         int y1 = (int) table.getMinY();
         int x2 = (int) table.getMaxX();
