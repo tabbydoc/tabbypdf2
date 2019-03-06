@@ -307,7 +307,7 @@ public class BlockComposer {
                 blocks.remove(i);
 
                 float w = calculateSpace(blockI);
-                rectangle.setRect(blockI.x - w, blockI.y, blockI.width + w, blockI.height);
+                rectangle.setRect(blockI.x - w, blockI.y, blockI.width + 2*w, blockI.height);
 
                 float idI = blockI.getWords().get(0).getStartChunkID();
 
@@ -399,7 +399,7 @@ public class BlockComposer {
             }
         }
 
-        return (float) ds.getMax();
+        return (float) ds.getMean();
     }
 
     private <T extends Line2D.Float, S extends Rectangle2D.Float> boolean isThereLine2D(S rec1, S rec2, List<T> list, int orientation) {

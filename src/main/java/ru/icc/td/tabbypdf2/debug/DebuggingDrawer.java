@@ -172,8 +172,8 @@ public final class DebuggingDrawer {
 
         for (Block block : page.getBlocks()) {
             contentDrawer.strokeRectangle(block);
-            String text = Math.round(block.getMinX()) + " " + Math.round(block.getMinY());
-            contentDrawer.showText(text, block.x, (float) block.getMaxY());
+            /*String text = Math.round(block.getMinX()) + " " + Math.round(block.getMinY());
+            contentDrawer.showText(text, block.x, (float) block.getMaxY());*/
         }
     }
 

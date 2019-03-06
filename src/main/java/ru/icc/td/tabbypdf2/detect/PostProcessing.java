@@ -37,7 +37,11 @@ public class PostProcessing {
     private Table newTable;
 
     private boolean processTable() {
-        //TODO: изображения; разряжённые области;
+        //TODO: разряжённые области
+
+        if(blocks.size() == 0 && isThereImage())
+            return false;
+
         Processing processing = new Processing(blocks);
         processing.processBlocks();
         List<Rectangle2D> unions = processing.getUnions();
@@ -73,6 +77,17 @@ public class PostProcessing {
                 return true;
             }
         }
+    }
+
+    private boolean isThereImage(){
+        List<Rectangle2D> images = page.getImageBounds();
+
+        for(Rectangle2D image : images) {
+            if(table.getBox().intersects(image))
+                return true;
+        }
+
+        return false;
     }
 
     private class Processing {

@@ -244,7 +244,7 @@ public final class TableExtractor {
 
             recomposedDocument = recomposeDocument(originDocument);
 
-            if (extractTables(originDocument) && useDebug) {
+            /*if (extractTables(originDocument) && useDebug) {
                 File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
                 FileWriter fileWriter = new FileWriter(out);
                 List<Table> tables = new ArrayList<Table>();
@@ -253,7 +253,7 @@ public final class TableExtractor {
                 }
                 writeTables(tables, fileWriter, originDocument.getFileName());
                 fileWriter.close();
-            }
+            }*/
 
 
 
