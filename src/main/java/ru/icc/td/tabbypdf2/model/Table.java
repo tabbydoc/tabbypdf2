@@ -17,6 +17,9 @@ public class Table extends Rectangle2D.Float {
     }
 
     public Table(List<Block> blocks, Page page, Rectangle2D box) {
+        if(blocks.isEmpty())
+            return;
+
         this.blocks = blocks;
         this.page = page;
         setBlocks(box);
@@ -31,7 +34,9 @@ public class Table extends Rectangle2D.Float {
             if (block.intersects(box))
                 blocks.add(block);
         }
-        setAll();
+
+        if(blocks != null)
+            setAll();
     }
 
     public Rectangle2D getBox() {
@@ -43,6 +48,7 @@ public class Table extends Rectangle2D.Float {
         float minY = java.lang.Float.MAX_VALUE;
         float maxX = java.lang.Float.MIN_VALUE;
         float maxY = java.lang.Float.MIN_VALUE;
+        double square = 0;
 
         for (Block block : blocks) {
             if (block.x < minX)
@@ -56,11 +62,15 @@ public class Table extends Rectangle2D.Float {
 
             if (block.y + block.height > maxY)
                 maxY = block.y + block.height;
-        }
 
+            square = square + block.width*block.height;
+        }
+        double boxSquare = box.getHeight()*box.getWidth();
+        double r = square/boxSquare;
         Rectangle2D rectangle2D = new Rectangle2D.Float(minX, minY, maxX - minX, maxY - minY);
         this.blockBox = rectangle2D;
         setRect(rectangle2D.createUnion(box));
+        System.out.println(r);
     }
 
     public Page getPage() {

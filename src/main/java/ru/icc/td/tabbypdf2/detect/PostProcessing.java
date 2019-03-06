@@ -30,14 +30,14 @@ public class PostProcessing {
         return processTable();
     }
 
-    public Table getNewTable() {
+    public Table getTable() {
         return newTable;
     }
 
     private Table newTable;
 
     private boolean processTable() {
-        //TODO: разряжённые области
+        //TODO: разряжённые области; eu-012.pdf; eu-013.pdf; eu-027.pdf
 
         if(blocks.size() == 0 && isThereImage())
             return false;
@@ -50,11 +50,10 @@ public class PostProcessing {
             return false;
         } else {
             if (unions.size() == 1) {
-                //TODO: возвращать обновлённую таблицу
                 boolean exit = false;
-                List<Rectangle2D> uni;
+                List<Rectangle2D> uni = new ArrayList<>(unions);
                 List<Block> blocks = new ArrayList<>(this.blocks);
-
+                int previousSize;
                 do {
                     blocks.remove(0);
 
@@ -63,9 +62,11 @@ public class PostProcessing {
                         break;
                     }
 
+                    previousSize = uni.size();
+
                     Processing processing1 = new Processing(blocks);
                     uni = processing1.getUnions();
-                } while (uni.size() == 1);
+                } while (uni.size() == 1 || previousSize != uni.size());
 
                 if(!exit) {
                     this.newTable = new Table(blocks, table.getPage(), table.getBox());

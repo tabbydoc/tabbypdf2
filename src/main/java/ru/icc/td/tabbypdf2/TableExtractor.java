@@ -6,9 +6,7 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import ru.icc.td.tabbypdf2.config.AppConfig;
 import ru.icc.td.tabbypdf2.debug.DebuggingDrawer;
@@ -19,13 +17,11 @@ import ru.icc.td.tabbypdf2.detect.RcnnTableDetector;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Table;
-import ru.icc.td.tabbypdf2.out.Writer;
 import ru.icc.td.tabbypdf2.out.XmlWriter;
 import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.nio.file.*;
 import java.util.ArrayList;
@@ -213,7 +209,7 @@ public final class TableExtractor {
                 PostProcessing postProcessing = new PostProcessing(table);
 
                 if(postProcessing.isTable())
-                    page.addTable(postProcessing.getNewTable());
+                    page.addTable(postProcessing.getTable());
             }
         }
 
@@ -244,7 +240,7 @@ public final class TableExtractor {
 
             recomposedDocument = recomposeDocument(originDocument);
 
-            /*if (extractTables(originDocument) && useDebug) {
+            if (extractTables(originDocument) && useDebug) {
                 File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
                 FileWriter fileWriter = new FileWriter(out);
                 List<Table> tables = new ArrayList<Table>();
@@ -253,9 +249,7 @@ public final class TableExtractor {
                 }
                 writeTables(tables, fileWriter, originDocument.getFileName());
                 fileWriter.close();
-            }*/
-
-
+            }
 
             if (useDebug) {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
