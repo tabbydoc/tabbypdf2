@@ -3,22 +3,22 @@ package ru.icc.td.tabbypdf2.model;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.util.Precision;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Line extends Block {
-    private float space;
+    private double space;
 
     public Line(List<Word> words) {
         super(words);
-        space = calculateSpace();
+        this.space = calculateSpace();
     }
 
-    private float calculateSpace(){
+    private double calculateSpace(){
         Word wordI, wordJ;
         List<Word> words = super.getWords();
-        float w, space, averageWidth = 0, maxWidth = java.lang.Float.MIN_VALUE;
-        DescriptiveStatistics ds1 = new DescriptiveStatistics();
-        DescriptiveStatistics ds2 = new DescriptiveStatistics();
+        double w, space, maxWidth = java.lang.Float.MIN_VALUE;
+        DescriptiveStatistics ds = new DescriptiveStatistics();
 
         for(int i = 0; i < words.size(); i++) {
             space = super.width;
@@ -35,29 +35,25 @@ public class Line extends Block {
 
                 if(w < space && w > 0)
                     space = w;
-
             }
 
             maxWidth = Math.max(wordI.width, maxWidth);
-            //ds2.addValue(Precision.round(wordI.width, 1));
-            if(space < super.width) {
-                ds1.addValue(Precision.round(space, 1));
-            }
+
+            if(space < super.width)
+                ds.addValue(Precision.round(space, 1));
         }
 
-        maxWidth = Precision.round(maxWidth, 1);
-        space = (float) ds1.getMax();
-        //averageWidth = (float) Precision.round(ds2.getMean(), 0);
+        space = ds.getMax();
 
-        if(Precision.round(space, 0) > maxWidth)
+        if(space > maxWidth)
             space = super.getMaxSpaceWidth();
         else
-            space = (float) ds1.getMean();
+            space = ds.getMean();
 
         return space;
     }
 
-    public float getSpace() {
+    public double getSpace() {
         return space;
     }
 }

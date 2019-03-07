@@ -258,9 +258,13 @@ public final class TableExtractor {
 
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                if(originDocument != null)
+                    originDocument.close();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
         }
     }
 }
-
-
-

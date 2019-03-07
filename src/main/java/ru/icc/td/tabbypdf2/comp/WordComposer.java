@@ -166,6 +166,7 @@ public final class WordComposer {
                 "\u25CA", // lozenge
                 "\u2311", // square lozenge
                 "\u28EB", // black lozenge
+                "\uF0B7"
         };
     }
 

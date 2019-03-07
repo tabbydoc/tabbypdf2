@@ -307,7 +307,7 @@ public class BlockComposer {
                 blocks.remove(i);
 
                 float w = calculateSpace(blockI);
-                rectangle.setRect(blockI.x - w, blockI.y, blockI.width + 2*w, blockI.height);
+                rectangle.setRect(blockI.x - w, blockI.y, blockI.width + 2 * w, blockI.height);
 
                 float idI = blockI.getWords().get(0).getStartChunkID();
 
@@ -340,7 +340,7 @@ public class BlockComposer {
                 updatedBlocks.add(blockI);
             }
             blocks.addAll(updatedBlocks);
-        } while(hasSeparatedWords(updatedBlocks));
+         } while(hasSeparatedWords(updatedBlocks));
     }
 
     private boolean hasSeparatedWords(List<Block> blocks){
@@ -356,7 +356,7 @@ public class BlockComposer {
 
             float w = calculateSpace(blockI);
 
-            rectangle.setRect(blockI.x - w, blockI.y, blockI.width + w, blockI.height);
+            rectangle.setRect(blockI.x - w, blockI.y, blockI.width + 2 * w, blockI.height);
 
             float idI = blockI.getWords().get(0).getStartChunkID();
 
@@ -389,6 +389,18 @@ public class BlockComposer {
     private float calculateSpace(Block block){
         DescriptiveStatistics ds = new DescriptiveStatistics();
 
+        for(Line line : lines){
+            List<Word> words = line.getWords();
+            for(Word word : block.getWords()){
+                if(words.contains(word)){
+                    ds.addValue(line.getSpace());
+                    break;
+                }
+            }
+        }
+
+
+/*
         for (Word aWb : block.getWords()) {
 
             for (Line line : lines) {
@@ -397,7 +409,7 @@ public class BlockComposer {
                 if (lw.contains(aWb))
                     ds.addValue(line.getSpace());
             }
-        }
+        }*/
 
         return (float) ds.getMean();
     }

@@ -6,6 +6,7 @@ import ru.icc.td.tabbypdf2.model.Table;
 
 import java.awt.geom.Rectangle2D;
 import java.util.*;
+import java.util.function.Predicate;
 
 public class PostProcessing {
     private Table table;
@@ -37,7 +38,10 @@ public class PostProcessing {
     private Table newTable;
 
     private boolean processTable() {
-        //TODO: разряжённые области; eu-012.pdf; eu-013.pdf; eu-027.pdf
+        //TODO: не таблица, а подпись: eu-027.pdf
+        //TODO: абзацы: us-010.pdf;
+        //TODO: диаграммы: us-028.pdf вычислить отношение площадей?
+        //TODO: убрал таблицы: us-014.pdf
 
         if(blocks.size() == 0 && isThereImage())
             return false;
@@ -54,10 +58,11 @@ public class PostProcessing {
                 List<Rectangle2D> uni = new ArrayList<>(unions);
                 List<Block> blocks = new ArrayList<>(this.blocks);
                 int previousSize;
+
                 do {
                     blocks.remove(0);
 
-                    if(blocks.size() < 1) {
+                    if(blocks.size() < 1 || uni.size() == 0) {
                         exit = true;
                         break;
                     }
@@ -69,15 +74,38 @@ public class PostProcessing {
                 } while (uni.size() == 1 || previousSize != uni.size());
 
                 if(!exit) {
-                    this.newTable = new Table(blocks, table.getPage(), table.getBox());
+                    this.newTable = new Table(blocks, table.getPage());
+                    this.newTable.setColumns(uni);
                 }
 
                 return !exit;
             } else {
+                //TODO: разоразвало таблицу: us-037.pdf
+                //TODO: улучшить точности границы таблицы: us-018.pdf - абзацы под таблицей
+                //TODO: us-027.pdf - слишком большая граница. Зацепило абзац
+
                 this.newTable = table;
+                this.newTable.setColumns(unions);
                 return true;
             }
         }
+    }
+
+    private boolean isRelationLikeTable(){
+        Rectangle2D r = table.getBox();
+        double squareB = 0;
+        double squareR = r.getWidth() * r.getHeight();
+
+        for(Block block : blocks){
+            squareB = 0 + block.getWidth() * block.getHeight();
+        }
+
+        double relation = squareB/squareR;
+
+        if(relation < 0.02)
+            return false;
+
+        return true;
     }
 
     private boolean isThereImage(){
@@ -119,7 +147,6 @@ public class PostProcessing {
                 Rectangle2D r = new Rectangle2D.Double(blockI.getMinX(), blockI.getMinY(),
                         blockI.getWidth(), Math.abs(blockI.getMinY() - table.getBox().getMaxY()));
 
-
                 for (int k = 0; k < blocks.size(); k++) {
                     Block blockK = blocks.get(k);
 
@@ -159,7 +186,7 @@ public class PostProcessing {
 
                 for (int i = 1; i < list.size(); i++) {
                     Block block = list.get(i);
-                    union.createUnion(block);
+                    union.add(block);
                 }
 
                 unions.add(union);
@@ -189,77 +216,85 @@ public class PostProcessing {
         }
 
         private void processUnions() {
-
             List<Block> blocksI;
             List<Block> blocksJ;
+            List<Rectangle2D> buffer = new ArrayList<>();
 
             for (int i = 0; i < unions.size(); i++) {
                 Rectangle2D rectangleI = unions.get(i);
                 Rectangle2D rectangle1 = rectangleI;
                 blocksI = map.get(rectangleI);
 
-                for (int j = 0; j < unions.size(); j++) {
+                for (int j = 0; j < unions.size() && blocksI != null; j++) {
                     Rectangle2D rectangleJ = unions.get(j);
                     Rectangle2D rectangle2 = rectangleJ;
                     blocksJ = map.get(rectangleJ);
 
-                    if (rectangleI.equals(rectangleJ))
+                    if (rectangleI.equals(rectangleJ) || blocksJ == null)
                         continue;
 
                     if (rectangleI.intersects(rectangleJ)) {
-                        blocksI = map.get(rectangleI);
-                        blocksJ = map.get(rectangleJ);
-                        HashSet<Block> intersectedBlocks = new HashSet<>();
+                        List<Block> intersectedBlocks = new ArrayList<>();
+                        Rectangle2D rectangle = rectangleI.createIntersection(rectangleJ);
 
                         for (Block blockI : blocksI) {
-                            for (Block blockJ : blocksJ) {
-                                if (blockI.equals(blockJ))
-                                    continue;
-
-                                if (blockI.intersects(blockJ)) {
-                                    intersectedBlocks.add(blockI);
-                                    intersectedBlocks.add(blockJ);
-                                }
-                            }
+                            if (blockI.intersects(rectangle))
+                                intersectedBlocks.add(blockI);
                         }
 
-                        Rectangle2D rectangle;
+                        for (Block blockJ : blocksJ) {
+                            if (blockJ.intersects(rectangle) && !intersectedBlocks.contains(blockJ))
+                                intersectedBlocks.add(blockJ);
+                        }
 
-                        do {
-                            rectangle = rectangleI.createIntersection(rectangleJ);
+                        intersectedBlocks.sort(Comparator.comparing(Block::getWidth).reversed());
 
-                            for (Block block : intersectedBlocks) {
-                                if (block.getWidth() == rectangle.getWidth()) {
-                                    blocksI.remove(block);
-                                    blocksJ.remove(block);
+                        while (rectangle1.intersects(rectangle2) && intersectedBlocks.size() > 0) {
+                            Block block = intersectedBlocks.remove(0);
 
-                                    rectangle1 = union(blocksI);
-                                    rectangle2 = union(blocksJ);
+                            blocksI.remove(block);
+                            blocksJ.remove(block);
 
-                                    break;
-                                }
+                            if (blocksI.size() < 2 || blocksJ.size() < 2){
+                                break;
                             }
-                        } while (rectangleI.intersects(rectangleJ) && blocksI.size() != 0 && blocksJ.size() != 0);
+
+                            rectangle1 = union(blocksI);
+                            rectangle2 = union(blocksJ);
+                        }
                     }
+
+                    blocksI.sort(Comparator.comparing(Block::getMaxY).reversed());
                     blocksJ.sort(Comparator.comparing(Block::getMaxY).reversed());
+                    map.remove(rectangleI);
                     map.remove(rectangleJ);
-                    map.put(rectangle2, blocksJ);
+                    unions.remove(rectangleI);
                     unions.remove(rectangleJ);
-                    unions.add(rectangle2);
+                    i = -1;
+                    j = -1;
+
+                    if(rectangle1.intersects(rectangle2)){
+                        rectangle1.add(rectangle2);
+                        blocksI.addAll(blocksJ);
+                        map.put(rectangle1, blocksI);
+                        buffer.add(rectangle1);
+                    } else {
+                        buffer.add(rectangle2);
+                        map.put(rectangle1, blocksI);
+                        map.put(rectangle2, blocksJ);
+                        buffer.add(rectangle1);
+                    }
                 }
-                blocksI.sort(Comparator.comparing(Block::getMaxY).reversed());
-                map.remove(rectangleI);
-                map.put(rectangle1, blocksI);
-                unions.remove(rectangleI);
-                unions.add(rectangle1);
             }
+            this.unions = new ArrayList<>(buffer);
         }
 
         private Rectangle2D union(List<Block> blocks) {
             Rectangle2D rectangle = new Rectangle2D.Double();
+            rectangle.setRect(blocks.get(0));
 
-            for (Block block : blocks) {
-                rectangle.createUnion(block);
+            for (int i = 1; i < blocks.size(); i++) {
+                rectangle.add(blocks.get(i));
             }
 
             return rectangle;
