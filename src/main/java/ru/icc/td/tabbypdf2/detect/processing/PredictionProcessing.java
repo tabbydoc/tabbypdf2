@@ -1,5 +1,6 @@
 package ru.icc.td.tabbypdf2.detect.processing;
 
+import ru.icc.td.tabbypdf2.detect.processing.recognition.StructureRecognizer;
 import ru.icc.td.tabbypdf2.detect.processing.refinement.ParagraphRefinement;
 import ru.icc.td.tabbypdf2.detect.processing.refinement.Refinement;
 import ru.icc.td.tabbypdf2.detect.processing.verification.ImageVerification;
@@ -12,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PredictionProcessing {
-    private final StructureRecognition recognition = new StructureRecognition();
+    private final StructureRecognizer recognition = new StructureRecognizer();
     private final TableComposer tableComposer = new TableComposer();
     private final List<Verification> verifications = new ArrayList<>();
     private final List<Refinement> refinements = new ArrayList<>();
@@ -23,7 +24,7 @@ public class PredictionProcessing {
     }
 
     public boolean isTable(Prediction prediction) {
-        prediction = recognition.process(prediction);
+        prediction = recognition.recognize(prediction);
 
         for (Verification v : verifications) {
 

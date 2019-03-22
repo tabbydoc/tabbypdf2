@@ -211,15 +211,4 @@ public final class DebuggingDrawer {
             contentDrawer.strokeRectangle(table);
         }
     }
-
-    private void drawColumns(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        for (Table table: page.getTables()) {
-            List<Rectangle2D> r = table.getColumns();
-            if(r != null)
-                for(Rectangle2D rectangle : r) {
-                    contentDrawer.strokeRectangle(rectangle);
-                }
-        }
-    }
-
 }

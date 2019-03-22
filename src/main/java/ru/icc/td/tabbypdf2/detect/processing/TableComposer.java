@@ -6,7 +6,7 @@ import ru.icc.td.tabbypdf2.model.Table;
 final class TableComposer {
 
     Table composeTable(Prediction prediction) {
-        return new Table(prediction.getBlocks());
+        return new Table(prediction.getBlocks(), prediction.getPage());
     }
 
 }

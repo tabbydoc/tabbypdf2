@@ -2,6 +2,8 @@ package ru.icc.td.tabbypdf2.model;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -10,7 +12,7 @@ import java.util.List;
 public class Prediction extends Rectangle2D.Float {
     private Page page;
     private List<Block> blocks = new ArrayList<>();
-    private List<Graph<Block, DefaultEdge>> graphs = new ArrayList<>();
+    private Graph<Block, DefaultWeightedEdge> structure = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
     private boolean isTruthful;
 
     public Prediction(Rectangle2D prediction, Page page){
@@ -44,8 +46,8 @@ public class Prediction extends Rectangle2D.Float {
         return rectangle.getHeight() * rectangle.getWidth();
     }
 
-    public void setGraphs(List<Graph<Block, DefaultEdge>> graphs) {
-        this.graphs = graphs;
+    public void setStructure(Graph<Block, DefaultWeightedEdge> structure) {
+        this.structure = structure;
     }
 
     public void setTruthful(boolean truthful) {
@@ -58,5 +60,9 @@ public class Prediction extends Rectangle2D.Float {
 
     public List<Block> getBlocks() {
         return blocks;
+    }
+
+    public Page getPage() {
+        return page;
     }
 }

@@ -6,12 +6,14 @@ import java.util.List;
 
 public class Table extends Rectangle2D.Float {
     private List<Block> blocks = new ArrayList<>();
+    private Page page;
 
-    public Table(List<Block> blocks) {
+    public Table(List<Block> blocks, Page page) {
         if (blocks == null)
             return;
 
         this.blocks = blocks;
+        this.page = page;
 
         setAll();
     }
@@ -37,5 +39,9 @@ public class Table extends Rectangle2D.Float {
         }
 
         setRect(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    public Page getPage() {
+        return page;
     }
 }
