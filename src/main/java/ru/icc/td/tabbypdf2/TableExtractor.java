@@ -12,10 +12,16 @@ import ru.icc.td.tabbypdf2.config.AppConfig;
 import ru.icc.td.tabbypdf2.debug.DebuggingDrawer;
 import ru.icc.td.tabbypdf2.comp.DocumentComposer;
 import ru.icc.td.tabbypdf2.detect.PdfToImage;
-import ru.icc.td.tabbypdf2.detect.PostProcessing;
+import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
+import ru.icc.td.tabbypdf2.detect.processing.refinement.ParagraphRefinement;
+import ru.icc.td.tabbypdf2.detect.processing.refinement.Refinement;
+import ru.icc.td.tabbypdf2.detect.processing.verification.ImageVerification;
+import ru.icc.td.tabbypdf2.detect.processing.verification.ParagraphVerification;
+import ru.icc.td.tabbypdf2.detect.processing.verification.Verification;
 import ru.icc.td.tabbypdf2.detect.RcnnTableDetector;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
+import ru.icc.td.tabbypdf2.model.Prediction;
 import ru.icc.td.tabbypdf2.model.Table;
 import ru.icc.td.tabbypdf2.out.XmlWriter;
 import ru.icc.td.tabbypdf2.read.DocumentLoader;
@@ -180,6 +186,8 @@ public final class TableExtractor {
 
         PdfToImage pdfToImage = new PdfToImage(recomposedDocument.getSourceFile());
 
+        PredictionProcessing processing = new PredictionProcessing();
+
         List<Rectangle2D> tables;
         for (Page page: pages) {
             BufferedImage img = pdfToImage.getImageForPage(page.getIndex());
@@ -205,11 +213,11 @@ public final class TableExtractor {
             if (tables.isEmpty())
                 continue;
             for (Rectangle2D rect: tables) {
-                Table table = new Table(rect, page);
-                PostProcessing postProcessing = new PostProcessing(table);
+                Prediction prediction = new Prediction(rect, page);
 
-                if(postProcessing.isTable())
-                    page.addTable(postProcessing.getTable());
+                if(processing.isTable(prediction)) {
+                    page.addTable(processing.getTable());
+                }
             }
         }
 
