@@ -41,7 +41,7 @@ public class PredictionProcessing {
             }
         }
 
-        this.table = tableComposer.composeTable(prediction);
+        this.table = tableComposer.compose(prediction);
 
         return true;
     }

@@ -1,5 +1,6 @@
 package ru.icc.td.tabbypdf2.model;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,7 +21,7 @@ public class Block extends Rectangle2D.Float {
 
     public Block(List<Word> words) {
         this.words.addAll(words);
-        setAll() ;
+        setAll();
     }
 
     private void setAll() {
@@ -33,25 +34,25 @@ public class Block extends Rectangle2D.Float {
         float maxSpaceWidth = java.lang.Float.MIN_VALUE;
         float sumSpaceWidth = 0f;
 
-        for(Word word : words) {
-            if(word.x < minX)
+        for (Word word : words) {
+            if (word.x < minX)
                 minX = word.x;
 
-            if(word.x + word.width > maxX)
+            if (word.x + word.width > maxX)
                 maxX = word.x + word.width;
 
-            if(word.y < minY)
+            if (word.y < minY)
                 minY = word.y;
 
-            if(word.y + word.height > maxY)
+            if (word.y + word.height > maxY)
                 maxY = word.y + word.height;
 
             float spaceWidth = word.getAverageSpaceWidth();
 
-            if  (spaceWidth < minSpaceWidth)
+            if (spaceWidth < minSpaceWidth)
                 minSpaceWidth = spaceWidth;
 
-            if  (spaceWidth > maxSpaceWidth)
+            if (spaceWidth > maxSpaceWidth)
                 maxSpaceWidth = spaceWidth;
 
             sumSpaceWidth += spaceWidth;
@@ -68,7 +69,7 @@ public class Block extends Rectangle2D.Float {
         return words;
     }
 
-    public void addWords(Collection<Word> words){
+    public void addWords(Collection<Word> words) {
         this.words.addAll(words);
         setAll();
     }
@@ -93,5 +94,19 @@ public class Block extends Rectangle2D.Float {
 
     public float getAverageSpaceWidth() {
         return averageSpaceWidth;
+    }
+
+    // find the nearest blocks located in this direction
+    public List<Block> findTheNearestRelatively(List<Block> blocks, Direction direction) {
+        return findTheNearestBlocks(this, blocks, direction);
+    }
+
+    public static List<Block> findTheNearestBlocks(Block block, List<Block> blocks, Direction direction) {
+
+        return null;
+    }
+
+    public enum Direction {
+        NORTH, SOUTH, WEST, EAST
     }
 }

@@ -7,19 +7,18 @@ import java.util.Comparator;
 import java.util.List;
 
 class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>> {
-    private final List<Projection> projections = new ArrayList<>();
-    private final List<Block> blocks = new ArrayList<>();
+    private List<Projection> projections;
 
     @Override
     public List<Projection> recognize(List<Block> blocks) {
-        setAll(blocks);
-        refineProjections();
+        setProjections(blocks);
+        uniteProjections();
         setLevels();
 
         return projections;
     }
 
-    private void refineProjections() {
+    private void uniteProjections() {
         Projection pI;
         Projection pJ;
 
@@ -29,11 +28,7 @@ class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>>
             for (int j = 0; j < projections.size(); j++) {
                 pJ = projections.get(j);
 
-                if (pI.equals(pJ)) {
-                    continue;
-                }
-
-                if (pI.intersectsProjection(pJ)) {
+                if (!pI.equals(pJ) && pI.intersectsProjection(pJ)) {
                     pI = pI.createIntersection(pJ);
                     projections.remove(pJ);
                     j--;
@@ -52,10 +47,8 @@ class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>>
         }
     }
 
-    private void setAll(List<Block> blockList) {
-        projections.clear();
-        blocks.clear();
-        blocks.addAll(blockList);
+    private void setProjections(List<Block> blocks) {
+        projections = new ArrayList<>();
         blocks.sort(Comparator.comparing(Block::getMaxY).reversed().thenComparing(Block::getMinX));
         blocks.forEach(block -> projections.add(createProjection(block)));
     }
