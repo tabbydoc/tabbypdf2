@@ -5,45 +5,53 @@ import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 import ru.icc.td.tabbypdf2.model.Block;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 class GraphComposer {
-    private Graph<Block, DefaultWeightedEdge> graph;
+    private Graph<Block, DefaultWeightedEdge> graph = null;
     private List<Block> blocks;
     private List<Projection> projections;
     private List<Block> rootBlocks;
 
     Graph<Block, DefaultWeightedEdge> compose(List<Block> blocks, List<Projection> projections) {
+        if (blocks.isEmpty()) {
+            return graph;
+        }
+
         setAll(blocks, projections);
 
         rootBlocks.forEach(block -> {
             graph.addVertex(block);
-            addBlocks(block);
+
+            if (!this.blocks.isEmpty()) {
+                doNext(block);
+            }
         });
 
         return graph;
     }
 
-    private void addBlocks(Block block) {
-        List<Block> neighbours = block.findTheNearestRelatively(blocks, Block.Direction.SOUTH);
-        int level = Projection.getLevel(block, projections);
+    private void doNext(Block block) {
+        List<Block> neighbours = block.findNeighbours(blocks);
+        int level1 = Projection.getLevel(block, projections);
 
-        neighbours.forEach(neighbour -> {
-            int level1 = Projection.getLevel(neighbour, projections);
-            boolean isContained = graph.addVertex(neighbour);
+        for (int i = 0; i < neighbours.size(); i++) {
+            Block neighbour = neighbours.get(i);
+            int level2 = Projection.getLevel(neighbour, projections);
+            boolean isAdded = graph.addVertex(neighbour);
 
             DefaultWeightedEdge edge = graph.addEdge(block, neighbour);
-            graph.setEdgeWeight(edge, level1 - level);
+            graph.setEdgeWeight(edge, level2 - level1);
 
-            if(!isContained) {
-                addBlocks(neighbour);
+            if (isAdded) {
+                doNext(neighbour);
             }
-        });
+        }
     }
 
-    private void setAll(List<Block> blocks, List<Projection> projections) {
+    private void setAll(List<Block> blocks, List<Projection> projections) throws NoSuchElementException{
         graph = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
+
         setBlocks(blocks);
         setRootBlocks();
         setProjections(projections);
@@ -51,12 +59,32 @@ class GraphComposer {
 
     private void setRootBlocks() {
         rootBlocks = new ArrayList<>();
-        rootBlocks.addAll(Block.findTheNearestBlocks(null, blocks, Block.Direction.SOUTH));
+
+        Block block = getTopmostBlock();
+
+        rootBlocks.addAll(Block.findNeighbours(block, blocks));
         blocks.removeAll(rootBlocks);
+    }
+
+    private Block getTopmostBlock() {
+        Block block  = new Block();
+
+        double yMax = Collections.max(blocks, Comparator.comparing(Block::getMaxY)).getMaxY();
+        double xMin = Collections.min(blocks, Comparator.comparing(Block::getMinX)).getMinX();
+        double xMax = Collections.max(blocks, Comparator.comparing(Block::getMaxX)).getMaxX();
+
+        block.setRect(xMin, yMax, xMax - xMin, 0);
+
+        return block;
     }
 
     private void setBlocks(List<Block> blocks) {
         this.blocks = new ArrayList<>();
+
+        if(blocks.isEmpty()) {
+            throw new NoSuchElementException();
+        }
+
         this.blocks.addAll(blocks);
     }
 

@@ -5,6 +5,7 @@ import ru.icc.td.tabbypdf2.detect.processing.refinement.ParagraphRefinement;
 import ru.icc.td.tabbypdf2.detect.processing.refinement.Refinement;
 import ru.icc.td.tabbypdf2.detect.processing.verification.ImageVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.ParagraphVerification;
+import ru.icc.td.tabbypdf2.detect.processing.verification.StructureVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.Verification;
 import ru.icc.td.tabbypdf2.model.Prediction;
 import ru.icc.td.tabbypdf2.model.Table;
@@ -48,10 +49,11 @@ public class PredictionProcessing {
 
     private void setAll(){
         // Verifications
-        verifications.add(new ImageVerification());
-        verifications.add(new ParagraphVerification());
+        verifications.add(new StructureVerification());
+        // verifications.add(new ImageVerification());
+        // verifications.add(new ParagraphVerification());
         // Refinements
-        refinements.add(new ParagraphRefinement());
+        // refinements.add(new ParagraphRefinement());
     }
 
     public Table getTable() {

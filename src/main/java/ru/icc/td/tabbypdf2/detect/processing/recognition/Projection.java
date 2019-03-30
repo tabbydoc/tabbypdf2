@@ -14,6 +14,8 @@ class Projection {
     private float start;
     private float end;
 
+    Projection(){}
+
     Projection(float start, float end) {
         this(start, end, -1);
     }
@@ -45,13 +47,13 @@ class Projection {
                 0, projection.getStart(), 0, projection.getEnd());
         boolean hasMeaning = true;
 
-        if(areIntersected) {
+        /*if(areIntersected) {
             float start1 = projection.getStart();
             float length1 = projection.getLength();
             float length2 = getLength(end, start1);
 
-            hasMeaning = length2 / length1 >= 0.5;
-        }
+            //hasMeaning = length2 / length1 >= 0.5;
+        }*/
 
         return areIntersected && hasMeaning;
     }
@@ -91,4 +93,19 @@ class Projection {
         return Collections.max(getLevels(block, projections));
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+
+        if (obj instanceof Projection) {
+            Projection p = (Projection) obj;
+            return ((this.start == p.start) &&
+                    (this.end == p.end) &&
+                    (this.level == p.level));
+        }
+
+        return false;
+    }
 }

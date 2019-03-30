@@ -64,4 +64,8 @@ public class Prediction extends Rectangle2D.Float {
     public Page getPage() {
         return page;
     }
+
+    public Graph<Block, DefaultWeightedEdge> getStructure() {
+        return structure;
+    }
 }

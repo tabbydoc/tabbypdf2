@@ -3,10 +3,14 @@ package ru.icc.td.tabbypdf2.debug;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultWeightedEdge;
 import ru.icc.td.tabbypdf2.model.*;
 
 import java.awt.Color;
 import java.awt.geom.Rectangle2D;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -209,6 +213,37 @@ public final class DebuggingDrawer {
     private void drawTables(Page page, PDFContentDrawer contentDrawer) throws IOException {
         for (Table table: page.getTables()) {
             contentDrawer.strokeRectangle(table);
+        }
+    }
+
+    private void drawGraphs(Page page, PDFContentDrawer contentDrawer) throws IOException {
+        for (Table table : page.getTables()){
+            Graph<Block, DefaultWeightedEdge> graph = table.getStructure();
+            Set<Block> blocks = graph.vertexSet();
+
+            for (Block blockI : blocks) {
+
+                for (Block blockJ : blocks) {
+
+                    if(blockI.equals(blockJ)) {
+                        continue;
+                    }
+
+                    DefaultWeightedEdge edge = graph.getEdge(blockI, blockJ);
+
+                    if (edge != null){
+                        Point2D pointI = new Point2D.Double(blockI.getCenterX(), blockI.getCenterY());
+                        Point2D pointJ = new Point2D.Double(blockJ.getCenterX(), blockJ.getCenterY());
+                        Line2D line = new Line2D.Double();
+                        line.setLine(pointI, pointJ);
+
+                        contentDrawer.strokeLine(line);
+                        float x = (float) Math.abs(line.getX1() + line.getX2())/2;
+                        float y = (float) Math.abs(line.getY1() + line.getY2())/2;
+                        contentDrawer.showText(String.valueOf(graph.getEdgeWeight(edge)), x, y);
+                    }
+                }
+            }
         }
     }
 }

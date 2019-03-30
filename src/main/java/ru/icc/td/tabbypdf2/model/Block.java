@@ -1,10 +1,9 @@
 package ru.icc.td.tabbypdf2.model;
 
-import java.awt.*;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
+import java.util.function.Predicate;
 
 public class Block extends Rectangle2D.Float {
     private final List<Word> words;
@@ -18,6 +17,8 @@ public class Block extends Rectangle2D.Float {
     {
         words = new ArrayList<>(3000);
     }
+
+    public Block(){}
 
     public Block(List<Word> words) {
         this.words.addAll(words);
@@ -97,16 +98,57 @@ public class Block extends Rectangle2D.Float {
     }
 
     // find the nearest blocks located in this direction
-    public List<Block> findTheNearestRelatively(List<Block> blocks, Direction direction) {
-        return findTheNearestBlocks(this, blocks, direction);
+    public List<Block> findNeighbours(List<Block> blocks) {
+        return findNeighbours(this, blocks);
     }
 
-    public static List<Block> findTheNearestBlocks(Block block, List<Block> blocks, Direction direction) {
+    public static List<Block> findNeighbours(Block block, List<Block> blocks) {
+        List<Block> neighbours = new ArrayList<>();
+        Block blockI;
+        Block blockJ;
+        boolean isThereUp;
 
-        return null;
-    }
+        double yMin = Collections.min(blocks, Comparator.comparing(Block::getMinY)).getMinY();
 
-    public enum Direction {
-        NORTH, SOUTH, WEST, EAST
+        for (int i = 0; i < blocks.size(); i++) {
+            isThereUp = false;
+            blockI = blocks.get(i);
+
+            if (blockI.equals(block)) {
+                continue;
+            }
+
+            double xMin = Math.max(block.getMinX(), blockI.getMinX());
+            double xMax = Math.min(block.getMaxX(), blockI.getMaxX());
+
+            Rectangle2D rectangle2D = new Rectangle2D.Double(xMin, blockI.getMinY(),
+                    xMax - xMin, Math.abs(blockI.getMinY() - block.getMaxY()));
+
+            for (int j = 0; j < blocks.size(); j++) {
+                blockJ = blocks.get(j);
+
+                if (blockI.equals(blockJ) || blockJ.equals(block)) {
+                    continue;
+                }
+
+                if (rectangle2D.intersects(blockJ)) {
+                    isThereUp = true;
+                    break;
+                }
+
+            }
+
+            if (isThereUp) {
+                continue;
+            }
+
+            rectangle2D.setRect(block.getMinX(), yMin, block.getWidth(), Math.abs(block.getMaxY() - yMin));
+
+            if (blockI.intersects(rectangle2D) && !neighbours.contains(blockI)) {
+                neighbours.add(blockI);
+            }
+        }
+
+        return neighbours;
     }
 }

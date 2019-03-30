@@ -1,5 +1,9 @@
 package ru.icc.td.tabbypdf2.model;
 
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultWeightedEdge;
+import org.jgrapht.graph.SimpleDirectedWeightedGraph;
+
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,13 +11,15 @@ import java.util.List;
 public class Table extends Rectangle2D.Float {
     private List<Block> blocks = new ArrayList<>();
     private Page page;
+    private Graph<Block, DefaultWeightedEdge> structure = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
 
-    public Table(List<Block> blocks, Page page) {
+    public Table(List<Block> blocks, Page page, Graph<Block, DefaultWeightedEdge> structure) {
         if (blocks == null)
             return;
 
         this.blocks = blocks;
         this.page = page;
+        this.structure = structure;
 
         setAll();
     }
@@ -43,5 +49,9 @@ public class Table extends Rectangle2D.Float {
 
     public Page getPage() {
         return page;
+    }
+
+    public Graph<Block, DefaultWeightedEdge> getStructure() {
+        return structure;
     }
 }

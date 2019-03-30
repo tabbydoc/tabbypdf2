@@ -2,9 +2,7 @@ package ru.icc.td.tabbypdf2.detect.processing.recognition;
 
 import ru.icc.td.tabbypdf2.model.Block;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>> {
     private List<Projection> projections;
@@ -21,6 +19,7 @@ class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>>
     private void uniteProjections() {
         Projection pI;
         Projection pJ;
+        Set<Projection> pList = new HashSet<>();
 
         for (int i = 0; i < projections.size(); i++) {
             pI = projections.get(i);
@@ -28,18 +27,27 @@ class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>>
             for (int j = 0; j < projections.size(); j++) {
                 pJ = projections.get(j);
 
-                if (!pI.equals(pJ) && pI.intersectsProjection(pJ)) {
+                if (pI == pJ) {
+                    continue;
+                }
+
+                if (pI.intersectsProjection(pJ)) {
                     pI = pI.createIntersection(pJ);
                     projections.remove(pJ);
                     j--;
+                    i = -1;
                 }
             }
+            /*pList.add(pI);
+            projections.remove(pI);
+        }
+        projections = new ArrayList<>(pList);*/
         }
     }
 
     private void setLevels(){
         Projection p;
-        projections.sort(Comparator.comparing(Projection::getStart).reversed());
+        projections.sort(Comparator.comparing(Projection::getEnd).reversed());
 
         for (int i = 0; i < projections.size(); i++) {
             p = projections.get(i);
@@ -54,8 +62,8 @@ class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>>
     }
 
     private Projection createProjection(Block block) {
-        float y1 = block.y - block.height;
-        float y2 = block.y;
+        float y1 = block.y;
+        float y2 = block.y + block.height;
 
         return new Projection(y1, y2);
     }
