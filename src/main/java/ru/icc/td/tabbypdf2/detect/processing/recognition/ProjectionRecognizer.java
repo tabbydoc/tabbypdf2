@@ -19,7 +19,6 @@ class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>>
     private void uniteProjections() {
         Projection pI;
         Projection pJ;
-        Set<Projection> pList = new HashSet<>();
 
         for (int i = 0; i < projections.size(); i++) {
             pI = projections.get(i);
@@ -27,21 +26,13 @@ class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>>
             for (int j = 0; j < projections.size(); j++) {
                 pJ = projections.get(j);
 
-                if (pI == pJ) {
-                    continue;
-                }
-
-                if (pI.intersectsProjection(pJ)) {
+                if (pI != pJ && pI.intersectsProjection(pJ)) {
                     pI = pI.createIntersection(pJ);
                     projections.remove(pJ);
                     j--;
                     i = -1;
                 }
             }
-            /*pList.add(pI);
-            projections.remove(pI);
-        }
-        projections = new ArrayList<>(pList);*/
         }
     }
 

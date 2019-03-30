@@ -97,7 +97,6 @@ public class Block extends Rectangle2D.Float {
         return averageSpaceWidth;
     }
 
-    // find the nearest blocks located in this direction
     public List<Block> findNeighbours(List<Block> blocks) {
         return findNeighbours(this, blocks);
     }
