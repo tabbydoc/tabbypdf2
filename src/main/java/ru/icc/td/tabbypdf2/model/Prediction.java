@@ -17,28 +17,60 @@ public class Prediction extends Rectangle2D.Float {
     public Prediction(Rectangle2D prediction, Page page){
         this.page = page;
         setRect(prediction);
+        setPageBlocks(page);
         setBlocks();
         setTruthful(true);
     }
 
+    private List<Block> pageBlocks;
+
     private void setBlocks() {
-        List<Block> pageBlocks = new ArrayList<>(page.getBlocks());
         Rectangle2D rectangle = getBounds2D();
 
-        for (Block block : pageBlocks) {
+        for (int i = 0; i < pageBlocks.size(); i++) {
+            Block block = pageBlocks.get(i);
 
             if (block.intersects(rectangle)) {
                 Rectangle2D intersection = block.createIntersection(rectangle);
                 double square1 = square(intersection);
                 double square2 = square(block);
 
-                if (square1/square2 >= 0.5) {
+                if (square1 / square2 >= 0.5) {
                     blocks.add(block);
+                    pageBlocks.remove(block);
+                    i--;
+                    setAll();
+                    setBlocks();
                 }
-            } // end of first condition
+            }
+        }
+    }
 
-        } // end of cycle
+    private void setAll() {
+        float minX = java.lang.Float.MAX_VALUE;
+        float minY = java.lang.Float.MAX_VALUE;
+        float maxX = java.lang.Float.MIN_VALUE;
+        float maxY = java.lang.Float.MIN_VALUE;
 
+        for (Block block : blocks) {
+            if (block.x < minX)
+                minX = block.x;
+
+            if (block.x + block.width > maxX)
+                maxX = block.x + block.width;
+
+            if (block.y < minY)
+                minY = block.y;
+
+            if (block.y + block.height > maxY)
+                maxY = block.y + block.height;
+        }
+
+        setRect(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    private void setPageBlocks(Page page) {
+        this.pageBlocks = new ArrayList<>(page.getBlocks());
     }
 
     private double square(Rectangle2D rectangle){
