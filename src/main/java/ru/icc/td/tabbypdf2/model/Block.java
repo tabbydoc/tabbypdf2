@@ -1,9 +1,7 @@
 package ru.icc.td.tabbypdf2.model;
 
-import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
-import java.util.function.Predicate;
 
 public class Block extends Rectangle2D.Float {
     private final List<Word> words;
@@ -11,8 +9,6 @@ public class Block extends Rectangle2D.Float {
     private float minSpaceWidth = 0f;
     private float maxSpaceWidth = 0f;
     private float averageSpaceWidth = 0f;
-
-    private Page page;
 
     {
         words = new ArrayList<>(3000);
