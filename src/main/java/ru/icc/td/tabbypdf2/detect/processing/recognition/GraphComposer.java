@@ -8,14 +8,14 @@ import ru.icc.td.tabbypdf2.model.Block;
 import java.util.*;
 
 class GraphComposer {
-    private Graph<Block, DefaultWeightedEdge> graph = null;
+    private Graph<Block, DefaultWeightedEdge> graph;
     private List<Block> blocks;
     private List<Projection> projections;
     private List<Block> rootBlocks;
 
     Graph<Block, DefaultWeightedEdge> compose(List<Block> blocks, List<Projection> projections) {
         if (blocks.isEmpty()) {
-            return graph;
+            return null;
         }
 
         setAll(blocks, projections);
