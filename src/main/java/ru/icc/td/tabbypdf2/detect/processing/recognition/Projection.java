@@ -14,8 +14,6 @@ class Projection {
     private float start;
     private float end;
 
-    Projection(){}
-
     Projection(float start, float end) {
         this(start, end, -1);
     }
@@ -43,19 +41,8 @@ class Projection {
     }
 
     public boolean intersectsProjection(Projection projection){
-        boolean areIntersected = Line2D.linesIntersect(0, start, 0, end,
+        return Line2D.linesIntersect(0, start, 0, end,
                 0, projection.getStart(), 0, projection.getEnd());
-        boolean hasMeaning = true;
-
-        /*if(areIntersected) {
-            float start1 = projection.getStart();
-            float length1 = projection.getLength();
-            float length2 = getLength(end, start1);
-
-            //hasMeaning = length2 / length1 >= 0.5;
-        }*/
-
-        return areIntersected && hasMeaning;
     }
 
     public Projection createIntersection(Projection projection){
@@ -63,14 +50,6 @@ class Projection {
         float end = Math.min(getEnd(), projection.getEnd());
 
         return new Projection(start, end);
-    }
-
-    public float getLength() {
-        return getLength(start, end);
-    }
-
-    private float getLength(float start, float end){
-        return Math.abs(start -= end);
     }
 
     private static Set<Integer> getLevels(Block block, List<Projection> projections){
