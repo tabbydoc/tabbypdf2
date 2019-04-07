@@ -25,6 +25,10 @@ public class PredictionProcessing {
     }
 
     public boolean isTable(Prediction prediction) {
+        if (prediction == null) {
+            return false;
+        }
+
         prediction = recognition.recognize(prediction);
 
         for (Verification v : verifications) {
@@ -49,7 +53,7 @@ public class PredictionProcessing {
 
     private void setAll(){
         // Verifications
-        verifications.add(new StructureVerification());
+        // verifications.add(new StructureVerification());
         // verifications.add(new ImageVerification());
         // verifications.add(new ParagraphVerification());
         // Refinements

@@ -219,7 +219,16 @@ public final class DebuggingDrawer {
     private void drawGraphs(Page page, PDFContentDrawer contentDrawer) throws IOException {
         for (Table table : page.getTables()){
             Graph<Block, DefaultWeightedEdge> graph = table.getStructure();
+
+            if (graph == null) {
+                return;
+            }
+
             Set<Block> blocks = graph.vertexSet();
+
+            if (blocks == null) {
+                return;
+            }
 
             for (Block blockI : blocks) {
 
@@ -231,7 +240,7 @@ public final class DebuggingDrawer {
 
                     DefaultWeightedEdge edge = graph.getEdge(blockI, blockJ);
 
-                    if (edge != null){
+                    if (edge != null) {
                         Point2D pointI = new Point2D.Double(blockI.getCenterX(), blockI.getCenterY());
                         Point2D pointJ = new Point2D.Double(blockJ.getCenterX(), blockJ.getCenterY());
                         Line2D line = new Line2D.Double();
