@@ -12,11 +12,19 @@ public class StructureVerification implements Verification {
     @Override
     public boolean verify(Prediction prediction) {
         Graph<Block, DefaultWeightedEdge> graph = prediction.getStructure();
+
+        if (graph == null) {
+            return false;
+        }
+
         Set<Block> vertexes = graph.vertexSet();
         Set<DefaultWeightedEdge> edges = graph.edgeSet();
 
-        return ((prediction.getStructure() != null) &&
-                !vertexes.isEmpty() &&
+        if (vertexes == null || edges == null) {
+            return false;
+        }
+
+        return (!vertexes.isEmpty() &&
                 !edges.isEmpty());
     }
 }
