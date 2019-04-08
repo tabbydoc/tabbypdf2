@@ -53,8 +53,8 @@ public class PredictionProcessing {
 
     private void setAll(){
         // Verifications
-        // verifications.add(new StructureVerification());
-        // verifications.add(new ImageVerification());
+        verifications.add(new StructureVerification());
+        verifications.add(new ImageVerification());
         // verifications.add(new ParagraphVerification());
         // Refinements
         // refinements.add(new ParagraphRefinement());
