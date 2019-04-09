@@ -25,7 +25,12 @@ public class ParagraphRefinement implements Refinement {
             }
         }
 
-        prediction.setTruthful(true);
+        if (structureVerification.verify(prediction)) {
+            prediction.setTruthful(true);
+            return prediction;
+        }
+
+        prediction.setTruthful(false);
         return prediction;
     }
 

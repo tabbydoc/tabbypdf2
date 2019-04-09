@@ -1,14 +1,17 @@
 package ru.icc.td.tabbypdf2.comp;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-import org.apache.commons.math3.util.Precision;
-import ru.icc.td.tabbypdf2.model.*;
+import ru.icc.td.tabbypdf2.model.Block;
+import ru.icc.td.tabbypdf2.model.Line;
+import ru.icc.td.tabbypdf2.model.Page;
+import ru.icc.td.tabbypdf2.model.Word;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Rectangle2D;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class BlockComposer {
     private Page page;
@@ -389,15 +392,20 @@ public class BlockComposer {
     private float calculateSpace(Block block){
         DescriptiveStatistics ds = new DescriptiveStatistics();
 
-        for(Line line : lines){
+        for (Word word : block.getWords()) {
+            ds.addValue(word.getAverageSpaceWidth());
+        }
+
+        /*for(Line line : lines){
             List<Word> words = line.getWords();
             for(Word word : block.getWords()){
                 if(words.contains(word)){
-                    ds.addValue(line.getSpace());
+                    //ds.addValue(line.getSpace());
+                    ds.addValue(word.getAverageSpaceWidth());
                     break;
                 }
             }
-        }
+        }*/
 
 
 /*
