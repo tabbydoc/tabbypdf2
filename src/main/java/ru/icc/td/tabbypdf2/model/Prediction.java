@@ -3,6 +3,7 @@ package ru.icc.td.tabbypdf2.model;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
+import ru.icc.td.tabbypdf2.detect.processing.recognition.StructureRecognizer;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -99,5 +100,16 @@ public class Prediction extends Rectangle2D.Float {
 
     public Graph<Block, DefaultWeightedEdge> getStructure() {
         return structure;
+    }
+
+    public void removeBlock(Block block) {
+        blocks.remove(block);
+        setAll();
+        updateStructure();
+    }
+
+    private void updateStructure() {
+        StructureRecognizer structureRecognizer = new StructureRecognizer();
+        structureRecognizer.recognize(this);
     }
 }
