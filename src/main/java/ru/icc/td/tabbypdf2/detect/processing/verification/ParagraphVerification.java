@@ -6,12 +6,17 @@ import ru.icc.td.tabbypdf2.model.Block;
 import ru.icc.td.tabbypdf2.model.Prediction;
 
 public class ParagraphVerification implements Verification {
+    private final StructureVerification verification = new StructureVerification();
 
     @Override
     public boolean verify(Prediction prediction) {
-        ConnectivityInspector<Block, DefaultWeightedEdge> inspector =
-                new ConnectivityInspector<>(prediction.getStructure());
+        if (verification.verify(prediction)) {
+            ConnectivityInspector<Block, DefaultWeightedEdge> inspector =
+                    new ConnectivityInspector<>(prediction.getStructure());
 
-        return !inspector.isConnected();
+            return !inspector.isConnected();
+        } else {
+            return false;
+        }
     }
 }

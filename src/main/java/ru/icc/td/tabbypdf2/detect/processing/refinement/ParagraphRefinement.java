@@ -43,7 +43,10 @@ public class ParagraphRefinement implements Refinement {
 
         block.setRect(xMin, yMax, xMax - xMin, 0);
         Block root = Block.findNeighbours(block, prediction.getBlocks()).get(0);
-
         prediction.removeBlock(root);
+
+        Block block1 = Collections.min(prediction.getBlocks(), Comparator.comparingDouble(Block::getMinY));
+        prediction.removeBlock(block1);
+
     }
 }
