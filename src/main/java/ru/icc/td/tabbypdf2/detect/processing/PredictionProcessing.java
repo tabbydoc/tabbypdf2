@@ -3,6 +3,7 @@ package ru.icc.td.tabbypdf2.detect.processing;
 import ru.icc.td.tabbypdf2.detect.processing.recognition.StructureRecognizer;
 import ru.icc.td.tabbypdf2.detect.processing.refinement.ParagraphRefinement;
 import ru.icc.td.tabbypdf2.detect.processing.refinement.Refinement;
+import ru.icc.td.tabbypdf2.detect.processing.verification.DiagramVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.ImageVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.StructureVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.Verification;
@@ -54,6 +55,7 @@ public class PredictionProcessing {
         // Verifications
         verifications.add(new StructureVerification());
         verifications.add(new ImageVerification());
+        verifications.add(new DiagramVerification());
         // verifications.add(new ParagraphVerification());
         // Refinements
         refinements.add(new ParagraphRefinement());
