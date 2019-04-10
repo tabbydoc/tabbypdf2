@@ -296,7 +296,8 @@ public class BlockComposer {
     private void unionSeparatedWords(){
         Block blockI;
         Block blockJ;
-        Rectangle2D.Float rectangle = new Rectangle2D.Float();
+        Rectangle2D.Float rectangleI = new Rectangle2D.Float();
+        Rectangle2D.Float rectangleJ = new Rectangle2D.Float();
 
         do {
             updatedBlocks.clear();
@@ -310,7 +311,7 @@ public class BlockComposer {
                 blocks.remove(i);
 
                 float w = calculateSpace(blockI);
-                rectangle.setRect(blockI.x - w, blockI.y, blockI.width + 2 * w, blockI.height);
+                rectangleI.setRect(blockI.x - w, blockI.y, blockI.width + 2 * w, blockI.height);
 
                 float idI = blockI.getWords().get(0).getStartChunkID();
 
@@ -333,7 +334,11 @@ public class BlockComposer {
                             isThereLine2D(blockI, blockJ, page.getRulings(), VERTICAL);
                     boolean isCursorTrace = isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL);
 
-                    if (rectangle.intersects(blockJ) && areIdsEqual && !isRuling && !isCursorTrace) {
+                    float w1 = calculateSpace(blockI);
+
+                    rectangleJ.setRect(blockI.x - w1, blockI.y, blockI.width + 2 * w1, blockI.height);
+
+                    if (rectangleI.intersects(rectangleJ) && areIdsEqual && !isRuling && !isCursorTrace) {
                         blocks.remove(j);
                         j--;
                         i = -1;
@@ -349,7 +354,8 @@ public class BlockComposer {
     private boolean hasSeparatedWords(List<Block> blocks){
         Block blockI;
         Block blockJ;
-        Rectangle2D.Float rectangle = new Rectangle2D.Float();
+        Rectangle2D.Float rectangleI = new Rectangle2D.Float();
+        Rectangle2D.Float rectangleJ = new Rectangle2D.Float();
 
         for (int i = 0; i < blocks.size(); i++) {
             blockI = blocks.get(i);
@@ -359,7 +365,7 @@ public class BlockComposer {
 
             float w = calculateSpace(blockI);
 
-            rectangle.setRect(blockI.x - w, blockI.y, blockI.width + 2 * w, blockI.height);
+            rectangleI.setRect(blockI.x - w, blockI.y, blockI.width + 2 * w, blockI.height);
 
             float idI = blockI.getWords().get(0).getStartChunkID();
 
@@ -381,7 +387,11 @@ public class BlockComposer {
                         isThereLine2D(blockI, blockJ, page.getRulings(), VERTICAL);
                 boolean isCursorTrace = isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL);
 
-                if (rectangle.intersects(blockJ) && areIdsEqual && !isRuling && !isCursorTrace) {
+                float w1 = calculateSpace(blockI);
+
+                rectangleJ.setRect(blockI.x - w1, blockI.y, blockI.width + 2 * w1, blockI.height);
+
+                if (rectangleI.intersects(rectangleJ) && areIdsEqual && !isRuling && !isCursorTrace) {
                    return true;
                 }
             }
