@@ -10,7 +10,6 @@ import java.util.Set;
 public class ParagraphVerification implements Verification {
     private final StructureVerification verification = new StructureVerification();
 
-    //TODO: check amount of 1-size sets
     @Override
     public boolean verify(Prediction prediction) {
         if (verification.verify(prediction)) {

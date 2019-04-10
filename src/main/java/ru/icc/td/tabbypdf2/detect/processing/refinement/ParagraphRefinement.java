@@ -49,6 +49,5 @@ public class ParagraphRefinement implements Refinement {
         if (prediction.getStructure().inDegreeOf(block1) > 1 && prediction.getStructure().outDegreeOf(block1) == 0) {
             prediction.removeBlock(block1);
         }
-
     }
 }
