@@ -16,7 +16,7 @@ public class DiagramVerification implements Verification {
         for (DefaultWeightedEdge edge : structure.edgeSet()) {
             ds.addValue(structure.getEdgeWeight(edge));
         }
-        System.out.printf("Mean %f, Page %d\n", ds.getMean(), prediction.getPage().getIndex());
+        //System.out.printf("Mean %f, Page %d\n", ds.getMean(), prediction.getPage().getIndex());
         return ds.getMean() <= 1.5f && ds.getMean() >= 1f;
     }
 }
