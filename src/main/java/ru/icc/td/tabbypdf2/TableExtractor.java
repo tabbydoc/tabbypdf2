@@ -8,12 +8,12 @@ import org.kohsuke.args4j.Option;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
+import ru.icc.td.tabbypdf2.comp.DocumentComposer;
 import ru.icc.td.tabbypdf2.config.AppConfig;
 import ru.icc.td.tabbypdf2.debug.DebuggingDrawer;
-import ru.icc.td.tabbypdf2.comp.DocumentComposer;
 import ru.icc.td.tabbypdf2.detect.PdfToImage;
-import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
 import ru.icc.td.tabbypdf2.detect.RcnnTableDetector;
+import ru.icc.td.tabbypdf2.detect.processing.PredictionInspector;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Prediction;
@@ -23,8 +23,11 @@ import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.nio.file.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -181,7 +184,7 @@ public final class TableExtractor {
 
         PdfToImage pdfToImage = new PdfToImage(recomposedDocument.getSourceFile());
 
-        PredictionProcessing processing = new PredictionProcessing();
+        PredictionInspector processing = new PredictionInspector();
 
         List<Rectangle2D> tables;
         for (Page page: pages) {
@@ -210,7 +213,7 @@ public final class TableExtractor {
             for (Rectangle2D rect: tables) {
                 Prediction prediction = new Prediction(rect, page);
 
-                if(processing.isTable(prediction)) {
+                if (processing.inspect(prediction)) {
                     page.addTable(processing.getTable());
                 }
             }
@@ -243,7 +246,7 @@ public final class TableExtractor {
 
             recomposedDocument = recomposeDocument(originDocument);
 
-            if (extractTables(originDocument) && useDebug) {
+            if (extractTables(originDocument) && useDebug && AppConfig.isUseANNModel()) {
                 File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
                 FileWriter fileWriter = new FileWriter(out);
                 List<Table> tables = new ArrayList<Table>();

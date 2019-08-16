@@ -2,29 +2,31 @@ package ru.icc.td.tabbypdf2.detect.processing;
 
 import ru.icc.td.tabbypdf2.detect.processing.recognition.StructureRecognizer;
 import ru.icc.td.tabbypdf2.detect.processing.refinement.ParagraphRefinement;
-import ru.icc.td.tabbypdf2.detect.processing.refinement.Refinement;
 import ru.icc.td.tabbypdf2.detect.processing.verification.DiagramVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.ImageVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.StructureVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.Verification;
+import ru.icc.td.tabbypdf2.interfaces.Inspector;
+import ru.icc.td.tabbypdf2.interfaces.Refinement;
 import ru.icc.td.tabbypdf2.model.Prediction;
 import ru.icc.td.tabbypdf2.model.Table;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class PredictionProcessing {
+public class PredictionInspector implements Inspector<Prediction> {
     private final StructureRecognizer recognition = new StructureRecognizer();
     private final TableComposer tableComposer = new TableComposer();
     private final List<Verification> verifications = new ArrayList<>();
-    private final List<Refinement> refinements = new ArrayList<>();
+    private final List<Refinement<Prediction>> refinements = new ArrayList<Refinement<Prediction>>();
     private Table table = null;
 
-    public PredictionProcessing() {
+    public PredictionInspector() {
         setAll();
     }
 
-    public boolean isTable(Prediction prediction) {
+    @Override
+    public boolean inspect(Prediction prediction) {
         if (prediction == null) {
             return false;
         }
@@ -38,8 +40,8 @@ public class PredictionProcessing {
             }
         }
 
-        for (Refinement r : refinements) {
-            prediction = r.refine(prediction);
+        for (Refinement<Prediction> r : refinements) {
+            r.refine(prediction);
 
             if (!prediction.isTruthful()) {
                 return false;

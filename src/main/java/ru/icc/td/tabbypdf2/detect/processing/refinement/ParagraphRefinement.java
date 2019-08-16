@@ -2,18 +2,19 @@ package ru.icc.td.tabbypdf2.detect.processing.refinement;
 
 import ru.icc.td.tabbypdf2.detect.processing.verification.ParagraphVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.StructureVerification;
+import ru.icc.td.tabbypdf2.interfaces.Refinement;
 import ru.icc.td.tabbypdf2.model.Block;
 import ru.icc.td.tabbypdf2.model.Prediction;
 
 import java.util.Collections;
 import java.util.Comparator;
 
-public class ParagraphRefinement implements Refinement {
+public class ParagraphRefinement implements Refinement<Prediction> {
     private final ParagraphVerification paragraphVerification = new ParagraphVerification();
     private final StructureVerification structureVerification = new StructureVerification();
 
     @Override
-    public Prediction refine(Prediction prediction) {
+    public void refine(Prediction prediction) {
 
         while (!paragraphVerification.verify(prediction)) {
 
@@ -21,17 +22,16 @@ public class ParagraphRefinement implements Refinement {
                 removeTopmost(prediction);
             } else {
                 prediction.setTruthful(false);
-                return prediction;
+                return;
             }
         }
 
         if (structureVerification.verify(prediction)) {
             prediction.setTruthful(true);
-            return prediction;
+            return;
         }
 
         prediction.setTruthful(false);
-        return prediction;
     }
 
     private void removeTopmost(Prediction prediction) {

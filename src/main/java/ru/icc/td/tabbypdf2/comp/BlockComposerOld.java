@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class BlockComposer {
+public class BlockComposerOld {
     private Page page;
     private final int VERTICAL = 0;
     private final int HORIZONTAL = 1;

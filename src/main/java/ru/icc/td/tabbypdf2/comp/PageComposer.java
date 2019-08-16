@@ -1,5 +1,6 @@
 package ru.icc.td.tabbypdf2.comp;
 
+import ru.icc.td.tabbypdf2.comp.block.BlockComposer;
 import ru.icc.td.tabbypdf2.model.Page;
 
 public class PageComposer {
@@ -14,7 +15,7 @@ public class PageComposer {
 
         wordComposer.composeWords(page);
         lineComposer.composeLines(page);
-        blockComposer.composeBlocks(page);
+        blockComposer.compose(page);
         interColumnGapExtractor.composeGaps(page);
     }
 }
