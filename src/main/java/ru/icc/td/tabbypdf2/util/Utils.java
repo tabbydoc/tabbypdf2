@@ -1,5 +1,16 @@
 package ru.icc.td.tabbypdf2.util;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
+import org.opencv.imgcodecs.Imgcodecs;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
@@ -11,21 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
-import java.util.*;
 import java.util.List;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.rendering.ImageType;
-import org.apache.pdfbox.rendering.PDFRenderer;
-import org.apache.pdfbox.tools.PDFToImage;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.imgcodecs.Imgcodecs;
-
-import javax.imageio.ImageIO;
+import java.util.*;
 
 public class Utils {
 
@@ -197,12 +195,12 @@ public class Utils {
         return rv;
     }
 
-    public static void snapPoints(List<? extends Line2D.Float> rulings, float xThreshold, float yThreshold) {
+    public static void snapPoints(List<? extends Line2D.Double> rulings, double xThreshold, double yThreshold) {
 
         // collect points and keep a Line -> p1,p2 map
-        Map<Line2D.Float, Point2D[]> linesToPoints = new HashMap<>();
+        Map<Line2D.Double, Point2D[]> linesToPoints = new HashMap<>();
         List<Point2D> points = new ArrayList<>();
-        for (Line2D.Float r : rulings) {
+        for (Line2D.Double r : rulings) {
             Point2D p1 = r.getP1();
             Point2D p2 = r.getP2();
             linesToPoints.put(r, new Point2D[]{p1, p2});
@@ -219,14 +217,14 @@ public class Utils {
         });
 
         List<List<Point2D>> groupedPoints = new ArrayList<>();
-        groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{points.get(0)})));
+        groupedPoints.add(new ArrayList<>(Arrays.asList(points.get(0))));
 
         for (Point2D p : points.subList(1, points.size() - 1)) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
             if (Math.abs(p.getX() - last.get(0).getX()) < xThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
             } else {
-                groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{p})));
+                groupedPoints.add(new ArrayList<>(Arrays.asList(p)));
             }
         }
 
@@ -251,14 +249,14 @@ public class Utils {
         });
 
         groupedPoints = new ArrayList<>();
-        groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{points.get(0)})));
+        groupedPoints.add(new ArrayList<>(Arrays.asList(points.get(0))));
 
         for (Point2D p : points.subList(1, points.size() - 1)) {
             List<Point2D> last = groupedPoints.get(groupedPoints.size() - 1);
             if (Math.abs(p.getY() - last.get(0).getY()) < yThreshold) {
                 groupedPoints.get(groupedPoints.size() - 1).add(p);
             } else {
-                groupedPoints.add(new ArrayList<>(Arrays.asList(new Point2D[]{p})));
+                groupedPoints.add(new ArrayList<>(Arrays.asList(p)));
             }
         }
 
@@ -275,7 +273,7 @@ public class Utils {
         // ---
 
         // finally, modify lines
-        for (Map.Entry<Line2D.Float, Point2D[]> ltp : linesToPoints.entrySet()) {
+        for (Map.Entry<Line2D.Double, Point2D[]> ltp : linesToPoints.entrySet()) {
             Point2D[] p = ltp.getValue();
             ltp.getKey().setLine(p[0], p[1]);
         }

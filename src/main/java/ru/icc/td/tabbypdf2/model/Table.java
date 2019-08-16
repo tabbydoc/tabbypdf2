@@ -8,7 +8,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Table extends Rectangle2D.Float {
+public class Table extends Rectangle2D.Double {
     private List<Block> blocks = new ArrayList<>();
     private Page page;
     private Graph<Block, DefaultWeightedEdge> structure = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
@@ -25,10 +25,10 @@ public class Table extends Rectangle2D.Float {
     }
 
     private void setAll() {
-        float minX = java.lang.Float.MAX_VALUE;
-        float minY = java.lang.Float.MAX_VALUE;
-        float maxX = java.lang.Float.MIN_VALUE;
-        float maxY = java.lang.Float.MIN_VALUE;
+        double minX = java.lang.Double.MAX_VALUE;
+        double minY = java.lang.Double.MAX_VALUE;
+        double maxX = java.lang.Double.MIN_VALUE;
+        double maxY = java.lang.Double.MIN_VALUE;
 
         for (Block block : blocks) {
             if (block.x < minX)

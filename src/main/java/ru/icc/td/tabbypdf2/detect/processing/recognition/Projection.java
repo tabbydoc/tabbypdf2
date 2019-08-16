@@ -11,14 +11,14 @@ import java.util.Set;
 class Projection {
 
     private int level;
-    private float start;
-    private float end;
+    private double start;
+    private double end;
 
-    Projection(float start, float end) {
+    Projection(double start, double end) {
         this(start, end, -1);
     }
 
-    private Projection(float start, float end, int level) {
+    private Projection(double start, double end, int level) {
         this.start = start;
         this.end = end;
         setLevel(level);
@@ -32,11 +32,11 @@ class Projection {
         this.level = level;
     }
 
-    public float getStart(){
+    public double getStart() {
         return start;
     }
 
-    public float getEnd(){
+    public double getEnd() {
         return end;
     }
 
@@ -46,8 +46,8 @@ class Projection {
     }
 
     public Projection createIntersection(Projection projection){
-        float start = Math.max(getStart(), projection.getStart());
-        float end = Math.min(getEnd(), projection.getEnd());
+        double start = Math.max(getStart(), projection.getStart());
+        double end = Math.min(getEnd(), projection.getEnd());
 
         return new Projection(start, end);
     }

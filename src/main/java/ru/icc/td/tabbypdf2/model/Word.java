@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public final class Word extends Rectangle2D.Float {
+public final class Word extends Rectangle2D.Double {
 
     private final List<CharPosition> charPositions;
     private final Set<Font> fonts;

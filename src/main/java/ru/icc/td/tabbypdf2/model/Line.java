@@ -3,7 +3,6 @@ package ru.icc.td.tabbypdf2.model;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.commons.math3.util.Precision;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Line extends Block {
@@ -17,13 +16,13 @@ public class Line extends Block {
     private double calculateSpace(){
         Word wordI, wordJ;
         List<Word> words = super.getWords();
-        double w, space, maxWidth = java.lang.Float.MIN_VALUE;
+        double w, space, maxWidth = java.lang.Double.MIN_VALUE;
         DescriptiveStatistics ds = new DescriptiveStatistics();
 
         for(int i = 0; i < words.size(); i++) {
             space = super.width;
             wordI = words.get(i);
-            float xI = wordI.x + wordI.width;
+            double xI = wordI.x + wordI.width;
 
             for(int j = 0; j < words.size(); j++){
                 wordJ = words.get(j);

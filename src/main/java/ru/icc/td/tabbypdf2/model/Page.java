@@ -2,7 +2,7 @@ package ru.icc.td.tabbypdf2.model;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
-import ru.icc.td.tabbypdf2.comp.InterColumnGapExtractor;
+
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,8 +20,9 @@ public final class Page extends Rectangle2D.Float {
     private List<Ruling> visibleRulings;
 
     private Orientation orientation;
+    private double lineCoefficient;
 
-    /*********/
+/*********/
     /*private List<CursorTrace> left;
     private List<CursorTrace> right;
     public List<CursorTrace> getLeft() {
@@ -104,6 +105,10 @@ public final class Page extends Rectangle2D.Float {
         return this.blocks.addAll(blocks);
     }
 
+    public boolean addBlock(Block block) {
+        return this.blocks.add(block);
+    }
+
     public List<Rectangle2D> getGaps () {
         return gaps;
     }
@@ -138,6 +143,14 @@ public final class Page extends Rectangle2D.Float {
         } else {
             return false;
         }
+    }
+
+    public double getLineCoefficient() {
+        return lineCoefficient;
+    }
+
+    public void setLineCoefficient(double lineCoefficient) {
+        this.lineCoefficient = lineCoefficient;
     }
 
     public List<Table> getTables() {

@@ -3,7 +3,7 @@ package ru.icc.td.tabbypdf2.model;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 
-public final class CursorTrace extends Line2D.Float {
+public final class CursorTrace extends Line2D.Double {
 
     private Page page;
 
@@ -11,7 +11,7 @@ public final class CursorTrace extends Line2D.Float {
         super(p1, p2);
     }
 
-    public CursorTrace(float x1, float y1, float x2, float y2) {
+    public CursorTrace(double x1, double y1, double x2, double y2) {
         super(x1, y1, x2, y2);
     }
 

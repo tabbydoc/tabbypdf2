@@ -7,7 +7,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 
-public final class Ruling extends Line2D.Float {
+public final class Ruling extends Line2D.Double {
 
     private static int PERPENDICULAR_PIXEL_EXPAND_AMOUNT = 2;
     private static int COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT = 1;
@@ -23,10 +23,11 @@ public final class Ruling extends Line2D.Float {
         this.page = page;
     }
 
-    public Ruling(float x1, float y1, float x2, float y2) {
+    public Ruling(double x1, double y1, double x2, double y2) {
         super(x1, y1, x2, y2);
     }
-    public Ruling(float x1, float y1, float x2, float y2, Page page) {
+
+    public Ruling(double x1, double y1, double x2, double y2, Page page) {
         super(x1, y1, x2, y2);
         this.page = page;
     }
@@ -66,14 +67,145 @@ public final class Ruling extends Line2D.Float {
     // attributes that make sense only for non-oblique lines
     // these are used to have a single collapse method (in page, currently)
 
-    public float getPosition() {
+    // log(n) implementation of find_intersections
+    // based on http://people.csail.mit.edu/indyk/6.838-old/handouts/lec2.pdf
+    public static Map<Point2D, Ruling[]> findIntersections(List<Ruling> horizontals, List<Ruling> verticals) {
+
+        class SortObject {
+            protected SOType type;
+            protected double position;
+            protected Ruling ruling;
+
+            public SortObject(SOType type, double position, Ruling ruling) {
+                this.type = type;
+                this.position = position;
+                this.ruling = ruling;
+            }
+        }
+
+        List<SortObject> sos = new ArrayList<>();
+
+        TreeMap<Ruling, Boolean> tree = new TreeMap<>(new Comparator<Ruling>() {
+            @Override
+            public int compare(Ruling o1, Ruling o2) {
+                return java.lang.Double.compare(o1.getTop(), o2.getTop());
+            }
+        });
+
+        TreeMap<Point2D, Ruling[]> rv = new TreeMap<>(new Comparator<Point2D>() {
+            @Override
+            public int compare(Point2D o1, Point2D o2) {
+                if (o1.getY() > o2.getY()) return 1;
+                if (o1.getY() < o2.getY()) return -1;
+                if (o1.getX() > o2.getX()) return 1;
+                if (o1.getX() < o2.getX()) return -1;
+                return 0;
+            }
+        });
+
+        for (Ruling h : horizontals) {
+            sos.add(new SortObject(SOType.HLEFT, h.getLeft() - PERPENDICULAR_PIXEL_EXPAND_AMOUNT, h));
+            sos.add(new SortObject(SOType.HRIGHT, h.getRight() + PERPENDICULAR_PIXEL_EXPAND_AMOUNT, h));
+        }
+
+        for (Ruling v : verticals) {
+            sos.add(new SortObject(SOType.VERTICAL, v.getLeft(), v));
+        }
+
+        Collections.sort(sos, new Comparator<SortObject>() {
+            @Override
+            public int compare(SortObject a, SortObject b) {
+                int rv;
+                if (Utils.feq(a.position, b.position)) {
+                    if (a.type == SOType.VERTICAL && b.type == SOType.HLEFT) {
+                        rv = 1;
+                    } else if (a.type == SOType.VERTICAL && b.type == SOType.HRIGHT) {
+                        rv = -1;
+                    } else if (a.type == SOType.HLEFT && b.type == SOType.VERTICAL) {
+                        rv = -1;
+                    } else if (a.type == SOType.HRIGHT && b.type == SOType.VERTICAL) {
+                        rv = 1;
+                    } else {
+                        rv = java.lang.Double.compare(a.position, b.position);
+                    }
+                } else {
+                    return java.lang.Double.compare(a.position, b.position);
+                }
+                return rv;
+            }
+        });
+
+        for (SortObject so : sos) {
+            switch (so.type) {
+                case VERTICAL:
+                    for (Map.Entry<Ruling, Boolean> h : tree.entrySet()) {
+                        Point2D i = h.getKey().intersectionPoint(so.ruling);
+                        if (i == null) {
+                            continue;
+                        }
+                        rv.put(i,
+                                new Ruling[]{h.getKey().expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT),
+                                        so.ruling.expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT)});
+                    }
+                    break;
+                case HRIGHT:
+                    tree.remove(so.ruling);
+                    break;
+                case HLEFT:
+                    tree.put(so.ruling, true);
+                    break;
+            }
+        }
+
+        return rv;
+
+    }
+
+    public static List<Ruling> collapseOrientedRulings(List<Ruling> lines, int expandAmount) {
+        ArrayList<Ruling> rv = new ArrayList<>();
+        Collections.sort(lines, new Comparator<Ruling>() {
+            @Override
+            public int compare(Ruling a, Ruling b) {
+                final double diff = a.getPosition() - b.getPosition();
+                return java.lang.Double.compare(diff == 0 ? a.getStart() - b.getStart() : diff, 0f);
+            }
+        });
+
+        for (Ruling next_line : lines) {
+            Ruling last = rv.isEmpty() ? null : rv.get(rv.size() - 1);
+            // if current line colinear with next, and are "close enough": expand current line
+            if (last != null && Utils.feq(next_line.getPosition(), last.getPosition()) && last.nearlyIntersects(next_line, expandAmount)) {
+                final double lastStart = last.getStart();
+                final double lastEnd = last.getEnd();
+
+                final boolean lastFlipped = lastStart > lastEnd;
+                final boolean nextFlipped = next_line.getStart() > next_line.getEnd();
+
+                boolean differentDirections = nextFlipped != lastFlipped;
+                double nextS = differentDirections ? next_line.getEnd() : next_line.getStart();
+                double nextE = differentDirections ? next_line.getStart() : next_line.getEnd();
+
+                final double newStart = lastFlipped ? Math.max(nextS, lastStart) : Math.min(nextS, lastStart);
+                final double newEnd = lastFlipped ? Math.min(nextE, lastEnd) : Math.max(nextE, lastEnd);
+                last.setStartEnd(newStart, newEnd);
+                assert !last.oblique();
+            } else if (next_line.length() == 0) {
+                continue;
+            } else {
+                rv.add(next_line);
+            }
+        }
+        return rv;
+    }
+
+    public double getPosition() {
         if (this.oblique()) {
             throw new UnsupportedOperationException();
         }
         return this.vertical() ? this.getLeft() : this.getTop();
     }
 
-    public void setPosition(float v) {
+    public void setPosition(double v) {
         if (this.oblique()) {
             throw new UnsupportedOperationException();
         }
@@ -87,14 +219,14 @@ public final class Ruling extends Line2D.Float {
         }
     }
 
-    public float getStart() {
+    public double getStart() {
         if (this.oblique()) {
             throw new UnsupportedOperationException();
         }
         return this.vertical() ? this.getTop() : this.getLeft();
     }
 
-    public void setStart(float v) {
+    public void setStart(double v) {
         if (this.oblique()) {
             throw new UnsupportedOperationException();
         }
@@ -106,37 +238,11 @@ public final class Ruling extends Line2D.Float {
         }
     }
 
-    public float getEnd() {
+    public double getEnd() {
         if (this.oblique()) {
             throw new UnsupportedOperationException();
         }
         return this.vertical() ? this.getBottom() : this.getRight();
-    }
-
-    public void setEnd(float v) {
-        if (this.oblique()) {
-            throw new UnsupportedOperationException();
-        }
-        if (this.vertical()) {
-            this.setBottom(v);
-        }
-        else {
-            this.setRight(v);
-        }
-    }
-
-    private void setStartEnd(float start, float end) {
-        if (this.oblique()) {
-            throw new UnsupportedOperationException();
-        }
-        if (this.vertical()) {
-            this.setTop(start);
-            this.setBottom(end);
-        }
-        else {
-            this.setLeft(start);
-            this.setRight(end);
-        }
     }
 
     // -----
@@ -197,7 +303,48 @@ public final class Ruling extends Line2D.Float {
         }
     }
 
-    public Ruling expand(float amount) {
+    public void setEnd(double v) {
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        if (this.vertical()) {
+            this.setBottom(v);
+        } else {
+            this.setRight(v);
+        }
+    }
+
+    private void setStartEnd(double start, double end) {
+        if (this.oblique()) {
+            throw new UnsupportedOperationException();
+        }
+        if (this.vertical()) {
+            this.setTop(start);
+            this.setBottom(end);
+        } else {
+            this.setLeft(start);
+            this.setRight(end);
+        }
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other)
+            return true;
+
+        if (!(other instanceof Ruling))
+            return false;
+
+        Ruling o = (Ruling) other;
+        return this.getP1().equals(o.getP1()) && this.getP2().equals(o.getP2());
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    public Ruling expand(double amount) {
         Ruling r = (Ruling) this.clone();
         r.setStart(this.getStart() - amount);
         r.setEnd(this.getEnd() + amount);
@@ -222,64 +369,39 @@ public final class Ruling extends Line2D.Float {
         else {
             throw new IllegalArgumentException("lines must be orthogonal, vertical and horizontal");
         }
-        return new Point2D.Float(vertical.getLeft(), horizontal.getTop());
+        return new Point2D.Double(vertical.getLeft(), horizontal.getTop());
     }
 
-    @Override
-    public boolean equals(Object other) {
-        if (this == other)
-            return true;
-
-        if (!(other instanceof Ruling))
-            return false;
-
-        Ruling o = (Ruling) other;
-        return this.getP1().equals(o.getP1()) && this.getP2().equals(o.getP2());
-    }
-
-    @Override
-    public int hashCode() {
-        return super.hashCode();
-    }
-
-    public float getTop() {
+    public double getTop() {
         return this.y1;
     }
 
-    public void setTop(float v) {
+    public void setTop(double v) {
         setLine(this.getLeft(), v, this.getRight(), this.getBottom());
     }
 
-    public float getLeft() {
+    public double getLeft() {
         return this.x1;
     }
 
-    public void setLeft(float v) {
+    public void setLeft(double v) {
         setLine(v, this.getTop(), this.getRight(), this.getBottom());
     }
 
-    public float getBottom() {
+    public double getBottom() {
         return this.y2;
     }
 
-    public void setBottom(float v) {
+    public void setBottom(double v) {
         setLine(this.getLeft(), this.getTop(), this.getRight(), v);
     }
 
-    public float getRight() {
+    public double getRight() {
         return this.x2;
     }
 
-    public void setRight(float v) {
+    public void setRight(double v) {
         setLine(this.getLeft(), this.getTop(), v, this.getBottom());
-    }
-
-    public float getWidth() {
-        return this.getRight() - this.getLeft();
-    }
-
-    public float getHeight() {
-        return this.getBottom() - this.getTop();
     }
 
     public double getAngle() {
@@ -313,145 +435,16 @@ public final class Ruling extends Line2D.Float {
         return rv;
     }
 
-    // log(n) implementation of find_intersections
-    // based on http://people.csail.mit.edu/indyk/6.838-old/handouts/lec2.pdf
-    public static Map<Point2D, Ruling[]> findIntersections(List<Ruling> horizontals, List<Ruling> verticals) {
-
-        class SortObject {
-            protected SOType type;
-            protected float position;
-            protected Ruling ruling;
-
-            public SortObject(SOType type, float position, Ruling ruling) {
-                this.type = type;
-                this.position = position;
-                this.ruling = ruling;
-            }
-        }
-
-        List<SortObject> sos = new ArrayList<>();
-
-        TreeMap<Ruling, Boolean> tree = new TreeMap<>(new Comparator<Ruling>() {
-            @Override
-            public int compare(Ruling o1, Ruling o2) {
-                return java.lang.Double.compare(o1.getTop(), o2.getTop());
-            }});
-
-        TreeMap<Point2D, Ruling[]> rv = new TreeMap<>(new Comparator<Point2D>() {
-            @Override
-            public int compare(Point2D o1, Point2D o2) {
-                if (o1.getY() > o2.getY()) return  1;
-                if (o1.getY() < o2.getY()) return -1;
-                if (o1.getX() > o2.getX()) return  1;
-                if (o1.getX() < o2.getX()) return -1;
-                return 0;
-            }
-        });
-
-        for (Ruling h : horizontals) {
-            sos.add(new SortObject(SOType.HLEFT, h.getLeft() - PERPENDICULAR_PIXEL_EXPAND_AMOUNT, h));
-            sos.add(new SortObject(SOType.HRIGHT, h.getRight() + PERPENDICULAR_PIXEL_EXPAND_AMOUNT, h));
-        }
-
-        for (Ruling v : verticals) {
-            sos.add(new SortObject(SOType.VERTICAL, v.getLeft(), v));
-        }
-
-        Collections.sort(sos, new Comparator<SortObject>() {
-            @Override
-            public int compare(SortObject a, SortObject b) {
-                int rv;
-                if (Utils.feq(a.position, b.position)) {
-                    if (a.type == SOType.VERTICAL && b.type == SOType.HLEFT) {
-                        rv = 1;
-                    }
-                    else if (a.type == SOType.VERTICAL && b.type == SOType.HRIGHT) {
-                        rv = -1;
-                    }
-                    else if (a.type == SOType.HLEFT && b.type == SOType.VERTICAL) {
-                        rv = -1;
-                    }
-                    else if (a.type == SOType.HRIGHT && b.type == SOType.VERTICAL) {
-                        rv = 1;
-                    }
-                    else {
-                        rv = java.lang.Double.compare(a.position, b.position);
-                    }
-                }
-                else {
-                    return java.lang.Double.compare(a.position, b.position);
-                }
-                return rv;
-            }
-        });
-
-        for (SortObject so : sos) {
-            switch(so.type) {
-                case VERTICAL:
-                    for (Map.Entry<Ruling, Boolean> h : tree.entrySet()) {
-                        Point2D i = h.getKey().intersectionPoint(so.ruling);
-                        if (i == null) {
-                            continue;
-                        }
-                        rv.put(i,
-                                new Ruling[] { h.getKey().expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT),
-                                        so.ruling.expand(PERPENDICULAR_PIXEL_EXPAND_AMOUNT) });
-                    }
-                    break;
-                case HRIGHT:
-                    tree.remove(so.ruling);
-                    break;
-                case HLEFT:
-                    tree.put(so.ruling, true);
-                    break;
-            }
-        }
-
-        return rv;
-
+    public double getWidth() {
+        return this.getRight() - this.getLeft();
     }
 
     public static List<Ruling> collapseOrientedRulings(List<Ruling> lines) {
         return collapseOrientedRulings(lines, COLINEAR_OR_PARALLEL_PIXEL_EXPAND_AMOUNT);
     }
 
-    public static List<Ruling> collapseOrientedRulings(List<Ruling> lines, int expandAmount) {
-        ArrayList<Ruling> rv = new ArrayList<>();
-        Collections.sort(lines, new Comparator<Ruling>() {
-            @Override
-            public int compare(Ruling a, Ruling b) {
-                final float diff = a.getPosition() - b.getPosition();
-                return java.lang.Float.compare(diff == 0 ? a.getStart() - b.getStart() : diff, 0f);
-            }
-        });
-
-        for (Ruling next_line : lines) {
-            Ruling last = rv.isEmpty() ? null : rv.get(rv.size() - 1);
-            // if current line colinear with next, and are "close enough": expand current line
-            if (last != null && Utils.feq(next_line.getPosition(), last.getPosition()) && last.nearlyIntersects(next_line, expandAmount)) {
-                final float lastStart = last.getStart();
-                final float lastEnd = last.getEnd();
-
-                final boolean lastFlipped = lastStart            > lastEnd;
-                final boolean nextFlipped = next_line.getStart() > next_line.getEnd();
-
-                boolean differentDirections = nextFlipped != lastFlipped;
-                float nextS = differentDirections ? next_line.getEnd()   : next_line.getStart();
-                float nextE = differentDirections ? next_line.getStart() : next_line.getEnd();
-
-                final float newStart = lastFlipped ? Math.max(nextS, lastStart) : Math.min(nextS, lastStart);
-                final float newEnd   = lastFlipped ? Math.min(nextE, lastEnd)   : Math.max(nextE, lastEnd);
-                last.setStartEnd(newStart, newEnd);
-                assert !last.oblique();
-            }
-            else if (next_line.length() == 0) {
-                continue;
-            }
-            else {
-                rv.add(next_line);
-            }
-        }
-        return rv;
+    public double getHeight() {
+        return this.getBottom() - this.getTop();
     }
 
 }

@@ -1,5 +1,6 @@
 package ru.icc.td.tabbypdf2.comp;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import ru.icc.td.tabbypdf2.model.Line;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Word;
@@ -18,8 +19,7 @@ public class LineComposer {
         if (words.isEmpty())
             return;
 
-        List<Line> lines = composeLines();
-        page.addLines(lines);
+        page.addLines(composeLines());
     }
 
     private final List<Line> lines = new ArrayList<>(2000);
@@ -30,7 +30,7 @@ public class LineComposer {
         lines.clear();
         lineWords.clear();
 
-        Rectangle2D.Float rectangle = new Rectangle2D.Float();
+        Rectangle2D.Double rectangle = new Rectangle2D.Double();
         Word wordI, wordJ;
         Line line;
 
@@ -59,7 +59,47 @@ public class LineComposer {
             lines.add(line);
         }
 
+        page.setLineCoefficient(calculateCoefficient());
+
         return lines;
     }
 
+    private double calculateCoefficient() {
+        Line line1, line2;
+        double space, t, y1, y2, height2;
+        DescriptiveStatistics ds = new DescriptiveStatistics();
+        List<Double> cDoubles = new ArrayList<>();
+
+        for (int i = 0; i < lines.size(); i++) {
+            line1 = lines.get(i);
+            y1 = line1.y;
+
+            space = Math.abs(page.height);
+
+            for (int j = 0; j < lines.size(); j++) {
+                line2 = lines.get(j);
+                y2 = line2.y;
+                height2 = line2.height;
+
+                if (line1.equals(line2) || !(y1 > y2 + height2))
+                    continue;
+
+                t = y1 - (y2 + height2);
+
+                if (t < space)
+                    space = t;
+            }
+
+            if (space < Math.abs(page.height)) {
+                //space = Precision.round(space, 2);
+                cDoubles.add(space / line1.height);
+            }
+
+        }
+
+        for (Double f : cDoubles)
+            ds.addValue(f);
+
+        return ds.getMean();
+    }
 }

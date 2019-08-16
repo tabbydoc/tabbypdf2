@@ -3,12 +3,12 @@ package ru.icc.td.tabbypdf2.model;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 
-public class Block extends Rectangle2D.Float {
+public class Block extends Rectangle2D.Double {
     private final List<Word> words;
 
-    private float minSpaceWidth = 0f;
-    private float maxSpaceWidth = 0f;
-    private float averageSpaceWidth = 0f;
+    private double minSpaceWidth = 0f;
+    private double maxSpaceWidth = 0f;
+    private double averageSpaceWidth = 0f;
 
     {
         words = new ArrayList<>(3000);
@@ -22,14 +22,14 @@ public class Block extends Rectangle2D.Float {
     }
 
     private void setAll() {
-        float minX = java.lang.Float.MAX_VALUE;
-        float minY = java.lang.Float.MAX_VALUE;
-        float maxX = java.lang.Float.MIN_VALUE;
-        float maxY = java.lang.Float.MIN_VALUE;
+        double minX = java.lang.Double.MAX_VALUE;
+        double minY = java.lang.Double.MAX_VALUE;
+        double maxX = java.lang.Double.MIN_VALUE;
+        double maxY = java.lang.Double.MIN_VALUE;
 
-        float minSpaceWidth = java.lang.Float.MAX_VALUE;
-        float maxSpaceWidth = java.lang.Float.MIN_VALUE;
-        float sumSpaceWidth = 0f;
+        double minSpaceWidth = java.lang.Double.MAX_VALUE;
+        double maxSpaceWidth = java.lang.Double.MIN_VALUE;
+        double sumSpaceWidth = 0f;
 
         for (Word word : words) {
             if (word.x < minX)
@@ -44,7 +44,7 @@ public class Block extends Rectangle2D.Float {
             if (word.y + word.height > maxY)
                 maxY = word.y + word.height;
 
-            float spaceWidth = word.getAverageSpaceWidth();
+            double spaceWidth = word.getAverageSpaceWidth();
 
             if (spaceWidth < minSpaceWidth)
                 minSpaceWidth = spaceWidth;
@@ -81,15 +81,15 @@ public class Block extends Rectangle2D.Float {
         setAll();
     }
 
-    public float getMinSpaceWidth() {
+    public double getMinSpaceWidth() {
         return minSpaceWidth;
     }
 
-    public float getMaxSpaceWidth() {
+    public double getMaxSpaceWidth() {
         return maxSpaceWidth;
     }
 
-    public float getAverageSpaceWidth() {
+    public double getAverageSpaceWidth() {
         return averageSpaceWidth;
     }
 

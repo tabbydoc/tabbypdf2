@@ -32,7 +32,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static ru.icc.td.tabbypdf2.util.Utils.*;
+import static ru.icc.td.tabbypdf2.util.Utils.mat2BufferedImage;
+import static ru.icc.td.tabbypdf2.util.Utils.matify;
 
 public final class TableExtractor {
 
@@ -246,7 +247,7 @@ public final class TableExtractor {
 
             recomposedDocument = recomposeDocument(originDocument);
 
-            if (extractTables(originDocument) && useDebug && AppConfig.isUseANNModel()) {
+            /*if (extractTables(originDocument) && useDebug) {
                 File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
                 FileWriter fileWriter = new FileWriter(out);
                 List<Table> tables = new ArrayList<Table>();
@@ -255,7 +256,7 @@ public final class TableExtractor {
                 }
                 writeTables(tables, fileWriter, originDocument.getFileName());
                 fileWriter.close();
-            }
+            }*/
 
             if (useDebug) {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();

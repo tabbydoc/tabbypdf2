@@ -8,19 +8,19 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDStream;
 import org.apache.pdfbox.rendering.ImageType;
-
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Ruling;
 import ru.icc.td.tabbypdf2.util.Utils;
 
-import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 
 public class PDFRulingExtractor {
@@ -28,7 +28,7 @@ public class PDFRulingExtractor {
     private static final int GRAYSCALE_INTENSITY_THRESHOLD = 50;
     private static final int HORIZONTAL_EDGE_WIDTH_MINIMUM = 50;
     private static final int VERTICAL_EDGE_HEIGHT_MINIMUM = 10;
-    private static final float POINT_SNAP_DISTANCE_THRESHOLD = 8f;
+    private static final double POINT_SNAP_DISTANCE_THRESHOLD = 8f;
 
     private final PDDocument pdDocument;
     private final List<Ruling> visibleRulings;
@@ -110,15 +110,15 @@ public class PDFRulingExtractor {
 
         //List<Ruling> allRulings = new ArrayList<>();
 
-        float pageHeight = (float) Math.abs(page.getHeight());
-        //float pageWidth = (float) Math.abs(page.getWidth());
+        double pageHeight = Math.abs(page.getHeight());
+        //double pageWidth = (double) Math.abs(page.getWidth());
 
-        for (Line2D.Float ruling : horizontalRulings) {
+        for (Line2D.Double ruling : horizontalRulings) {
 
-            float x1;
-            float y1;
-            float x2;
-            float y2;
+            double x1;
+            double y1;
+            double x2;
+            double y2;
 
             if (page.getOrientation() == Page.Orientation.LANDSCAPE) {
                 x1 = ruling.y1 / 2;
@@ -135,11 +135,11 @@ public class PDFRulingExtractor {
             visibleRulings.add(new Ruling(x1, y1, x2, y2, page));
         }
 
-        for (Line2D.Float ruling : verticalRulings) {
-            float x1;
-            float y1;
-            float x2;
-            float y2;
+        for (Line2D.Double ruling : verticalRulings) {
+            double x1;
+            double y1;
+            double x2;
+            double y2;
 
             if (page.getOrientation() == Page.Orientation.LANDSCAPE) {
                 x1 = ruling.y1 / 2;
@@ -180,7 +180,7 @@ public class PDFRulingExtractor {
                     // we hit what could be a line
                     // don't bother scanning it if we've hit a pixel in the line before
                     boolean alreadyChecked = false;
-                    for (Line2D.Float line : horizontalRulings) {
+                    for (Line2D.Double line : horizontalRulings) {
                         if (y == line.getY1() && x >= line.getX1() && x <= line.getX2()) {
                             alreadyChecked = true;
                             break;
@@ -209,7 +209,7 @@ public class PDFRulingExtractor {
                     int endX = lineX - 1;
                     int lineWidth = endX - x;
                     if (lineWidth > HORIZONTAL_EDGE_WIDTH_MINIMUM) {
-                        horizontalRulings.add(new Ruling(new Point2D.Float(x, y), new Point2D.Float(endX, y)));
+                        horizontalRulings.add(new Ruling(new Point2D.Double(x, y), new Point2D.Double(endX, y)));
                     }
                 }
 
@@ -243,7 +243,7 @@ public class PDFRulingExtractor {
                     // we hit what could be a line
                     // don't bother scanning it if we've hit a pixel in the line before
                     boolean alreadyChecked = false;
-                    for (Line2D.Float line : verticalRulings) {
+                    for (Line2D.Double line : verticalRulings) {
                         if (x == line.getX1() && y >= line.getY1() && y <= line.getY2()) {
                             alreadyChecked = true;
                             break;
@@ -272,7 +272,7 @@ public class PDFRulingExtractor {
                     int endY = lineY - 1;
                     int lineLength = endY - y;
                     if (lineLength > VERTICAL_EDGE_HEIGHT_MINIMUM) {
-                        verticalRulings.add(new Ruling(new Point2D.Float(x, y), new Point2D.Float(x, endY)));
+                        verticalRulings.add(new Ruling(new Point2D.Double(x, y), new Point2D.Double(x, endY)));
                     }
                 }
 

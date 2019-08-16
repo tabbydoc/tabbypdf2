@@ -2,22 +2,23 @@ package ru.icc.td.tabbypdf2.debug;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
-
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import ru.icc.td.tabbypdf2.model.*;
 
-import java.awt.Color;
-import java.awt.geom.Rectangle2D;
+import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.Hashtable;
+import java.util.Properties;
+import java.util.Set;
 
 public final class DebuggingDrawer {
     private static final String SUFFIX_SEPARATOR = "_";
@@ -167,7 +168,7 @@ public final class DebuggingDrawer {
         for (Word word : page.getWords()) {
             contentDrawer.strokeRectangle(word);
             String text = String.valueOf(word.getStartChunkID());
-            contentDrawer.showText(text, word.x, (float) word.getMaxY());
+            contentDrawer.showText(text, (float) word.getX(), (float) word.getMaxY());
         }
     }
 

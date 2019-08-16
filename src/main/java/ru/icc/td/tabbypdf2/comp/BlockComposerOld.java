@@ -17,7 +17,7 @@ public class BlockComposerOld {
     private Page page;
     private final int VERTICAL = 0;
     private final int HORIZONTAL = 1;
-    private float lineCoefficient;
+    private double lineCoefficient;
 
 
     public void composeBlocks(Page page) {
@@ -78,8 +78,8 @@ public class BlockComposerOld {
     }
 
     private void hasWordIntersections(Word word) {
-        Rectangle2D.Float rectangle = new Rectangle2D.Float();
-        float height = word.height;
+        Rectangle2D.Double rectangle = new Rectangle2D.Double();
+        double height = word.height;
 
         rectangle.setRect(word.x, word.y - lineCoefficient * height, word.width, (1 + 2 * lineCoefficient) * height);
 
@@ -218,9 +218,9 @@ public class BlockComposerOld {
 
         Block blockI;
         Block blockJ;
-        Rectangle2D.Float rectangle1 = new Rectangle2D.Float();
-        Rectangle2D.Float rectangle2 = new Rectangle2D.Float();
-        float spaceI, spaceJ;
+        Rectangle2D.Double rectangle1 = new Rectangle2D.Double();
+        Rectangle2D.Double rectangle2 = new Rectangle2D.Double();
+        double spaceI, spaceJ;
 
         do {
             updatedBlocks.clear();
@@ -262,9 +262,9 @@ public class BlockComposerOld {
     private boolean hasWronglyIsolatedBlocks(List<Block> blocks) {
         Block blockI;
         Block blockJ;
-        Rectangle2D.Float rectangle1 = new Rectangle2D.Float();
-        Rectangle2D.Float rectangle2 = new Rectangle2D.Float();
-        float spaceI, spaceJ;
+        Rectangle2D.Double rectangle1 = new Rectangle2D.Double();
+        Rectangle2D.Double rectangle2 = new Rectangle2D.Double();
+        double spaceI, spaceJ;
 
         for (int i = 0; i < blocks.size(); i++) {
             blockI = blocks.get(i);
@@ -296,8 +296,8 @@ public class BlockComposerOld {
     private void unionSeparatedWords(){
         Block blockI;
         Block blockJ;
-        Rectangle2D.Float rectangleI = new Rectangle2D.Float();
-        Rectangle2D.Float rectangleJ = new Rectangle2D.Float();
+        Rectangle2D.Double rectangleI = new Rectangle2D.Double();
+        Rectangle2D.Double rectangleJ = new Rectangle2D.Double();
 
         do {
             updatedBlocks.clear();
@@ -310,10 +310,10 @@ public class BlockComposerOld {
 
                 blocks.remove(i);
 
-                float w = calculateSpace(blockI);
+                double w = calculateSpace(blockI);
                 rectangleI.setRect(blockI.x - w, blockI.y, blockI.width + 2 * w, blockI.height);
 
-                float idI = blockI.getWords().get(0).getStartChunkID();
+                double idI = blockI.getWords().get(0).getStartChunkID();
 
                 for (int j = 0; j < blocks.size(); j++) {
                     blockJ = blocks.get(j);
@@ -334,7 +334,7 @@ public class BlockComposerOld {
                             isThereLine2D(blockI, blockJ, page.getRulings(), VERTICAL);
                     boolean isCursorTrace = isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL);
 
-                    float w1 = calculateSpace(blockI);
+                    double w1 = calculateSpace(blockI);
 
                     rectangleJ.setRect(blockI.x - w1, blockI.y, blockI.width + 2 * w1, blockI.height);
 
@@ -354,8 +354,8 @@ public class BlockComposerOld {
     private boolean hasSeparatedWords(List<Block> blocks){
         Block blockI;
         Block blockJ;
-        Rectangle2D.Float rectangleI = new Rectangle2D.Float();
-        Rectangle2D.Float rectangleJ = new Rectangle2D.Float();
+        Rectangle2D.Double rectangleI = new Rectangle2D.Double();
+        Rectangle2D.Double rectangleJ = new Rectangle2D.Double();
 
         for (int i = 0; i < blocks.size(); i++) {
             blockI = blocks.get(i);
@@ -363,11 +363,11 @@ public class BlockComposerOld {
             if (blockI.getWords().size() != 1)
                 continue;
 
-            float w = calculateSpace(blockI);
+            double w = calculateSpace(blockI);
 
             rectangleI.setRect(blockI.x - w, blockI.y, blockI.width + 2 * w, blockI.height);
 
-            float idI = blockI.getWords().get(0).getStartChunkID();
+            double idI = blockI.getWords().get(0).getStartChunkID();
 
             for (int j = 0; j < blocks.size(); j++) {
                 blockJ = blocks.get(j);
@@ -387,7 +387,7 @@ public class BlockComposerOld {
                         isThereLine2D(blockI, blockJ, page.getRulings(), VERTICAL);
                 boolean isCursorTrace = isThereLine2D(blockI, blockJ, page.getCursorTraces(), VERTICAL);
 
-                float w1 = calculateSpace(blockI);
+                double w1 = calculateSpace(blockI);
 
                 rectangleJ.setRect(blockI.x - w1, blockI.y, blockI.width + 2 * w1, blockI.height);
 
@@ -399,7 +399,7 @@ public class BlockComposerOld {
         return false;
     }
 
-    private float calculateSpace(Block block){
+    private double calculateSpace(Block block) {
         DescriptiveStatistics ds = new DescriptiveStatistics();
 
         for (Word word : block.getWords()) {
@@ -429,10 +429,10 @@ public class BlockComposerOld {
             }
         }*/
 
-        return (float) ds.getMean();
+        return ds.getMean();
     }
 
-    private <T extends Line2D.Float, S extends Rectangle2D.Float> boolean isThereLine2D(S rec1, S rec2, List<T> list, int orientation) {
+    private <T extends Line2D.Double, S extends Rectangle2D.Double> boolean isThereLine2D(S rec1, S rec2, List<T> list, int orientation) {
         boolean condition = false;
         boolean isIntersected = false;
 
@@ -475,11 +475,11 @@ public class BlockComposerOld {
         return false;
     }
 
-    private float calculateCoefficient(){
+    private double calculateCoefficient() {
         Line line1, line2;
-        float space, t, y1, y2, height2;
+        double space, t, y1, y2, height2;
         DescriptiveStatistics ds = new DescriptiveStatistics();
-        List<Float> cFloats = new ArrayList<>();
+        List<Double> cDoubles = new ArrayList<>();
 
         for(int i = 0; i < lines.size(); i++){
             line1 = lines.get(i);
@@ -503,15 +503,15 @@ public class BlockComposerOld {
 
             if(space < Math.abs(page.height)) {
                 //space = Precision.round(space, 2);
-                cFloats.add(space/line1.height);
+                cDoubles.add(space / line1.height);
             }
 
         }
 
-        for(Float f : cFloats)
+        for (Double f : cDoubles)
             ds.addValue(f);
 
-        return (float) ds.getMean();
+        return ds.getMean();
     }
 
     private boolean areTheSameFonts(Word word1, Word word2){

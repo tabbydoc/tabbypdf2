@@ -2,7 +2,9 @@ package ru.icc.td.tabbypdf2.detect.processing.recognition;
 
 import ru.icc.td.tabbypdf2.model.Block;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>> {
     private List<Projection> projections;
@@ -53,8 +55,8 @@ class ProjectionRecognizer implements Recognition<List<Block>, List<Projection>>
     }
 
     private Projection createProjection(Block block) {
-        float y1 = block.y;
-        float y2 = block.y + block.height;
+        double y1 = block.y;
+        double y2 = block.y + block.height;
 
         return new Projection(y1, y2);
     }
