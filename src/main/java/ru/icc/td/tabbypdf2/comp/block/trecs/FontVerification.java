@@ -5,7 +5,7 @@ import ru.icc.td.tabbypdf2.model.Word;
 import java.awt.*;
 import java.util.Set;
 
-public final class FontVerification {
+final class FontVerification {
 
     public static boolean verify(Word word1, Word word2) {
         Set<Font> fonts = word2.getFonts();

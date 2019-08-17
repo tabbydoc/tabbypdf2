@@ -53,7 +53,7 @@ public class TRecsAlgorithm implements Algorithm {
 
             if (rectangle.intersects(wordI) && checkAll(word, wordI)) {
                 addWord(wordI);
-                i = 0;
+                i--;
             }
         }
     }
