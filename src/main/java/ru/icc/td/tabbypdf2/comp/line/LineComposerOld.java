@@ -1,4 +1,4 @@
-package ru.icc.td.tabbypdf2.comp;
+package ru.icc.td.tabbypdf2.comp.line;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import ru.icc.td.tabbypdf2.model.Line;
@@ -9,7 +9,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LineComposer {
+public class LineComposerOld {
     private Page page;
 
     public void composeLines(Page page) {

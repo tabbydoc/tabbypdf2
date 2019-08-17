@@ -1,4 +1,4 @@
-package ru.icc.td.tabbypdf2.comp;
+package ru.icc.td.tabbypdf2.comp.block;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import ru.icc.td.tabbypdf2.model.Block;

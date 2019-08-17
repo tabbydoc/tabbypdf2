@@ -33,7 +33,7 @@ public final class Word extends Rectangle2D.Double {
         float minX = java.lang.Float.MAX_VALUE;
         float minY = java.lang.Float.MAX_VALUE;
         float maxX = java.lang.Float.MIN_VALUE;
-        float maxY = java.lang.Float.MIN_VALUE;
+        float height = java.lang.Float.MIN_VALUE;
 
         float minSpaceWidth = java.lang.Float.MAX_VALUE;
         float maxSpaceWidth = java.lang.Float.MIN_VALUE;
@@ -54,8 +54,7 @@ public final class Word extends Rectangle2D.Double {
             if (cp.x + cp.width > maxX)
                 maxX = cp.x + cp.width;
 
-            if (cp.y + cp.height > maxY)
-                maxY = cp.y + cp.height;
+            height = Math.max(height, cp.height);
 
             float spaceWidth = cp.getSpaceWidth();
 
@@ -70,7 +69,7 @@ public final class Word extends Rectangle2D.Double {
             sb.append(cp.getUnicode());
         }
 
-        setRect(minX, minY, maxX - minX, maxY - minY);
+        setRect(minX, minY, maxX - minX, height);
         setText(sb.toString());
 
         this.minSpaceWidth = minSpaceWidth;

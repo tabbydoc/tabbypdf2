@@ -25,7 +25,7 @@ public class Block extends Rectangle2D.Double {
         double minX = java.lang.Double.MAX_VALUE;
         double minY = java.lang.Double.MAX_VALUE;
         double maxX = java.lang.Double.MIN_VALUE;
-        double maxY = java.lang.Double.MIN_VALUE;
+        double height = java.lang.Double.MIN_VALUE;
 
         double minSpaceWidth = java.lang.Double.MAX_VALUE;
         double maxSpaceWidth = java.lang.Double.MIN_VALUE;
@@ -41,8 +41,7 @@ public class Block extends Rectangle2D.Double {
             if (word.y < minY)
                 minY = word.y;
 
-            if (word.y + word.height > maxY)
-                maxY = word.y + word.height;
+            height = Math.max(height, word.height);
 
             double spaceWidth = word.getAverageSpaceWidth();
 
@@ -55,7 +54,7 @@ public class Block extends Rectangle2D.Double {
             sumSpaceWidth += spaceWidth;
         }
 
-        setRect(minX, minY, maxX - minX, maxY - minY);
+        setRect(minX, minY, maxX - minX, height);
 
         this.minSpaceWidth = minSpaceWidth;
         this.maxSpaceWidth = maxSpaceWidth;

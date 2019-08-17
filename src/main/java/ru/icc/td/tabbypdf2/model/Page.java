@@ -145,6 +145,10 @@ public final class Page extends Rectangle2D.Float {
         }
     }
 
+    public boolean addLine(Line line) {
+        return this.lines.add(line);
+    }
+
     public double getLineCoefficient() {
         return lineCoefficient;
     }

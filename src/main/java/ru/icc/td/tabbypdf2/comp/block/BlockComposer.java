@@ -1,8 +1,8 @@
 package ru.icc.td.tabbypdf2.comp.block;
 
 import ru.icc.td.tabbypdf2.comp.block.refinement.BlockProcessing;
-import ru.icc.td.tabbypdf2.comp.block.trecs.Algorithm;
 import ru.icc.td.tabbypdf2.comp.block.trecs.TRecsAlgorithm;
+import ru.icc.td.tabbypdf2.interfaces.Algorithm;
 import ru.icc.td.tabbypdf2.interfaces.Composer;
 import ru.icc.td.tabbypdf2.interfaces.Processing;
 import ru.icc.td.tabbypdf2.model.Page;

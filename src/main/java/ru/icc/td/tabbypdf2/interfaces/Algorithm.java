@@ -1,4 +1,4 @@
-package ru.icc.td.tabbypdf2.comp.block.trecs;
+package ru.icc.td.tabbypdf2.interfaces;
 
 import ru.icc.td.tabbypdf2.model.Page;
 

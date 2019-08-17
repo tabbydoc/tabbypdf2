@@ -1,6 +1,7 @@
 package ru.icc.td.tabbypdf2.comp.block.trecs;
 
 import ru.icc.td.tabbypdf2.comp.block.util.Line2DVerification;
+import ru.icc.td.tabbypdf2.interfaces.Algorithm;
 import ru.icc.td.tabbypdf2.model.Block;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Word;
