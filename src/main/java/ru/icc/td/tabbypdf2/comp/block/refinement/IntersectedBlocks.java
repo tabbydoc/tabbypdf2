@@ -32,11 +32,11 @@ class IntersectedBlocks implements Refinement<Page> {
             blockJ = blocks.get(j);
 
             if (blockI.intersects(blockJ) && !blockI.equals(blockJ)) {
-                blocks.remove(blockJ);
-                blockI.addWords(blockJ.getWords());
-
                 changed = true;
                 j--;
+
+                blocks.remove(blockJ);
+                blockI.addWords(blockJ.getWords());
 
                 union(blockI);
             }
