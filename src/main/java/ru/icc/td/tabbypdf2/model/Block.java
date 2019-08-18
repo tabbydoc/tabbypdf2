@@ -1,6 +1,8 @@
 package ru.icc.td.tabbypdf2.model;
 
+import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.List;
 import java.util.*;
 
 public class Block extends Rectangle2D.Double {
@@ -25,7 +27,7 @@ public class Block extends Rectangle2D.Double {
         double minX = java.lang.Double.MAX_VALUE;
         double minY = java.lang.Double.MAX_VALUE;
         double maxX = java.lang.Double.MIN_VALUE;
-        double height = java.lang.Double.MIN_VALUE;
+        double maxY = java.lang.Double.MIN_VALUE;
 
         double minSpaceWidth = java.lang.Double.MAX_VALUE;
         double maxSpaceWidth = java.lang.Double.MIN_VALUE;
@@ -38,10 +40,8 @@ public class Block extends Rectangle2D.Double {
             if (word.x + word.width > maxX)
                 maxX = word.x + word.width;
 
-            if (word.y < minY)
-                minY = word.y;
-
-            height = Math.max(height, word.height);
+            minY = Math.min(minY, word.getMinY());
+            maxY = Math.max(maxY, word.getMaxY());
 
             double spaceWidth = word.getAverageSpaceWidth();
 
@@ -54,7 +54,7 @@ public class Block extends Rectangle2D.Double {
             sumSpaceWidth += spaceWidth;
         }
 
-        setRect(minX, minY, maxX - minX, height);
+        setRect(minX, minY, maxX - minX, maxY - minY);
 
         this.minSpaceWidth = minSpaceWidth;
         this.maxSpaceWidth = maxSpaceWidth;
@@ -78,6 +78,14 @@ public class Block extends Rectangle2D.Double {
     public void removeWords(Collection<Word> words) {
         this.words.removeAll(words);
         setAll();
+    }
+
+    public Set<Font> getFonts() {
+        Set<Font> fonts = new HashSet<>();
+
+        words.forEach(word -> fonts.addAll(word.getFonts()));
+
+        return fonts;
     }
 
     public double getMinSpaceWidth() {

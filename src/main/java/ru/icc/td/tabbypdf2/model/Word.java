@@ -13,9 +13,9 @@ public final class Word extends Rectangle2D.Double {
     private final Set<Font> fonts;
     private String text;
 
-    float minSpaceWidth = 0f;
-    float maxSpaceWidth = 0f;
-    float averageSpaceWidth = 0f;
+    double minSpaceWidth = 0f;
+    double maxSpaceWidth = 0f;
+    double averageSpaceWidth = 0f;
 
     private Line line;
 
@@ -30,14 +30,14 @@ public final class Word extends Rectangle2D.Double {
     }
 
     private void setAll() {
-        float minX = java.lang.Float.MAX_VALUE;
-        float minY = java.lang.Float.MAX_VALUE;
-        float maxX = java.lang.Float.MIN_VALUE;
-        float height = java.lang.Float.MIN_VALUE;
+        double minX = java.lang.Float.MAX_VALUE;
+        double minY = java.lang.Float.MAX_VALUE;
+        double maxX = java.lang.Float.MIN_VALUE;
+        double maxY = java.lang.Float.MIN_VALUE;
 
-        float minSpaceWidth = java.lang.Float.MAX_VALUE;
-        float maxSpaceWidth = java.lang.Float.MIN_VALUE;
-        float sumSpaceWidth = 0f;
+        double minSpaceWidth = java.lang.Float.MAX_VALUE;
+        double maxSpaceWidth = java.lang.Float.MIN_VALUE;
+        double sumSpaceWidth = 0f;
 
         StringBuilder sb = new StringBuilder(charPositions.size());
 
@@ -48,15 +48,14 @@ public final class Word extends Rectangle2D.Double {
             if (cp.x < minX)
                 minX = cp.x;
 
-            if (cp.y < minY)
-                minY = cp.y;
+            minY = Math.min(minY, cp.getMinY());
 
             if (cp.x + cp.width > maxX)
                 maxX = cp.x + cp.width;
 
-            height = Math.max(height, cp.height);
+            maxY = Math.max(maxY, cp.getMaxY());
 
-            float spaceWidth = cp.getSpaceWidth();
+            double spaceWidth = cp.getSpaceWidth();
 
             if  (spaceWidth < minSpaceWidth)
                 minSpaceWidth = spaceWidth;
@@ -69,7 +68,7 @@ public final class Word extends Rectangle2D.Double {
             sb.append(cp.getUnicode());
         }
 
-        setRect(minX, minY, maxX - minX, height);
+        setRect(minX, minY, maxX - minX, maxY - minY);
         setText(sb.toString());
 
         this.minSpaceWidth = minSpaceWidth;
@@ -106,15 +105,15 @@ public final class Word extends Rectangle2D.Double {
         return charPositions.get(0).getChunkId();
     }
 
-    public float getMaxSpaceWidth() {
+    public double getMaxSpaceWidth() {
         return maxSpaceWidth;
     }
 
-    public float getMinSpaceWidth() {
+    public double getMinSpaceWidth() {
         return minSpaceWidth;
     }
 
-    public float getAverageSpaceWidth() {
+    public double getAverageSpaceWidth() {
         return averageSpaceWidth;
     }
 }

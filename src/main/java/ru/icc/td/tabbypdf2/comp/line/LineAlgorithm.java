@@ -39,6 +39,7 @@ public class LineAlgorithm implements Algorithm {
 
             page.addLine(new Line(lineWords));
             words.removeAll(lineWords);
+            i = -1;
         }
     }
 }

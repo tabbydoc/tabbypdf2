@@ -173,13 +173,17 @@ public final class DebuggingDrawer {
     }
 
     private void drawBlocks(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        //contentDrawer.setStyle(null, Color.BLACK, 0f);
-
         for (Block block : page.getBlocks()) {
             contentDrawer.strokeRectangle(block);
-            /*String text = Math.round(block.getMinX()) + " " + Math.round(block.getMinY());
-            contentDrawer.showText(text, block.x, (float) block.getMaxY());*/
         }
+        /*for (Word word : page.getWords()) {
+            double height = word.getLine().height;
+            double lineSpace = word.getLine().getLineSpace();
+
+            Rectangle2D rectangle = new Rectangle2D.Double(word.x, word.y - (1 + lineSpace) * height,
+                    word.width, (3 + 2 * lineSpace) * height);
+            contentDrawer.strokeRectangle(rectangle);
+        }*/
     }
 
     private void drawLines(Page page, PDFContentDrawer contentDrawer) throws IOException {

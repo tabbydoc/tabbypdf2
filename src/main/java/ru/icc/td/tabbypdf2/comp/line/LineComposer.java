@@ -6,7 +6,7 @@ import ru.icc.td.tabbypdf2.model.Page;
 
 public class LineComposer implements Composer<Page> {
     private final Algorithm algorithm = new LineAlgorithm();
-    private final Algorithm algorithmLC = new LineConstantAlgorithm();
+    private final Algorithm algorithmLC = new LineSpacingAlgorithm();
 
     @Override
     public void compose(Page page) {

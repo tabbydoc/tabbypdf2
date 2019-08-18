@@ -1,6 +1,7 @@
 package ru.icc.td.tabbypdf2.comp.block.trecs;
 
-import ru.icc.td.tabbypdf2.comp.block.util.Line2DVerification;
+import ru.icc.td.tabbypdf2.comp.util.FontVerification;
+import ru.icc.td.tabbypdf2.comp.util.Line2DVerification;
 import ru.icc.td.tabbypdf2.interfaces.Algorithm;
 import ru.icc.td.tabbypdf2.model.Block;
 import ru.icc.td.tabbypdf2.model.Page;
@@ -10,13 +11,12 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.icc.td.tabbypdf2.comp.block.util.Line2DVerification.Orientation.HORIZONTAL;
-import static ru.icc.td.tabbypdf2.comp.block.util.Line2DVerification.Orientation.VERTICAL;
+import static ru.icc.td.tabbypdf2.comp.util.Line2DVerification.Orientation.HORIZONTAL;
+import static ru.icc.td.tabbypdf2.comp.util.Line2DVerification.Orientation.VERTICAL;
 
 public class TRecsAlgorithm implements Algorithm {
     private final List<Word> blockWords = new ArrayList<>();
     private List<Word> words;
-    private double lineConst;
     private Page page;
 
     @Override
@@ -44,9 +44,11 @@ public class TRecsAlgorithm implements Algorithm {
     }
 
     private void findNext(Word word) {
-        double height = word.height;
-        Rectangle2D rectangle = new Rectangle2D.Double(word.x, word.y - lineConst * height,
-                word.width, (1 + 2 * lineConst) * height);
+        double height = word.getLine().height;
+        double lineSpace = word.getLine().getLineSpace();
+
+        Rectangle2D rectangle = new Rectangle2D.Double(word.x, word.y - (1 + lineSpace) * height,
+                word.width, (3 + 2 * lineSpace) * height);
 
         Word wordI;
         for (int i = 0; i < words.size(); i++) {
@@ -54,7 +56,7 @@ public class TRecsAlgorithm implements Algorithm {
 
             if (rectangle.intersects(wordI) && checkAll(word, wordI)) {
                 addWord(wordI);
-                i--;
+                i = -1;
             }
         }
     }
@@ -75,6 +77,5 @@ public class TRecsAlgorithm implements Algorithm {
     private void setAll(Page page) {
         this.page = page;
         words = new ArrayList<>(page.getWords());
-        lineConst = page.getLineCoefficient();
     }
 }

@@ -7,6 +7,7 @@ import java.util.List;
 
 public class Line extends Block {
     private double space;
+    private double lineSpace;
 
     public Line(List<Word> words) {
         super(words);
@@ -52,7 +53,11 @@ public class Line extends Block {
         return space;
     }
 
-    public double getSpace() {
-        return space;
+    public double getLineSpace() {
+        return this.lineSpace;
+    }
+
+    public void setLineSpace(double lineSpace) {
+        this.lineSpace = lineSpace;
     }
 }
