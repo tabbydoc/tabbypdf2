@@ -52,11 +52,8 @@ public class Block extends Rectangle2D.Double {
 
             double spaceWidth = word.getAverageSpaceWidth();
 
-            if (spaceWidth < minSpaceWidth)
-                minSpaceWidth = spaceWidth;
-
-            if (spaceWidth > maxSpaceWidth)
-                maxSpaceWidth = spaceWidth;
+            minSpaceWidth = Math.min(minSpaceWidth, word.getMinSpaceWidth());
+            maxSpaceWidth = Math.max(maxSpaceWidth, word.getMaxSpaceWidth());
 
             sumSpaceWidth += spaceWidth;
         }

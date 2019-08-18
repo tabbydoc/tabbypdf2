@@ -175,30 +175,7 @@ public final class DebuggingDrawer {
     private void drawBlocks(Page page, PDFContentDrawer contentDrawer) throws IOException {
         for (Block block : page.getBlocks()) {
             contentDrawer.strokeRectangle(block);
-
-            double spaceI = block.getMaxSpaceWidth();
-            Rectangle2D rectI = new Rectangle2D.Double();
-            rectI.setRect(block.x - 1.5 * spaceI, block.y,
-                    block.width + 3 * spaceI, block.height);
         }
-
-        for (Block block : page.getBlocks()) {
-            contentDrawer.setStyle(Color.RED, null, 0.3f);
-            double spaceI = block.getMaxSpaceWidth();
-            Rectangle2D rectI = new Rectangle2D.Double();
-            rectI.setRect(block.x - 1.5 * spaceI, block.y,
-                    block.width + 3 * spaceI, block.height);
-            contentDrawer.strokeRectangle(rectI);
-        }
-
-        /*for (Word word : page.getWords()) {
-            double height = word.getLine().height;
-            double lineSpace = word.getLine().getLineSpace();
-
-            Rectangle2D rectangle = new Rectangle2D.Double(word.x, word.y - (1 + lineSpace) * height,
-                    word.width, (3 + 2 * lineSpace) * height);
-            contentDrawer.strokeRectangle(rectangle);
-        }*/
     }
 
     private void drawLines(Page page, PDFContentDrawer contentDrawer) throws IOException {
