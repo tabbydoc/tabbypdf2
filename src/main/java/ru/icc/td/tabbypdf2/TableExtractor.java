@@ -148,9 +148,13 @@ public final class TableExtractor {
                 if (files.isEmpty()) {
                     System.err.println("There are no (*.pdf) files in the specified directory");
                 } else {
+                    int i = 1;
+                    int size = files.size();
+
                     for (File file : files) {
-                        System.out.println(file.getCanonicalPath());
+                        System.out.println(i + "/" + size + " " + file.getCanonicalPath());
                         processDocument(file);
+                        i++;
                     }
                 }
             } else {

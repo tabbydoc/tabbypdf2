@@ -31,8 +31,8 @@ class IsolatedBlocks implements Refinement<Page> {
 
         double spaceI = blockI.getMaxSpaceWidth();
         Rectangle2D rectI = new Rectangle2D.Double();
-        rectI.setRect(blockI.x - spaceI, blockI.y,
-                blockI.width + 2 * spaceI, blockI.height);
+        rectI.setRect(blockI.x - 1.5 * spaceI, blockI.y,
+                blockI.width + 3 * spaceI, blockI.height);
 
         Block blockJ;
         double spaceJ;
@@ -44,7 +44,7 @@ class IsolatedBlocks implements Refinement<Page> {
             rectJ.setRect(blockJ.x - spaceJ, blockJ.y,
                     blockJ.width + 2 * spaceJ, blockJ.height);
 
-            if (rectI.intersects(rectJ) && !blockI.equals(blockJ)) {
+            if (rectI.intersects(blockJ) && !blockI.equals(blockJ)) {
                 united = true;
                 j = -1;
 
