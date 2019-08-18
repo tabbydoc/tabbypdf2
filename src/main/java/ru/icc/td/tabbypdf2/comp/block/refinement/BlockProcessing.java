@@ -21,7 +21,8 @@ public class BlockProcessing implements Processing<Page> {
     }
 
     private void setRefinements() {
-        refinements.addAll(Arrays.asList(new ChunkIDRefinement(), new IntersectedBlocks(),
-                new SeparatedWords(), new IsolatedBlocks()));
+        refinements.addAll(Arrays.asList(new IntersectedBlocks(), new IsolatedBlocks(), new SeparatedWords(),
+                new ChunkIDRefinement(),
+                new IntersectedBlocks(), new SeparatedWords(), new IsolatedBlocks()));
     }
 }

@@ -18,6 +18,7 @@ public final class Word extends Rectangle2D.Double {
     double averageSpaceWidth = 0f;
 
     private Line line;
+    private Block block;
 
     {
         fonts = new HashSet<>(10);
@@ -79,6 +80,14 @@ public final class Word extends Rectangle2D.Double {
     private void setText(String text) {
         assert (null != text && !text.isEmpty());
         this.text = text;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
     }
 
     public Set<Font> getFonts() {

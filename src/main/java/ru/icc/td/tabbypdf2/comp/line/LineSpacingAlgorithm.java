@@ -5,7 +5,6 @@ import ru.icc.td.tabbypdf2.comp.util.FontVerification;
 import ru.icc.td.tabbypdf2.interfaces.Algorithm;
 import ru.icc.td.tabbypdf2.model.Line;
 import ru.icc.td.tabbypdf2.model.Page;
-import ru.icc.td.tabbypdf2.model.Word;
 
 import java.util.Comparator;
 import java.util.HashSet;
@@ -78,13 +77,7 @@ public class LineSpacingAlgorithm implements Algorithm {
         double meanH = statH.getMean();
         double c = meanS / meanH;
 
-        for (Line l : currentLines) {
-            l.setLineSpace(c);
-
-            for (Word w : l.getWords()) {
-                w.setLine(l);
-            }
-        }
+        currentLines.forEach(line -> line.setLineSpace(c));
     }
 
     private void setAll(Page page) {

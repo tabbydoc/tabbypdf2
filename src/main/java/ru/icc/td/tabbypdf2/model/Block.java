@@ -20,6 +20,13 @@ public class Block extends Rectangle2D.Double {
 
     public Block(List<Word> words) {
         this.words.addAll(words);
+        assign(this.words);
+        setAll();
+    }
+
+    public Block(Word word) {
+        this.words.add(word);
+        assign(this.words);
         setAll();
     }
 
@@ -65,18 +72,28 @@ public class Block extends Rectangle2D.Double {
         return words;
     }
 
-    public void addWords(Collection<Word> words) {
+    public void addWord(Word word) {
+        this.words.add(word);
+        assign(word);
+        setAll();
+    }
+
+    public void addWords(List<Word> words) {
         this.words.addAll(words);
+        assign(words);
         setAll();
     }
 
-    public void removeWord(Word word) {
-        words.remove(word);
+    public boolean removeWord(Word word) {
+        boolean removed = this.words.remove(word);
+        reassign(word);
         setAll();
+        return removed;
     }
 
-    public void removeWords(Collection<Word> words) {
+    public void removeWords(List<Word> words) {
         this.words.removeAll(words);
+        reassign(words);
         setAll();
     }
 
@@ -152,5 +169,21 @@ public class Block extends Rectangle2D.Double {
         }
 
         return neighbours;
+    }
+
+    private void assign(List<Word> words) {
+        words.forEach(word -> assign(word));
+    }
+
+    private void assign(Word word) {
+        word.setBlock(this);
+    }
+
+    private void reassign(List<Word> words) {
+        words.forEach(word -> reassign(word));
+    }
+
+    private void reassign(Word word) {
+        word.setBlock(null);
     }
 }
