@@ -37,39 +37,47 @@ class ChunkIDRefinement implements Refinement<Page> {
                     break;
                 }
 
-                if (id2 != id1) {
-                    continue;
-                }
-
-                if (!wordI.equals(wordJ) &&
+                if (id1 == id2 && !wordI.equals(wordJ) &&
                         !wordJ.getBlock().equals(block)) {
-                    separate(wordI, wordJ);
-                    break;
+                    if (separate(wordI)) {
+                        i = -1;
+                        j = -1;
+                    }
+
+                    if (separate(wordJ)) {
+                        i = -1;
+                        j = -1;
+                    }
                 }
             }
-
-            words.remove(wordI);
-            i = -1;
         }
-
-        page.addBlocks(blocks);
     }
 
-    private void separate(Word wordI, Word wordJ) {
+    // delete from the block all words with the same id;
+    // compose blocks with the words;
+    // add to block list;
+    // delete from word list;
+    private boolean separate(Word word) {
+        Block block = word.getBlock();
 
+        if (block.getWords().size() > 1) {
+            List<Word> words = block.getWords();
+            int id1 = word.getStartChunkID();
 
+            for (int i = 0; i < words.size(); i++) {
+                Word wordI = words.get(i);
 
+                if (id1 == wordI.getStartChunkID()) {
+                    block.removeWord(wordI);
+                    i--;
 
-
-        /*separateByID(wordI.getStartChunkID());
-
-        if (wordI.getBlock().removeWord(wordI)) {
-            blocks.add(new Block(wordI));
+                    this.blocks.add(new Block(wordI));
+                    this.words.remove(wordI);
+                }
+            }
+            return true;
         }
 
-        if (wordJ.getBlock().removeWord(wordJ)) {
-            blocks.add(new Block(wordJ));
-            words.remove(wordJ);
-        }*/
+        return false;
     }
 }
