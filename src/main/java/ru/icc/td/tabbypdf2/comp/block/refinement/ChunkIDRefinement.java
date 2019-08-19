@@ -37,11 +37,14 @@ class ChunkIDRefinement implements Refinement<Page> {
                     break;
                 }
 
-                if (id1 == id2 && !wordI.equals(wordJ) &&
+                if (id2 != id1) {
+                    continue;
+                }
+
+                if (!wordI.equals(wordJ) &&
                         !wordJ.getBlock().equals(block)) {
                     separate(wordI, wordJ);
-
-                    j--;
+                    break;
                 }
             }
 
@@ -53,6 +56,13 @@ class ChunkIDRefinement implements Refinement<Page> {
     }
 
     private void separate(Word wordI, Word wordJ) {
+
+
+
+
+
+        /*separateByID(wordI.getStartChunkID());
+
         if (wordI.getBlock().removeWord(wordI)) {
             blocks.add(new Block(wordI));
         }
@@ -60,6 +70,6 @@ class ChunkIDRefinement implements Refinement<Page> {
         if (wordJ.getBlock().removeWord(wordJ)) {
             blocks.add(new Block(wordJ));
             words.remove(wordJ);
-        }
+        }*/
     }
 }

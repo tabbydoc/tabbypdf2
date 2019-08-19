@@ -125,4 +125,9 @@ public final class Word extends Rectangle2D.Double {
     public double getAverageSpaceWidth() {
         return averageSpaceWidth;
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + this.getStartChunkID();
+    }
 }

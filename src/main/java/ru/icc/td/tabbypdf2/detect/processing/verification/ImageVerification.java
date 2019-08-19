@@ -11,6 +11,7 @@ public class ImageVerification implements Verification {
     public boolean verify(Prediction prediction) {
         List<Rectangle2D> images = prediction.getPage().getImageBounds();
         Rectangle2D rectangle = prediction.getBounds2D();
+        boolean size = prediction.getBlocks().size() <= 1;
 
         for(Rectangle2D image : images) {
 
@@ -19,7 +20,7 @@ public class ImageVerification implements Verification {
                 Rectangle2D intersection = image.createIntersection(rectangle);
                 double square2 = intersection.getHeight() * intersection.getWidth();
 
-                if (square2/square1 > 0.5) {
+                if (square2 / square1 > 0.5 && size) {
                     return false;
                 }
             }

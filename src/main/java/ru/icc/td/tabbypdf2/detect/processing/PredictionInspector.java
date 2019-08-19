@@ -12,6 +12,7 @@ import ru.icc.td.tabbypdf2.model.Prediction;
 import ru.icc.td.tabbypdf2.model.Table;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class PredictionInspector implements Inspector<Prediction> {
@@ -55,10 +56,8 @@ public class PredictionInspector implements Inspector<Prediction> {
 
     private void setAll(){
         // Verifications
-        verifications.add(new StructureVerification());
-        verifications.add(new ImageVerification());
-        verifications.add(new DiagramVerification());
-        // verifications.add(new ParagraphVerification());
+        verifications.addAll(Arrays.asList(new StructureVerification(), new ImageVerification(),
+                new DiagramVerification()));
         // Refinements
         refinements.add(new ParagraphRefinement());
     }
