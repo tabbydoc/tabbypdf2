@@ -1,5 +1,6 @@
 package ru.icc.td.tabbypdf2.comp.block.refinement;
 
+import ru.icc.td.tabbypdf2.comp.util.Line2DVerification;
 import ru.icc.td.tabbypdf2.interfaces.Refinement;
 import ru.icc.td.tabbypdf2.model.Block;
 import ru.icc.td.tabbypdf2.model.Page;
@@ -7,12 +8,16 @@ import ru.icc.td.tabbypdf2.model.Page;
 import java.awt.geom.Rectangle2D;
 import java.util.List;
 
+import static ru.icc.td.tabbypdf2.comp.util.Line2DVerification.Orientation.VERTICAL;
+
 class IsolatedBlocks implements Refinement<Page> {
     private List<Block> blocks;
+    private Page page;
 
     @Override
     public void refine(Page page) {
         blocks = page.getBlocks();
+        this.page = page;
 
         Block blockI;
 
@@ -40,7 +45,7 @@ class IsolatedBlocks implements Refinement<Page> {
         for (int j = 0; j < blocks.size(); j++) {
             blockJ = blocks.get(j);
 
-            if (rectI.intersects(blockJ) && !blockI.equals(blockJ)) {
+            if (rectI.intersects(blockJ) && checkAll(blockI, blockJ)) {
                 united = true;
                 j = -1;
 
@@ -52,5 +57,12 @@ class IsolatedBlocks implements Refinement<Page> {
         }
 
         return united;
+    }
+
+    private boolean checkAll(Block blockI, Block blockJ) {
+        boolean isRuling = Line2DVerification.verify(blockI, blockJ, page.getRulings(), VERTICAL);
+        boolean isCursorTrace = Line2DVerification.verify(blockI, blockJ, page.getCursorTraces(), VERTICAL);
+
+        return !isRuling && !isCursorTrace && !blockI.equals(blockJ);
     }
 }

@@ -86,6 +86,16 @@ public final class TableExtractor {
         return arg == null || arg.isEmpty();
     }
 
+    private boolean useAnnModel;
+
+    private Document loadDocument(File file) throws IOException {
+        return new DocumentLoader().load(file.toPath());
+    }
+
+    private Document recomposeDocument(Document originDocument) {
+        return null;
+    }
+
     public void run(String[] args) throws Exception {
         CmdLineParser parser = new CmdLineParser(this);
         try {
@@ -123,7 +133,7 @@ public final class TableExtractor {
             if (useDebug)
                 debugPath = outputPath.resolve("debug");
 
-            boolean useAnnModel = AppConfig.isUseANNModel();
+            useAnnModel = AppConfig.isUseANNModel();
             if (useAnnModel) {
                 Path pathToModel = Paths.get(AppConfig.getPathToANNModel());
                 Path pathToLabelMap = Paths.get(AppConfig.getPathToLabelMap());
@@ -151,7 +161,7 @@ public final class TableExtractor {
                     int size = files.size();
 
                     for (File file : files) {
-                        System.out.println(i + "/" + size + " " + file.getCanonicalPath());
+                        System.out.printf("%d / %d  %s\n", i, size, file.getCanonicalPath());
                         processDocument(file);
                         i++;
                     }
@@ -167,14 +177,6 @@ public final class TableExtractor {
             parser.printUsage(System.err);
             System.exit(1);
         }
-    }
-
-    private Document loadDocument(File file) throws IOException {
-        return new DocumentLoader().load(file.toPath());
-    }
-
-    private Document recomposeDocument(Document originDocument) {
-        return null;
     }
 
     private boolean extractTables(Document recomposedDocument) throws IOException {
@@ -250,15 +252,17 @@ public final class TableExtractor {
 
             recomposedDocument = recomposeDocument(originDocument);
 
-            if (extractTables(originDocument) && useDebug) {
-                File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
-                FileWriter fileWriter = new FileWriter(out);
-                List<Table> tables = new ArrayList<Table>();
-                for (Page page: originDocument.getPages()) {
-                    tables.addAll(page.getTables());
+            if (useAnnModel) {
+                if (extractTables(originDocument) && useDebug) {
+                    File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
+                    FileWriter fileWriter = new FileWriter(out);
+                    List<Table> tables = new ArrayList<Table>();
+                    for (Page page : originDocument.getPages()) {
+                        tables.addAll(page.getTables());
+                    }
+                    writeTables(tables, fileWriter, originDocument.getFileName());
+                    fileWriter.close();
                 }
-                writeTables(tables, fileWriter, originDocument.getFileName());
-                fileWriter.close();
             }
 
             if (useDebug) {
