@@ -61,6 +61,7 @@ public class PredictionProcessing implements Processing<Prediction> {
     }
 
     private void setAll(){
+        // TODO: refactor verifications and refinement
         // Verifications
         verifications.addAll(Arrays.asList(new StructureVerification(),
                 new ImageVerification(), new DiagramVerification()));

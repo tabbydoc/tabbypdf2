@@ -13,7 +13,6 @@ public class ParagraphRefinement implements Refinement<Prediction> {
     private final ParagraphVerification paragraphVerification = new ParagraphVerification();
     private final StructureVerification structureVerification = new StructureVerification();
 
-    // TODO: refactor this
     @Override
     public void refine(Prediction prediction) {
 

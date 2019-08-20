@@ -35,7 +35,12 @@ class ChunkIDRefinement implements Refinement<Page> {
 
                 if (id1 == id2 && !wordI.equals(wordJ) &&
                         !wordJ.getBlock().equals(block)) {
-                    if (separate(wordI) || separate(wordJ)) {
+                    if (separate(wordI)) {
+                        i = -1;
+                        j = -1;
+                    }
+
+                    if (separate(wordJ)) {
                         i = -1;
                         j = -1;
                     }
