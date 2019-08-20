@@ -1,0 +1,64 @@
+package ru.icc.td.tabbypdf2.detect.processing.recognition.projection;
+
+import ru.icc.td.tabbypdf2.detect.processing.recognition.Projection;
+import ru.icc.td.tabbypdf2.detect.processing.recognition.Recognition;
+import ru.icc.td.tabbypdf2.model.Block;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+class ProjectionRecognizerOld implements Recognition<List<Block>> {
+    private List<Projection> projections;
+
+    @Override
+    public void recognize(List<Block> blocks) {
+        setProjections(blocks);
+        uniteProjections();
+        setLevels();
+
+    }
+
+    private void uniteProjections() {
+        Projection pI;
+        Projection pJ;
+
+        for (int i = 0; i < projections.size(); i++) {
+            pI = projections.get(i);
+
+            for (int j = 0; j < projections.size(); j++) {
+                pJ = projections.get(j);
+
+                if (pI != pJ && pI.intersectsProjection(pJ)) {
+                    pI = pI.createIntersection(pJ);
+                    projections.remove(pJ);
+                    j--;
+                    i = -1;
+                }
+            }
+        }
+    }
+
+    private void setLevels(){
+        Projection p;
+        projections.sort(Comparator.comparing(Projection::getEnd).reversed());
+
+        for (int i = 0; i < projections.size(); i++) {
+            p = projections.get(i);
+            p.setLevel(i);
+        }
+    }
+
+    private void setProjections(List<Block> blocks) {
+        projections = new ArrayList<>();
+        blocks.sort(Comparator.comparing(Block::getMaxY).reversed().thenComparing(Block::getMinX));
+        blocks.forEach(block -> projections.add(createProjection(block)));
+    }
+
+    private Projection createProjection(Block block) {
+        double y1 = block.y;
+        double y2 = block.y + block.height;
+
+        return new Projection(y1, y2);
+    }
+}
