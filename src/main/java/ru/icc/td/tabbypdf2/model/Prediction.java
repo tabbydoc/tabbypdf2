@@ -4,7 +4,7 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 import ru.icc.td.tabbypdf2.detect.processing.recognition.Projection;
-import ru.icc.td.tabbypdf2.detect.processing.recognition.StructureRecognizer;
+import ru.icc.td.tabbypdf2.detect.processing.recognition.StructureComposer;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
@@ -17,14 +17,6 @@ public class Prediction extends Rectangle2D.Double {
     private Graph<Block, DefaultWeightedEdge> structure = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
     private boolean isTruthful;
     private Map<Projection.Horizontal, List<Projection.Vertical>> map;
-
-    public Map<Projection.Horizontal, List<Projection.Vertical>> getMap() {
-        return map;
-    }
-
-    public void setMap(Map<Projection.Horizontal, List<Projection.Vertical>> map) {
-        this.map = map;
-    }
 
     public Prediction(Rectangle2D prediction, Page page){
         this.page = page;
@@ -81,6 +73,14 @@ public class Prediction extends Rectangle2D.Double {
         setRect(minX, minY, maxX - minX, maxY - minY);
     }
 
+    public Map<Projection.Horizontal, List<Projection.Vertical>> getMap() {
+        return map;
+    }
+
+    public void setMap(Map<Projection.Horizontal, List<Projection.Vertical>> map) {
+        this.map = map;
+    }
+
     private void setPageBlocks(Page page) {
         this.pageBlocks = new ArrayList<>(page.getBlocks());
     }
@@ -120,7 +120,7 @@ public class Prediction extends Rectangle2D.Double {
     }
 
     private void updateStructure() {
-        StructureRecognizer structureRecognizer = new StructureRecognizer();
-        structureRecognizer.recognize(this);
+        StructureComposer structureComposer = new StructureComposer();
+        structureComposer.compose(this);
     }
 }

@@ -1,14 +1,15 @@
 package ru.icc.td.tabbypdf2.detect.processing.recognition;
 
+import ru.icc.td.tabbypdf2.interfaces.Algorithm;
 import ru.icc.td.tabbypdf2.model.Block;
 import ru.icc.td.tabbypdf2.model.Prediction;
 
 import java.util.*;
 
-public class ProjectionRecognizer implements Recognition<Prediction> {
+public class ProjectionAlgorithm implements Algorithm<Prediction> {
 
     @Override
-    public void recognize(Prediction prediction) {
+    public void start(Prediction prediction) {
         Map<Projection.Horizontal, List<Projection.Vertical>> map = new HashMap<>();
         Horizontal horizontal = new Horizontal(prediction.getBlocks(), prediction.getMaxY());
         Vertical vertical = new Vertical(prediction.getBlocks());

@@ -19,10 +19,8 @@ class IsolatedBlocks implements Refinement<Page> {
         blocks = page.getBlocks();
         this.page = page;
 
-        Block blockI;
-
         for (int i = 0; i < blocks.size(); i++) {
-            blockI = blocks.get(i);
+            Block blockI = blocks.get(i);
 
             if (union(blockI)) {
                 i = -1;
@@ -40,10 +38,8 @@ class IsolatedBlocks implements Refinement<Page> {
         rectI.setRect(blockI.x - (1 + CONST) * spaceI, blockI.y,
                 blockI.width + 2 * (1 + CONST) * spaceI, blockI.height);
 
-        Block blockJ;
-
         for (int j = 0; j < blocks.size(); j++) {
-            blockJ = blocks.get(j);
+            Block blockJ = blocks.get(j);
 
             if (rectI.intersects(blockJ) && checkAll(blockI, blockJ)) {
                 united = true;

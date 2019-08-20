@@ -1,4 +1,4 @@
-package ru.icc.td.tabbypdf2.comp.block.trecs;
+package ru.icc.td.tabbypdf2.comp.block;
 
 import ru.icc.td.tabbypdf2.comp.util.FontVerification;
 import ru.icc.td.tabbypdf2.comp.util.Line2DVerification;
@@ -14,7 +14,7 @@ import java.util.List;
 import static ru.icc.td.tabbypdf2.comp.util.Line2DVerification.Orientation.HORIZONTAL;
 import static ru.icc.td.tabbypdf2.comp.util.Line2DVerification.Orientation.VERTICAL;
 
-public class TRecsAlgorithm implements Algorithm {
+public class TRecsAlgorithm implements Algorithm<Page> {
     private final List<Word> blockWords = new ArrayList<>();
     private List<Word> words;
     private Page page;
@@ -23,16 +23,13 @@ public class TRecsAlgorithm implements Algorithm {
     public void start(Page page) {
         setAll(page);
 
-        Word word;
-        Block block;
-
         while (!words.isEmpty()) {
             blockWords.clear();
 
-            word = words.get(0);
+            Word word = words.get(0);
             addWord(word);
 
-            block = new Block(blockWords);
+            Block block = new Block(blockWords);
             page.addBlock(block);
         }
     }
@@ -50,9 +47,8 @@ public class TRecsAlgorithm implements Algorithm {
         Rectangle2D rectangle = new Rectangle2D.Double(word.x, word.y - (1 + lineSpace) * height,
                 word.width, (3 + 2 * lineSpace) * height);
 
-        Word wordI;
         for (int i = 0; i < words.size(); i++) {
-            wordI = words.get(i);
+            Word wordI = words.get(i);
 
             if (rectangle.intersects(wordI) && checkAll(word, wordI)) {
                 addWord(wordI);

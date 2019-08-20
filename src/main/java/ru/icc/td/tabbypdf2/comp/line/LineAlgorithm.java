@@ -9,7 +9,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LineAlgorithm implements Algorithm {
+public class LineAlgorithm implements Algorithm<Page> {
 
     @Override
     public void start(Page page) {
@@ -19,18 +19,16 @@ public class LineAlgorithm implements Algorithm {
         List<Word> lineWords = new ArrayList<>();
 
         Rectangle2D rect = new Rectangle2D.Double();
-        Word wordI;
-        Word wordJ;
 
         for (int i = 0; i < words.size(); i++) {
-            wordI = words.get(i);
+            Word wordI = words.get(i);
             lineWords.clear();
 
             lineWords.add(wordI);
             rect.setRect(0d, wordI.y, width, wordI.height);
 
             for (int j = 0; j < words.size(); j++) {
-                wordJ = words.get(j);
+                Word wordJ = words.get(j);
 
                 if (rect.intersects(wordJ) && !wordI.equals(wordJ)) {
                     lineWords.add(wordJ);

@@ -12,7 +12,7 @@ public class BlockProcessing implements Processing<Page> {
     private final List<Refinement<Page>> refinements = new ArrayList<>();
 
     public BlockProcessing() {
-        setRefinements();
+        setAll();
     }
 
     @Override
@@ -20,9 +20,8 @@ public class BlockProcessing implements Processing<Page> {
         refinements.forEach(r -> r.refine(page));
     }
 
-    private void setRefinements() {
-        refinements.addAll(Arrays.asList(new IntersectedBlocks(), new IsolatedBlocks(), new SeparatedWords(),
-                new ChunkIDRefinement(),
-                new IntersectedBlocks(), new SeparatedWords(), new IsolatedBlocks()));
+    private void setAll() {
+        refinements.addAll(Arrays.asList(new IntersectedBlocks(), new IsolatedBlocks(),
+                new ChunkIDRefinement(), new IntersectedBlocks(), new IsolatedBlocks()));
     }
 }

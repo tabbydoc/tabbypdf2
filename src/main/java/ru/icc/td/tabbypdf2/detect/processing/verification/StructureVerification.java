@@ -2,6 +2,7 @@ package ru.icc.td.tabbypdf2.detect.processing.verification;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
+import ru.icc.td.tabbypdf2.interfaces.Verification;
 import ru.icc.td.tabbypdf2.model.Block;
 import ru.icc.td.tabbypdf2.model.Prediction;
 

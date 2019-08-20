@@ -13,10 +13,8 @@ class IntersectedBlocks implements Refinement<Page> {
     public void refine(Page page) {
         blocks = page.getBlocks();
 
-        Block blockI;
-
         for (int i = 0; i < blocks.size(); i++) {
-            blockI = blocks.get(i);
+            Block blockI = blocks.get(i);
 
             if (union(blockI)) {
                 i = -1;
@@ -25,11 +23,10 @@ class IntersectedBlocks implements Refinement<Page> {
     }
 
     private boolean union(Block blockI) {
-        Block blockJ;
         boolean changed = false;
 
         for (int j = 0; j < blocks.size(); j++) {
-            blockJ = blocks.get(j);
+            Block blockJ = blocks.get(j);
 
             if (blockI.intersects(blockJ) && !blockI.equals(blockJ)) {
                 changed = true;

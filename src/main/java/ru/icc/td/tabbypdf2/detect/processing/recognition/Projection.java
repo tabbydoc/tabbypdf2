@@ -31,10 +31,6 @@ public abstract class Projection extends Line2D {
         this(0, 0, -1);
     }
 
-    public static Map<Horizontal, List<Vertical>> getMap() {
-        return map;
-    }
-
     public static void setMap(Map<Horizontal, List<Vertical>> projections) {
         map = new HashMap<>(projections);
     }
@@ -101,9 +97,6 @@ public abstract class Projection extends Line2D {
     }
 
     public static class Horizontal extends Projection {
-        public Horizontal() {
-            super();
-        }
 
         public Horizontal(double start, double end, double position) {
             super(start, end, position);
@@ -154,9 +147,6 @@ public abstract class Projection extends Line2D {
     }
 
     public static class Vertical extends Projection {
-        public Vertical() {
-            super();
-        }
 
         public Vertical(double start, double end, double position) {
             super(start, end, position);
