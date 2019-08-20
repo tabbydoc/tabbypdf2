@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Hashtable;
@@ -108,8 +109,10 @@ public final class DebuggingDrawer {
     }
 
     private void drawDocument(Document document, PDFContentDrawer contentDrawer) throws IOException {
-        for (Page page : document.getPages())
+        for (Page page : document.getPages()) {
             drawPage(page, contentDrawer);
+        }
+        document.close();
     }
 
     private void drawPage(Page page, PDFContentDrawer contentDrawer) throws IOException {
@@ -143,10 +146,13 @@ public final class DebuggingDrawer {
                         } else
                             fillColor = null;
 
-                        lineWidth = Float.valueOf(lineW);
+                        lineWidth = Float.parseFloat(lineW);
                         contentDrawer.setStyle(strokeColor, fillColor, lineWidth);
 
                         m.invoke(obj.newInstance(), page, contentDrawer);
+                    } catch (InvocationTargetException e) {
+                        Throwable exception = e.getTargetException();
+                        exception.printStackTrace();
                     } catch (Exception e){
                         e.printStackTrace();
                         System.exit(1);
@@ -210,6 +216,20 @@ public final class DebuggingDrawer {
     private void drawTables(Page page, PDFContentDrawer contentDrawer) throws IOException {
         for (Table table: page.getTables()) {
             contentDrawer.strokeRectangle(table);
+
+            /*if (table.getMap() == null) {
+                return;
+            }
+
+            Set<Projection.Horizontal> horizontals = table.getMap().keySet();
+
+            for (Projection.Horizontal horizontal : horizontals) {
+                contentDrawer.strokeLine(horizontal);
+
+                for (Projection.Vertical vertical : table.getMap().get(horizontal)) {
+                    contentDrawer.strokeLine(vertical);
+                }
+            }*/
         }
     }
 

@@ -3,17 +3,28 @@ package ru.icc.td.tabbypdf2.model;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
+import ru.icc.td.tabbypdf2.detect.processing.recognition.Projection;
 import ru.icc.td.tabbypdf2.detect.processing.recognition.StructureRecognizer;
 
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Prediction extends Rectangle2D.Double {
     private Page page;
     private List<Block> blocks = new ArrayList<>();
     private Graph<Block, DefaultWeightedEdge> structure = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
     private boolean isTruthful;
+    private Map<Projection.Horizontal, List<Projection.Vertical>> map;
+
+    public Map<Projection.Horizontal, List<Projection.Vertical>> getMap() {
+        return map;
+    }
+
+    public void setMap(Map<Projection.Horizontal, List<Projection.Vertical>> map) {
+        this.map = map;
+    }
 
     public Prediction(Rectangle2D prediction, Page page){
         this.page = page;

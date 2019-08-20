@@ -1,7 +1,7 @@
 package ru.icc.td.tabbypdf2.detect.processing.recognition;
 
-interface Recognition<T, S> {
+public interface Recognition<T> {
 
-    S recognize(T obj);
+    void recognize(T obj);
 
 }

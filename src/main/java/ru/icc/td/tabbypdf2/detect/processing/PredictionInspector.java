@@ -17,10 +17,9 @@ import java.util.List;
 
 public class PredictionInspector implements Inspector<Prediction> {
     private final StructureRecognizer recognition = new StructureRecognizer();
-    private final TableComposer tableComposer = new TableComposer();
     private final List<Verification> verifications = new ArrayList<>();
     private final List<Refinement<Prediction>> refinements = new ArrayList<Refinement<Prediction>>();
-    private Table table = null;
+    private Table table;
 
     public PredictionInspector() {
         setAll();
@@ -32,7 +31,7 @@ public class PredictionInspector implements Inspector<Prediction> {
             return false;
         }
 
-        prediction = recognition.recognize(prediction);
+        recognition.recognize(prediction);
 
         for (Verification v : verifications) {
 
@@ -49,7 +48,9 @@ public class PredictionInspector implements Inspector<Prediction> {
             }
         }
 
-        this.table = tableComposer.compose(prediction);
+        Table table = new Table(prediction.getBlocks(), prediction.getPage(), prediction.getStructure());
+        table.setMap(prediction.getMap());
+        this.table = table;
 
         return true;
     }
