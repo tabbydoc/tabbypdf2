@@ -19,18 +19,14 @@ class ChunkIDRefinement implements Refinement<Page> {
         words.sort(Comparator.comparing(Word::getStartChunkID));
         blocks = page.getBlocks();
 
-        Word wordI;
-        Word wordJ;
-        Block block;
-
         for (int i = 0; i < words.size(); i++) {
-            wordI = words.get(i);
+            Word wordI = words.get(i);
 
-            block = wordI.getBlock();
+            Block block = wordI.getBlock();
             int id1 = wordI.getStartChunkID();
 
             for (int j = 0; j < words.size(); j++) {
-                wordJ = words.get(j);
+                Word wordJ = words.get(j);
                 int id2 = wordJ.getStartChunkID();
 
                 if (id2 > id1) {
@@ -39,12 +35,7 @@ class ChunkIDRefinement implements Refinement<Page> {
 
                 if (id1 == id2 && !wordI.equals(wordJ) &&
                         !wordJ.getBlock().equals(block)) {
-                    if (separate(wordI)) {
-                        i = -1;
-                        j = -1;
-                    }
-
-                    if (separate(wordJ)) {
+                    if (separate(wordI) || separate(wordJ)) {
                         i = -1;
                         j = -1;
                     }
@@ -53,10 +44,6 @@ class ChunkIDRefinement implements Refinement<Page> {
         }
     }
 
-    // delete from the block all words with the same id;
-    // compose blocks with the words;
-    // add to block list;
-    // delete from word list;
     private boolean separate(Word word) {
         Block block = word.getBlock();
 

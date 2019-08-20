@@ -1,5 +1,6 @@
 package ru.icc.td.tabbypdf2.detect.processing.verification;
 
+import ru.icc.td.tabbypdf2.interfaces.Verification;
 import ru.icc.td.tabbypdf2.model.Prediction;
 
 import java.awt.geom.Rectangle2D;

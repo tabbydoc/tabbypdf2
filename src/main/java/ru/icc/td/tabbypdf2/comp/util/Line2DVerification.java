@@ -6,40 +6,6 @@ import java.util.List;
 
 public final class Line2DVerification {
 
-    /*public static <L extends Line2D.Double,
-            R extends Rectangle2D.Double> boolean verify(R rec1, R rec2, List<L> list, Orientation orientation) {
-        boolean condition1;
-        boolean condition2;
-        double xMin = Math.min(rec1.getMinX(), rec2.getMinX());
-        double xMax = Math.max(rec1.getMaxX(), rec1.getMaxX());
-
-        for (Line2D line : list) {
-
-            if (orientation == Orientation.HORIZONTAL && line.getY1() == line.getY2()) {
-                condition1 = (rec1.getMinY() > line.getY1() && rec2.getMaxY() < line.getY1()) ||
-                        (rec2.getMinY() > line.getY1() && rec1.getMaxY() < line.getY1());
-                condition2 =
-
-                if (condition1) {
-                    return true;
-                }
-
-                continue;
-            }
-
-            if (orientation == Orientation.VERTICAL && line.getX1() == line.getX2()) {
-                condition1 = (rec1.getMinX() > line.getX1() && rec2.getMaxX() < line.getX1()) ||
-                        (rec2.getMinX() > line.getX1() && rec1.getMaxX() < line.getX1());
-
-                if (condition1) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }*/
-
     public static <L extends Line2D.Double,
             R extends Rectangle2D.Double> boolean verify(R rec1, R rec2, List<L> list, Orientation orientation) {
         Rectangle2D rec = new Rectangle2D.Double();

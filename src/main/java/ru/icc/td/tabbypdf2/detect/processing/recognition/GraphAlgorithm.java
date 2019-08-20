@@ -3,21 +3,26 @@ package ru.icc.td.tabbypdf2.detect.processing.recognition;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
+import ru.icc.td.tabbypdf2.interfaces.Algorithm;
 import ru.icc.td.tabbypdf2.model.Block;
+import ru.icc.td.tabbypdf2.model.Prediction;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-class GraphComposer {
+class GraphAlgorithm implements Algorithm<Prediction> {
     private Graph<Block, DefaultWeightedEdge> graph;
     private List<Block> blocks;
     private List<Block> rootBlocks;
 
-    Graph<Block, DefaultWeightedEdge> compose(List<Block> blocks) {
+    @Override
+    public void start(Prediction prediction) {
+        List<Block> blocks = prediction.getBlocks();
+
         if (blocks.isEmpty()) {
-            return null;
+            return;
         }
 
         setAll(blocks);
@@ -30,15 +35,14 @@ class GraphComposer {
             }
         });
 
-        return graph;
+        prediction.setStructure(graph);
     }
 
     private void doNext(Block block) {
         List<Block> neighbours = block.findNeighbours(blocks);
         int level1 = Projection.getLevel(block);
 
-        for (int i = 0; i < neighbours.size(); i++) {
-            Block neighbour = neighbours.get(i);
+        for (Block neighbour : neighbours) {
             int level2 = Projection.getLevel(neighbour);
             boolean isAdded = graph.addVertex(neighbour);
 

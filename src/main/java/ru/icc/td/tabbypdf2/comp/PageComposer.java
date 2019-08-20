@@ -4,7 +4,7 @@ import ru.icc.td.tabbypdf2.comp.block.BlockComposer;
 import ru.icc.td.tabbypdf2.comp.line.LineComposer;
 import ru.icc.td.tabbypdf2.model.Page;
 
-public class PageComposer {
+public final class PageComposer {
     private final WordComposer wordComposer = new WordComposer();
     private final BlockComposer blockComposer = new BlockComposer();
     private final InterColumnGapExtractor interColumnGapExtractor = new InterColumnGapExtractor();
@@ -14,10 +14,9 @@ public class PageComposer {
         if (null == page)
             return;
 
-        // Check that page does not contain nulls
-        wordComposer.composeWords(page);
+        wordComposer.compose(page);
         lineComposer.compose(page);
         blockComposer.compose(page);
-        interColumnGapExtractor.composeGaps(page);
+        // interColumnGapExtractor.composeGaps(page);
     }
 }

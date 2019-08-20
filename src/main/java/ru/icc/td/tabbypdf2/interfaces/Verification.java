@@ -1,4 +1,4 @@
-package ru.icc.td.tabbypdf2.detect.processing.verification;
+package ru.icc.td.tabbypdf2.interfaces;
 
 import ru.icc.td.tabbypdf2.model.Prediction;
 

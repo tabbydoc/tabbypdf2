@@ -11,10 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class LineSpacingAlgorithm implements Algorithm {
+public class LineSpacingAlgorithm implements Algorithm<Page> {
+    private final DescriptiveStatistics statS = new DescriptiveStatistics();
+    private final DescriptiveStatistics statH = new DescriptiveStatistics();
     private List<Line> lines;
-    private DescriptiveStatistics statS = new DescriptiveStatistics();
-    private DescriptiveStatistics statH = new DescriptiveStatistics();
     private Set<Line> currentLines;
 
     private int size;
@@ -23,10 +23,8 @@ public class LineSpacingAlgorithm implements Algorithm {
     public void start(Page page) {
         setAll(page);
 
-        Line line;
-
         for (int i = 0; i < size; i++) {
-            line = lines.get(i);
+            Line line = lines.get(i);
 
             if (currentLines.contains(line)) {
                 continue;
@@ -46,10 +44,8 @@ public class LineSpacingAlgorithm implements Algorithm {
     }
 
     private void findNext(Line line1, int iterator) {
-        Line line2;
-
         for (int i = iterator + 1; i < size; i++) {
-            line2 = lines.get(i);
+            Line line2 = lines.get(i);
 
             if (currentLines.contains(line2)) {
                 continue;

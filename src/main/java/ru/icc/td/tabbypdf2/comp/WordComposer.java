@@ -1,33 +1,33 @@
 package ru.icc.td.tabbypdf2.comp;
 
-import ru.icc.td.tabbypdf2.model.Page;
+import ru.icc.td.tabbypdf2.interfaces.Composer;
 import ru.icc.td.tabbypdf2.model.CharPosition;
+import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Word;
-
-import static ru.icc.td.tabbypdf2.model.Constants.TOLERANCE;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.Float.MAX_VALUE;
 import static java.lang.Float.min;
+import static ru.icc.td.tabbypdf2.model.Constants.TOLERANCE;
 
-public final class WordComposer {
+public final class WordComposer implements Composer<Page> {
 
-    public void composeWords(Page page) {
+    public void compose(Page page) {
         List<CharPosition> charPositions = page.getCharPositions();
 
         if (charPositions.isEmpty())
             return;
 
-        List<Word> words = composeWords(charPositions);
+        List<Word> words = compose(charPositions);
         page.addWords(words);
     }
 
     private final List<CharPosition> wordCharPositions = new ArrayList<>(25);
     private final List<Word> words = new ArrayList<>(400);
 
-    private List<Word> composeWords(List<CharPosition> charPositions) {
+    private List<Word> compose(List<CharPosition> charPositions) {
 
         if (charPositions.isEmpty())
             return null;

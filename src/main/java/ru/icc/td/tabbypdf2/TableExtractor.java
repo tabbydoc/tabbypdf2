@@ -13,7 +13,7 @@ import ru.icc.td.tabbypdf2.config.AppConfig;
 import ru.icc.td.tabbypdf2.debug.DebuggingDrawer;
 import ru.icc.td.tabbypdf2.detect.PdfToImage;
 import ru.icc.td.tabbypdf2.detect.RcnnTableDetector;
-import ru.icc.td.tabbypdf2.detect.processing.PredictionInspector;
+import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Prediction;
@@ -161,9 +161,12 @@ public final class TableExtractor {
                     int size = files.size();
 
                     for (File file : files) {
-                        System.out.printf("%d / %d  %s\n", i, size, file.getCanonicalPath());
-                        processDocument(file);
+                        int percent = Math.round((i * 100) / size);
+                        System.out.printf("%d / %d  %d%% %s\n",
+                                i, size, percent, file.getCanonicalPath());
                         i++;
+
+                        processDocument(file);
                     }
                 }
             } else {
@@ -190,10 +193,10 @@ public final class TableExtractor {
 
         PdfToImage pdfToImage = new PdfToImage(recomposedDocument.getSourceFile());
 
-        PredictionInspector processing = new PredictionInspector();
+        PredictionProcessing processing = new PredictionProcessing();
 
         List<Rectangle2D> tables;
-        for (Page page: pages) {
+        for (Page page : pages) {
             BufferedImage img = pdfToImage.getImageForPage(page.getIndex());
             Mat imgResult = matify(img);
             Mat bw = new Mat();
@@ -216,23 +219,24 @@ public final class TableExtractor {
                 continue;
             if (tables.isEmpty())
                 continue;
-            for (Rectangle2D rect: tables) {
+            for (Rectangle2D rect : tables) {
                 Prediction prediction = new Prediction(rect, page);
+                processing.process(prediction);
 
-                if (processing.inspect(prediction)) {
+                if (processing.isTable) {
                     page.addTable(processing.getTable());
                 }
             }
         }
 
+        recomposedDocument.close();
+
         return true;
     }
 
-
-
     private void writeTables(List<Table> tables, FileWriter file, String fileName) throws IOException {
         XmlWriter xmlWriter = new XmlWriter(tables, fileName);
-        List<String> icdarTables =  xmlWriter.write();
+        List<String> icdarTables = xmlWriter.write();
         if (icdarTables != null) {
             String iTables = String.join(" ", icdarTables);
             file.write(iTables);
@@ -252,17 +256,15 @@ public final class TableExtractor {
 
             recomposedDocument = recomposeDocument(originDocument);
 
-            if (useAnnModel) {
-                if (extractTables(originDocument) && useDebug) {
-                    File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
-                    FileWriter fileWriter = new FileWriter(out);
-                    List<Table> tables = new ArrayList<Table>();
-                    for (Page page : originDocument.getPages()) {
-                        tables.addAll(page.getTables());
-                    }
-                    writeTables(tables, fileWriter, originDocument.getFileName());
-                    fileWriter.close();
+            if (useAnnModel && useDebug && extractTables(originDocument)) {
+                File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
+                FileWriter fileWriter = new FileWriter(out);
+                List<Table> tables = new ArrayList<>();
+                for (Page page : originDocument.getPages()) {
+                    tables.addAll(page.getTables());
                 }
+                writeTables(tables, fileWriter, originDocument.getFileName());
+                fileWriter.close();
             }
 
             if (useDebug) {
@@ -274,9 +276,10 @@ public final class TableExtractor {
             e.printStackTrace();
         } finally {
             try {
-                if(originDocument != null)
+                if (originDocument != null) {
                     originDocument.close();
-            } catch (IOException e){
+                }
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }

@@ -82,12 +82,13 @@ public final class DebuggingDrawer {
             if (result.isEncrypted())
                 result.setAllSecurityToBeRemoved(true);
 
+            result.close();
             return result;
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            return result;
         }
+
+        return result;
     }
 
     private File createOutputFile(String subDirName, String fileNameSuffix) {
@@ -149,7 +150,7 @@ public final class DebuggingDrawer {
                         lineWidth = Float.parseFloat(lineW);
                         contentDrawer.setStyle(strokeColor, fillColor, lineWidth);
 
-                        m.invoke(obj.newInstance(), page, contentDrawer);
+                        m.invoke(obj.getDeclaredConstructor().newInstance(), page, contentDrawer);
                     } catch (InvocationTargetException e) {
                         Throwable exception = e.getTargetException();
                         exception.printStackTrace();
