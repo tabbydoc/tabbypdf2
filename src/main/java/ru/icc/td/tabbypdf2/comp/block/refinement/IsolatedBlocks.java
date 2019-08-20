@@ -33,7 +33,7 @@ class IsolatedBlocks implements Refinement<Page> {
     private boolean union(Block blockI) {
         boolean united = false;
 
-        double CONST = 0.75d;
+        double CONST = 0.5d;
         double spaceI = blockI.getAverageSpaceWidth();
 
         Rectangle2D rectI = new Rectangle2D.Double();
