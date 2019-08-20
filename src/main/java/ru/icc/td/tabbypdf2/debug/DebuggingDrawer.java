@@ -82,13 +82,12 @@ public final class DebuggingDrawer {
             if (result.isEncrypted())
                 result.setAllSecurityToBeRemoved(true);
 
-            result.close();
             return result;
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            return result;
         }
-
-        return result;
     }
 
     private File createOutputFile(String subDirName, String fileNameSuffix) {
@@ -113,7 +112,6 @@ public final class DebuggingDrawer {
         for (Page page : document.getPages()) {
             drawPage(page, contentDrawer);
         }
-        document.close();
     }
 
     private void drawPage(Page page, PDFContentDrawer contentDrawer) throws IOException {
