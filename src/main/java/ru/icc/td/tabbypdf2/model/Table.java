@@ -15,15 +15,10 @@ public class Table extends Rectangle2D.Double {
     private Page page;
     private Graph<Block, DefaultWeightedEdge> structure = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
     private Map<Projection.Horizontal, List<Projection.Vertical>> map;
-    private List<Projection.Horizontal> horizontals = new ArrayList<>();
     private List<Projection.Vertical> verticals = new ArrayList<>();
 
     public Map<Projection.Horizontal, List<Projection.Vertical>> getMap() {
         return map;
-    }
-
-    public void setMap(Map<Projection.Horizontal, List<Projection.Vertical>> map) {
-        this.map = map;
     }
 
     public Table(List<Block> blocks, Page page, Graph<Block, DefaultWeightedEdge> structure) {
@@ -42,7 +37,6 @@ public class Table extends Rectangle2D.Double {
             return;
         }
 
-        horizontals = prediction.getHorizontals();
         verticals = prediction.getVerticals();
         blocks = prediction.getBlocks();
         structure = prediction.getStructure();
@@ -76,11 +70,7 @@ public class Table extends Rectangle2D.Double {
     }
 
     public List<Projection.Horizontal> getHorizontals() {
-        return horizontals;
-    }
-
-    public void setHorizontals(List<Projection.Horizontal> horizontals) {
-        this.horizontals = horizontals;
+        return new ArrayList<>(map.keySet());
     }
 
     public List<Projection.Vertical> getVerticals() {
