@@ -8,13 +8,11 @@ import java.awt.*;
 import java.awt.geom.Line2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public abstract class Projection extends Line2D {
-    private static Map<Horizontal, List<Vertical>> map;
     double start;
     double end;
     double position;
@@ -27,15 +25,7 @@ public abstract class Projection extends Line2D {
         this.level = -1;
     }
 
-    private Projection() {
-        this(0, 0, -1);
-    }
-
-    public static void setMap(Map<Horizontal, List<Vertical>> projections) {
-        map = new HashMap<>(projections);
-    }
-
-    public static int getLevel(Block block) {
+    public static int getLevel(Block block, Map<Horizontal, List<Vertical>> map) {
         Set<Horizontal> horizontals = map.keySet();
 
         for (Horizontal horizontal : horizontals) {
@@ -54,8 +44,8 @@ public abstract class Projection extends Line2D {
     }
 
     public void createUnion(Projection projection) {
-        this.start = Math.min(projection.start, this.start);
-        this.end = Math.max(projection.end, this.end);
+        start = Math.min(projection.start, start);
+        end = Math.max(projection.end, end);
     }
 
     public double getStart() {
@@ -100,6 +90,17 @@ public abstract class Projection extends Line2D {
 
         public Horizontal(double start, double end, double position) {
             super(start, end, position);
+        }
+
+        public static int getLevel(Block block, List<Horizontal> horizontals) {
+
+            for (Horizontal horizontal : horizontals) {
+                if (horizontal.start <= block.getMinX() && block.getMaxX() <= horizontal.end) {
+                    return horizontal.level;
+                }
+            }
+
+            return -1;
         }
 
         @Override
@@ -150,6 +151,17 @@ public abstract class Projection extends Line2D {
 
         public Vertical(double start, double end, double position) {
             super(start, end, position);
+        }
+
+        public static int getLevel(Block block, List<Vertical> verticals) {
+
+            for (Vertical vertical : verticals) {
+                if (vertical.start <= block.getMinY() && block.getMaxY() <= vertical.end) {
+                    return vertical.level;
+                }
+            }
+
+            return -1;
         }
 
         @Override

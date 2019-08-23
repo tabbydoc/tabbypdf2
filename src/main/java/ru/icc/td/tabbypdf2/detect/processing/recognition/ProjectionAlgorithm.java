@@ -7,21 +7,36 @@ import ru.icc.td.tabbypdf2.model.Prediction;
 import java.util.*;
 
 public class ProjectionAlgorithm implements Algorithm<Prediction> {
+    private Mode mode;
+
+    ProjectionAlgorithm(Mode mode) {
+        this.mode = mode;
+    }
 
     @Override
     public void start(Prediction prediction) {
-        Map<Projection.Horizontal, List<Projection.Vertical>> map = new HashMap<>();
         Horizontal horizontal = new Horizontal(prediction.getBlocks(), prediction.getMaxY());
         Vertical vertical = new Vertical(prediction.getBlocks());
+        List<Projection.Horizontal> horizontals = horizontal.recognize();
 
-        List<Projection.Horizontal> horizontals = new ArrayList<>(horizontal.recognize());
+        List<Projection.Vertical> verticals = new ArrayList<>();
+        if (mode == Mode.LISTS) {
+            verticals = vertical.recognize(new Projection.Horizontal(prediction.getMinX(),
+                    prediction.getMaxX(), prediction.getMaxY()));
+        }
 
-        for (Projection.Horizontal projection : horizontals) {
-            map.put(projection, vertical.recognize(projection));
+        Map<Projection.Horizontal, List<Projection.Vertical>> map = new HashMap<>();
+        if (mode == Mode.MAP) {
+            map = new HashMap<>();
+
+            for (Projection.Horizontal projection : horizontals) {
+                map.put(projection, vertical.recognize(projection));
+            }
         }
 
         prediction.setMap(map);
-        Projection.setMap(map);
+        prediction.setVerticals(verticals);
+        prediction.setHorizontals(horizontals);
     }
 
     private <T extends Projection> void setLevels(List<T> projections) {
@@ -100,5 +115,9 @@ public class ProjectionAlgorithm implements Algorithm<Prediction> {
 
             return verticals;
         }
+    }
+
+    public enum Mode {
+        LISTS, MAP
     }
 }

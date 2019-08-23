@@ -4,6 +4,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
+import ru.icc.td.tabbypdf2.detect.processing.recognition.Projection;
 import ru.icc.td.tabbypdf2.model.*;
 
 import java.awt.*;
@@ -18,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -213,8 +215,9 @@ public final class DebuggingDrawer {
     }
 
     private void drawTables(Page page, PDFContentDrawer contentDrawer) throws IOException {
-        for (Table table: page.getTables()) {
+        for (Table table : page.getTables()) {
             contentDrawer.strokeRectangle(table);
+
 
             /*if (table.getMap() == null) {
                 return;
@@ -229,6 +232,22 @@ public final class DebuggingDrawer {
                     contentDrawer.strokeLine(vertical);
                 }
             }*/
+
+            contentDrawer.setStyle(Color.RED, Color.RED, 0.5f);
+            List<Projection.Vertical> verticals = table.getVerticals();
+            List<Projection.Horizontal> horizontals = table.getHorizontals();
+
+            if (verticals == null || horizontals == null) {
+                return;
+            }
+
+            for (Projection.Vertical vertical : verticals) {
+                contentDrawer.strokeLine(vertical);
+            }
+
+            for (Projection.Horizontal horizontal : horizontals) {
+                contentDrawer.strokeLine(horizontal);
+            }
         }
     }
 

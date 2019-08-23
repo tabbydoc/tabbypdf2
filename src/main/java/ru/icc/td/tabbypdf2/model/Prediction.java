@@ -17,6 +17,8 @@ public class Prediction extends Rectangle2D.Double {
     private Graph<Block, DefaultWeightedEdge> structure = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
     private boolean isTruthful;
     private Map<Projection.Horizontal, List<Projection.Vertical>> map;
+    private List<Projection.Horizontal> horizontals;
+    private List<Projection.Vertical> verticals;
 
     public Prediction(Rectangle2D prediction, Page page){
         this.page = page;
@@ -71,6 +73,22 @@ public class Prediction extends Rectangle2D.Double {
         }
 
         setRect(minX, minY, maxX - minX, maxY - minY);
+    }
+
+    public List<Projection.Horizontal> getHorizontals() {
+        return horizontals;
+    }
+
+    public void setHorizontals(List<Projection.Horizontal> horizontals) {
+        this.horizontals = horizontals;
+    }
+
+    public List<Projection.Vertical> getVerticals() {
+        return verticals;
+    }
+
+    public void setVerticals(List<Projection.Vertical> verticals) {
+        this.verticals = verticals;
     }
 
     public Map<Projection.Horizontal, List<Projection.Vertical>> getMap() {

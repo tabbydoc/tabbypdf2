@@ -54,8 +54,7 @@ public class PredictionProcessing implements Processing<Prediction> {
             }
         }
 
-        table = new Table(prediction.getBlocks(), prediction.getPage(), prediction.getStructure());
-        table.setMap(prediction.getMap());
+        table = new Table(prediction);
 
         isTable = true;
     }
