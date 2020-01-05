@@ -46,6 +46,10 @@ public class Table extends Rectangle2D.Double {
         setAll();
     }
 
+    public List<Block> getBlocks() {
+        return blocks;
+    }
+
     private void setAll() {
         double minX = java.lang.Double.MAX_VALUE;
         double minY = java.lang.Double.MAX_VALUE;
