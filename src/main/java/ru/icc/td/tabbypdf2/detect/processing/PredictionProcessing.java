@@ -1,7 +1,6 @@
 package ru.icc.td.tabbypdf2.detect.processing;
 
 import ru.icc.td.tabbypdf2.detect.processing.recognition.StructureComposer;
-import ru.icc.td.tabbypdf2.detect.processing.refinement.ParagraphRefinement;
 import ru.icc.td.tabbypdf2.detect.processing.verification.DiagramVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.ImageVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.StructureVerification;
@@ -23,7 +22,7 @@ public class PredictionProcessing implements Processing<Prediction> {
     public boolean isTable;
 
     public PredictionProcessing() {
-        //setAll();
+        setAll();
     }
 
     @Override
@@ -60,12 +59,11 @@ public class PredictionProcessing implements Processing<Prediction> {
     }
 
     private void setAll(){
-        // TODO: refactor verifications and refinement
         // Verifications
         verifications.addAll(Arrays.asList(new StructureVerification(),
                 new ImageVerification(), new DiagramVerification()));
         // Refinements
-        refinements.add(new ParagraphRefinement());
+        // refinements.add(new ParagraphRefinement());
     }
 
     public Table getTable() {
