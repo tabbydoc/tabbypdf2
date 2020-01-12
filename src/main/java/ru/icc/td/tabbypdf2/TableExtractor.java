@@ -277,7 +277,7 @@ public final class TableExtractor {
                 fileWriter.close();
             }
 
-            writer.writeExcel(originDocument);
+            // writer.writeExcel(originDocument);
 
             if (useDebug) {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
