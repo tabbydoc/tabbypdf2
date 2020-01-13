@@ -17,6 +17,7 @@ public final class DocumentLoader {
     private PDFGraphicsExtractor PDFGraphicsExtractor;
     private PDFRulingExtractor PDFRulingExtractor;
 
+
     public Document load(Path path) throws IllegalArgumentException, IOException {
         if (null == path) {
             throw new IllegalArgumentException("The path to a PDF document cannot be null");

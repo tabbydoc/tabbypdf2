@@ -23,24 +23,24 @@ public class PredictionProcessing implements Processing<Prediction> {
     public boolean isTable;
 
     public PredictionProcessing() {
-        //setAll();
+        setAll();
     }
 
     @Override
     public void process(Prediction prediction) {
+
+        isTable = false;
+        table = null;
+
         if (prediction == null) {
-            isTable = false;
             return;
         }
-
-        table = null;
 
         recognition.compose(prediction);
 
         for (Verification v : verifications) {
 
             if (!v.verify(prediction)) {
-                isTable = false;
                 return;
             }
         }
@@ -49,7 +49,6 @@ public class PredictionProcessing implements Processing<Prediction> {
             r.refine(prediction);
 
             if (!prediction.isTruthful()) {
-                isTable = false;
                 return;
             }
         }

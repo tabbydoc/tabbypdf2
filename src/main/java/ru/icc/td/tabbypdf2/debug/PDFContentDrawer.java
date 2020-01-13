@@ -53,7 +53,7 @@ final class PDFContentDrawer {
     }
 
     void endPage() throws IOException {
-        contentStream.closeAndStroke();
+        contentStream.stroke();
         contentStream.close();
     }
 
@@ -95,6 +95,7 @@ final class PDFContentDrawer {
     }
 
     void strokeRectangle(Rectangle2D rect) throws IOException {
+        contentStream.moveTo((float) rect.getMinX(), (float) rect.getMinY());
         addRectangle(rect);
         contentStream.stroke();
     }
@@ -113,7 +114,8 @@ final class PDFContentDrawer {
         contentStream.moveTo(x1, y1);
         contentStream.lineTo(x2, y2);
         contentStream.stroke();
-        contentStream.moveTo(x1, y1);
+        //contentStream.moveTo(x1, y1);
+        //contentStream.closePath();
     }
 
     void showText(String text, float x, float y) throws IOException {

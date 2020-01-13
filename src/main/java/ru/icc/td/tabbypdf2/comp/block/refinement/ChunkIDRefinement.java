@@ -65,6 +65,11 @@ class ChunkIDRefinement implements Refinement<Page> {
 
                     this.blocks.add(new Block(wordI));
                     this.words.remove(wordI);
+
+                    if (block.getWords().isEmpty()) {
+                        blocks.remove(block);
+                        break;
+                    }
                 }
             }
             return true;

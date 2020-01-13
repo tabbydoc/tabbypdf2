@@ -24,10 +24,18 @@ public class Table extends Rectangle2D.Double {
         this.map = map;
     }
 
+/*
+    public Table(Page page, Rectangle2D rect) {
+        this(null, page, null);
+        setRect(rect);
+    }
+*/
+
     public Table(List<Block> blocks, Page page, Graph<Block, DefaultWeightedEdge> structure) {
+/*
         if (blocks == null)
             return;
-
+*/
         this.blocks = blocks;
         this.page = page;
         this.structure = structure;

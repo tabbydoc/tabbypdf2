@@ -225,6 +225,7 @@ public final class TableExtractor {
 
                 if (processing.isTable) {
                     page.addTable(processing.getTable());
+                    //page.addTable(new Table(page, rect));
                 }
             }
         }
@@ -253,7 +254,6 @@ public final class TableExtractor {
 
             DocumentComposer documentComposer = new DocumentComposer();
             documentComposer.compose(originDocument);
-
             recomposedDocument = recomposeDocument(originDocument);
 
             if (useAnnModel && useDebug && extractTables(originDocument)) {

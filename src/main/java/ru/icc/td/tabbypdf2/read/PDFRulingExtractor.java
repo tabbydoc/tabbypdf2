@@ -1,6 +1,7 @@
 package ru.icc.td.tabbypdf2.read;
 
 import org.apache.pdfbox.contentstream.operator.Operator;
+import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdfparser.PDFStreamParser;
 import org.apache.pdfbox.pdfwriter.ContentStreamWriter;
@@ -62,11 +63,18 @@ public class PDFRulingExtractor {
 
         List<Ruling> horizontalRulings = this.getHorizontalRulings(image);
 
+        COSDictionary pageDict = pdfPage.getCOSObject();
+        COSDictionary newPageDict = new COSDictionary(pageDict);
+
+        newPageDict.removeItem(COSName.ANNOTS);
+
+        PDPage newPage = new PDPage(newPageDict);
+
         // now check the page for vertical lines, but remove the text first to make things less confusing
         PDDocument removeTextDocument = null;
         try {
             removeTextDocument = this.removeText(pdfPage);
-            image = Utils.pageConvertToImage(pdfPage, 144, ImageType.GRAY);
+            image = Utils.pageConvertToImage(newPage, 144, ImageType.GRAY);
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
