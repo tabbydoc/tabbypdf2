@@ -23,9 +23,7 @@ import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -73,6 +71,8 @@ public final class TableExtractor {
 
     private boolean help = false;
 
+    private ExcelWriter writer = new ExcelWriter();
+
     public static void main(String[] args) throws Exception {
         new TableExtractor().run(args);
     }
@@ -98,6 +98,7 @@ public final class TableExtractor {
 
     public void run(String[] args) throws Exception {
         CmdLineParser parser = new CmdLineParser(this);
+
         try {
             parser.parseArgument(args);
 
@@ -180,6 +181,18 @@ public final class TableExtractor {
             parser.printUsage(System.err);
             System.exit(1);
         }
+
+        /*
+        try {
+            FileOutputStream outputStream = new FileOutputStream("book.xlsx");
+            ExcelWriter.getWorkbook().write(outputStream);
+            ExcelWriter.getWorkbook().close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        */
     }
 
     private boolean extractTables(Document recomposedDocument) throws IOException {
@@ -267,6 +280,8 @@ public final class TableExtractor {
                 fileWriter.close();
             }
 
+            // writer.writeExcel(originDocument);
+
             if (useDebug) {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
                 debuggingDrawer.drawTo(originDocument, debugPath);
@@ -284,4 +299,6 @@ public final class TableExtractor {
             }
         }
     }
+
+
 }

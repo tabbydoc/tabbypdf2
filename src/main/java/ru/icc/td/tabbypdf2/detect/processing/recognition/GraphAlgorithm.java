@@ -15,7 +15,7 @@ import java.util.List;
 class GraphAlgorithm implements Algorithm<Prediction> {
     private Graph<Block, DefaultWeightedEdge> graph;
     private List<Block> blocks;
-    private List<Block> rootBlocks;
+    private List<Projection.Vertical> verticals;
 
     @Override
     public void start(Prediction prediction) {
@@ -25,7 +25,8 @@ class GraphAlgorithm implements Algorithm<Prediction> {
             return;
         }
 
-        setAll(blocks);
+        setAll(prediction);
+        List<Block> rootBlocks = setRootBlocks();
 
         rootBlocks.forEach(block -> {
             graph.addVertex(block);
@@ -40,10 +41,10 @@ class GraphAlgorithm implements Algorithm<Prediction> {
 
     private void doNext(Block block) {
         List<Block> neighbours = block.findNeighbours(blocks);
-        int level1 = Projection.getLevel(block);
+        int level1 = Projection.Vertical.getLevel(block, verticals);
 
         for (Block neighbour : neighbours) {
-            int level2 = Projection.getLevel(neighbour);
+            int level2 = Projection.Vertical.getLevel(neighbour, verticals);
             boolean isAdded = graph.addVertex(neighbour);
 
             DefaultWeightedEdge edge = graph.addEdge(block, neighbour);
@@ -55,20 +56,20 @@ class GraphAlgorithm implements Algorithm<Prediction> {
         }
     }
 
-    private void setAll(List<Block> blocks) {
+    private void setAll(Prediction prediction) {
+        verticals = prediction.getVerticals();
         graph = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
-        this.blocks = new ArrayList<>(blocks);
+        blocks = new ArrayList<>(prediction.getBlocks());
 
-        setRootBlocks();
     }
 
-    private void setRootBlocks() {
-        rootBlocks = new ArrayList<>();
-
+    private List<Block> setRootBlocks() {
         Block block = getTopmostBlock();
 
-        rootBlocks.addAll(Block.findNeighbours(block, blocks));
+        List<Block> rootBlocks = new ArrayList<>(Block.findNeighbours(block, blocks));
         blocks.removeAll(rootBlocks);
+
+        return rootBlocks;
     }
 
     private Block getTopmostBlock() {

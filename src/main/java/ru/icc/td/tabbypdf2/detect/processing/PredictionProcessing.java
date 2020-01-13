@@ -1,7 +1,6 @@
 package ru.icc.td.tabbypdf2.detect.processing;
 
 import ru.icc.td.tabbypdf2.detect.processing.recognition.StructureComposer;
-import ru.icc.td.tabbypdf2.detect.processing.refinement.ParagraphRefinement;
 import ru.icc.td.tabbypdf2.detect.processing.verification.DiagramVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.ImageVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.StructureVerification;
@@ -28,19 +27,19 @@ public class PredictionProcessing implements Processing<Prediction> {
 
     @Override
     public void process(Prediction prediction) {
-
-        isTable = false;
-        table = null;
-
         if (prediction == null) {
+            isTable = false;
             return;
         }
+
+        table = null;
 
         recognition.compose(prediction);
 
         for (Verification v : verifications) {
 
             if (!v.verify(prediction)) {
+                isTable = false;
                 return;
             }
         }
@@ -49,23 +48,22 @@ public class PredictionProcessing implements Processing<Prediction> {
             r.refine(prediction);
 
             if (!prediction.isTruthful()) {
+                isTable = false;
                 return;
             }
         }
 
-        table = new Table(prediction.getBlocks(), prediction.getPage(), prediction.getStructure());
-        table.setMap(prediction.getMap());
+        table = new Table(prediction);
 
         isTable = true;
     }
 
     private void setAll(){
-        // TODO: refactor verifications and refinement
         // Verifications
         verifications.addAll(Arrays.asList(new StructureVerification(),
                 new ImageVerification(), new DiagramVerification()));
         // Refinements
-        refinements.add(new ParagraphRefinement());
+        // refinements.add(new ParagraphRefinement());
     }
 
     public Table getTable() {

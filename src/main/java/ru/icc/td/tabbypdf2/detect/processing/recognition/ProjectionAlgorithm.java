@@ -10,18 +10,19 @@ public class ProjectionAlgorithm implements Algorithm<Prediction> {
 
     @Override
     public void start(Prediction prediction) {
-        Map<Projection.Horizontal, List<Projection.Vertical>> map = new HashMap<>();
         Horizontal horizontal = new Horizontal(prediction.getBlocks(), prediction.getMaxY());
         Vertical vertical = new Vertical(prediction.getBlocks());
+        Map<Projection.Horizontal, List<Projection.Vertical>> map = new HashMap<>();
 
-        List<Projection.Horizontal> horizontals = new ArrayList<>(horizontal.recognize());
+        List<Projection.Vertical> verticals = vertical.start(new Projection.Horizontal(prediction.getMinX(),
+                prediction.getMaxX(), prediction.getMaxY()));
 
-        for (Projection.Horizontal projection : horizontals) {
-            map.put(projection, vertical.recognize(projection));
+        for (Projection.Horizontal projection : horizontal.start()) {
+            map.put(projection, vertical.start(projection));
         }
 
         prediction.setMap(map);
-        Projection.setMap(map);
+        prediction.setVerticals(verticals);
     }
 
     private <T extends Projection> void setLevels(List<T> projections) {
@@ -62,7 +63,7 @@ public class ProjectionAlgorithm implements Algorithm<Prediction> {
             this.position = maxPosition;
         }
 
-        List<Projection.Horizontal> recognize() {
+        List<Projection.Horizontal> start() {
             List<Projection.Horizontal> horizontals = new ArrayList<>();
 
             blocks.forEach(block -> horizontals.add(new Projection.Horizontal(block.getMinX(),
@@ -84,7 +85,7 @@ public class ProjectionAlgorithm implements Algorithm<Prediction> {
             this.blocks = blocks;
         }
 
-        List<Projection.Vertical> recognize(Projection.Horizontal projection) {
+        List<Projection.Vertical> start(Projection.Horizontal projection) {
             List<Projection.Vertical> verticals = new ArrayList<>();
 
             blocks.forEach(block -> {

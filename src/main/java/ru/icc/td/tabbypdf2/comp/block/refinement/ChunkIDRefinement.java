@@ -70,6 +70,7 @@ class ChunkIDRefinement implements Refinement<Page> {
                         blocks.remove(block);
                         break;
                     }
+
                 }
             }
             return true;
