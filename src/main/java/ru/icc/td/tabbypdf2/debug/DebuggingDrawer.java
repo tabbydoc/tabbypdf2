@@ -233,7 +233,6 @@ public final class DebuggingDrawer {
             }*/
 
 
-            contentDrawer.setStyle(Color.RED, Color.RED, 0.5f);
             List<Projection.Vertical> verticals = table.getVerticals();
             List<Projection.Horizontal> horizontals = table.getHorizontals();
 

@@ -23,7 +23,9 @@ import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -238,7 +240,6 @@ public final class TableExtractor {
 
                 if (processing.isTable) {
                     page.addTable(processing.getTable());
-                    //page.addTable(new Table(page, rect));
                 }
             }
         }

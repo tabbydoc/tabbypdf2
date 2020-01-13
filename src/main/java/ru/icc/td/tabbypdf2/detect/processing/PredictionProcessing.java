@@ -22,7 +22,7 @@ public class PredictionProcessing implements Processing<Prediction> {
     public boolean isTable;
 
     public PredictionProcessing() {
-        setAll();
+        // setAll();
     }
 
     @Override
@@ -59,11 +59,8 @@ public class PredictionProcessing implements Processing<Prediction> {
     }
 
     private void setAll(){
-        // Verifications
         verifications.addAll(Arrays.asList(new StructureVerification(),
                 new ImageVerification(), new DiagramVerification()));
-        // Refinements
-        // refinements.add(new ParagraphRefinement());
     }
 
     public Table getTable() {
