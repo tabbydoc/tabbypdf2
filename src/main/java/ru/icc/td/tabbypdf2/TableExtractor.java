@@ -18,6 +18,7 @@ import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Prediction;
 import ru.icc.td.tabbypdf2.model.Table;
+import ru.icc.td.tabbypdf2.out.ExcelWriter;
 import ru.icc.td.tabbypdf2.out.XmlWriter;
 import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
@@ -234,12 +235,20 @@ public final class TableExtractor {
                 continue;
             if (tables.isEmpty())
                 continue;
+
+            boolean usePostProcessing = AppConfig.isUsePostProcessing();
+
             for (Rectangle2D rect : tables) {
                 Prediction prediction = new Prediction(rect, page);
-                processing.process(prediction);
 
-                if (processing.isTable) {
-                    page.addTable(processing.getTable());
+                if (usePostProcessing) {
+                    processing.process(prediction);
+
+                    if (processing.isTable) {
+                        page.addTable(processing.getTable());
+                    }
+                } else {
+                    page.addTable(new Table(prediction));
                 }
             }
         }

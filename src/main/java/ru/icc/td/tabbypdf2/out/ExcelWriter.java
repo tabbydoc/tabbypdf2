@@ -1,4 +1,4 @@
-package ru.icc.td.tabbypdf2;
+package ru.icc.td.tabbypdf2.out;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.poi.ss.usermodel.Row;

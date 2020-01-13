@@ -234,18 +234,13 @@ public final class DebuggingDrawer {
 
 
             List<Projection.Vertical> verticals = table.getVerticals();
-            List<Projection.Horizontal> horizontals = table.getHorizontals();
 
-            if (verticals == null || horizontals == null) {
+            if (verticals == null) {
                 return;
             }
 
             for (Projection.Vertical vertical : verticals) {
                 contentDrawer.strokeLine(vertical);
-            }
-
-            for (Projection.Horizontal horizontal : horizontals) {
-                contentDrawer.strokeLine(horizontal);
             }
         }
     }

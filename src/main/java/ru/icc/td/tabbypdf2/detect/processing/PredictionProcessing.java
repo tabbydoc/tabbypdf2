@@ -22,7 +22,7 @@ public class PredictionProcessing implements Processing<Prediction> {
     public boolean isTable;
 
     public PredictionProcessing() {
-        // setAll();
+        setAll();
     }
 
     @Override
