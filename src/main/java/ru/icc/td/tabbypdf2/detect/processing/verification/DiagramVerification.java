@@ -47,7 +47,7 @@ public class DiagramVerification implements Verification {
 
         double[] r = Model.score(parameters);
 
-        return r[1] >= 0.50;
+        return r[1] >= 0.70;
     }
 
     private void setElement(double p) {
