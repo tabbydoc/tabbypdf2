@@ -25,6 +25,13 @@ public class PredictionProcessing implements Processing<Prediction> {
         setAll();
     }
 
+    public PredictionProcessing(boolean config) {
+        if (config) {
+            setAll();
+        } else {
+        }
+    }
+
     @Override
     public void process(Prediction prediction) {
         if (prediction == null) {

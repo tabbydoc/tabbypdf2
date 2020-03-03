@@ -24,9 +24,7 @@ import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -75,6 +73,7 @@ public final class TableExtractor {
     private boolean help = false;
 
     private ExcelWriter writer = new ExcelWriter();
+    private DataExtractor extractor = new DataExtractor();
 
     public static void main(String[] args) throws Exception {
         new TableExtractor().run(args);
@@ -185,7 +184,6 @@ public final class TableExtractor {
             System.exit(1);
         }
 
-        /*
         try {
             FileOutputStream outputStream = new FileOutputStream("book.xlsx");
             ExcelWriter.getWorkbook().write(outputStream);
@@ -195,7 +193,6 @@ public final class TableExtractor {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        */
     }
 
     private boolean extractTables(Document recomposedDocument) throws IOException {
@@ -279,6 +276,8 @@ public final class TableExtractor {
             documentComposer.compose(originDocument);
             recomposedDocument = recomposeDocument(originDocument);
 
+            extractor.start(originDocument);
+
             if (useAnnModel && useDebug && extractTables(originDocument)) {
                 File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
                 FileWriter fileWriter = new FileWriter(out);
@@ -290,7 +289,7 @@ public final class TableExtractor {
                 fileWriter.close();
             }
 
-            // writer.writeExcel(originDocument);
+            writer.writeExcel(originDocument);
 
             if (useDebug) {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();
