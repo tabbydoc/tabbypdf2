@@ -11,10 +11,14 @@ import ru.icc.td.tabbypdf2.model.Prediction;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.text.BreakIterator;
+import java.util.*;
 
 public class DataExtractor {
     private Document document;
+
+    private List<Chunk> chunks = new ArrayList<>();
+    private List<String> cells = new ArrayList<>();
 
     public void start(Document document) {
         if (document == null)
@@ -29,52 +33,160 @@ public class DataExtractor {
         PredictionProcessing processing = new PredictionProcessing(false);
 
         for (Page page : pages) {
-            Rectangle2D.Double rect = getTables();
+            List<Rectangle2D.Double> tables = getTables();
 
-            if (rect == null)
-                continue;
-
-            Prediction prediction = new Prediction(rect, page);
-
-            processing.process(prediction);
-            page.addTable(processing.getTable());
+            tables.forEach(rect -> {
+                Prediction prediction = new Prediction(rect, page);
+                processing.process(prediction);
+                page.addTable(processing.getTable());
+            });
         }
+
+        chunks.clear();
+        cells.clear();
     }
 
-    private Rectangle2D.Double getTables() {
-        String pathParent = document.getSourceFile().toPath().getParent().getParent().toString().concat("/chunk/");
+    private List<Rectangle2D.Double> getTables() {
+        String parentPath = document.getSourceFile().toPath().getParent().getParent().toString();
         String name = document.getFileName().split(".pdf")[0];
-        String path = pathParent.concat(name).concat(".chunk");
 
-        File file = new File(path);
-        String content;
+        List<Rectangle2D.Double> tables = new ArrayList<>();
+
         try {
-            content = FileUtils.readFileToString(file, "utf-8");
-            JSONObject cellsJson = new JSONObject(content);
-            JSONArray posArray = cellsJson.getJSONArray("chunks");
+            setByKey(parentPath, name, "chunks");
+            setByKey(parentPath, name, "cells");
+            check();
 
-            double x1 = Double.MAX_VALUE;
-            double y1 = Double.MAX_VALUE;
-            double x2 = Double.MIN_VALUE;
-            double y2 = Double.MIN_VALUE;
+            double x1 = Collections.min(chunks, Comparator.comparing(Chunk::getX1)).x1;
+            double y1 = Collections.min(chunks, Comparator.comparing(Chunk::getY1)).y1;
+            double x2 = Collections.max(chunks, Comparator.comparing(Chunk::getX2)).x2;
+            double y2 = Collections.max(chunks, Comparator.comparing(Chunk::getY2)).y2;
 
-            for (int i = 0; i < posArray.length(); i++) {
-                JSONObject obj = posArray.getJSONObject(i);
-                JSONArray pos = obj.getJSONArray("pos");
-
-                x1 = Math.min(x1, pos.getDouble(0));
-                y1 = Math.min(y1, pos.getDouble(2));
-                x2 = Math.max(x2, pos.getDouble(1));
-                y2 = Math.max(y2, pos.getDouble(3));
-            }
-
-            return new Rectangle2D.Double(x1, y1, x2 - x1, y2 - y1);
+            tables.add(new Rectangle2D.Double(x1, y1, x2 - x1, y2 - y1));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return null;
+        return tables;
     }
 
+    private void setByKey(String parentPath, String name, String key) throws IOException {
+        String path;
+        boolean isChunks = key.equals("chunks");
 
+        if (isChunks) {
+            path = parentPath + "/chunk/" + name + ".chunk";
+        } else {
+            path = parentPath + "/structure/" + name + ".json";
+        }
+
+        String file = FileUtils.readFileToString(new File(path), "utf-8");
+        JSONObject jsonObject = new JSONObject(file);
+        JSONArray jsonArray = jsonObject.getJSONArray(key);
+
+        if (isChunks) {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject obj = jsonArray.getJSONObject(i);
+                JSONArray pos = obj.getJSONArray("pos");
+
+                chunks.add(new Chunk(pos.getDouble(0), pos.getDouble(1),
+                        pos.getDouble(2), pos.getDouble(3), obj.getString("text")));
+            }
+        } else {
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject obj = jsonArray.getJSONObject(i);
+                String string = obj.getString("tex");
+                string = getWords(string);
+                cells.add(string);
+            }
+        }
+    }
+
+    private void check() {
+        for (int i = 0; i < chunks.size(); i++) {
+            Chunk chunk = chunks.get(i);
+            String chunkText = chunk.text;
+            chunkText = getWords(chunkText);
+
+            boolean contains = false;
+
+            for (int j = 0; j < cells.size(); j++) {
+
+                if (chunkText.equals(cells.get(j))) {
+                    contains = true;
+                    break;
+                }
+            }
+
+            if (!contains) {
+                chunks.remove(i);
+                i--;
+            }
+        }
+    }
+
+    public String getWords(String text) {
+        String word = "";
+        BreakIterator breakIterator = BreakIterator.getWordInstance();
+        breakIterator.setText(text);
+        int lastIndex = breakIterator.first();
+        while (BreakIterator.DONE != lastIndex) {
+            int firstIndex = lastIndex;
+            lastIndex = breakIterator.next();
+            if (lastIndex != BreakIterator.DONE && Character.isLetterOrDigit(text.charAt(firstIndex))) {
+                word = word.concat(text.substring(firstIndex, lastIndex));
+            }
+        }
+
+        return word;
+    }
+
+    private static class Chunk {
+        double x1;
+        double x2;
+        double y1;
+        double y2;
+        String text;
+
+        public Chunk(double x1, double x2, double y1, double y2, String text) {
+            this.x1 = x1;
+            this.x2 = x2;
+            this.y1 = y1;
+            this.y2 = y2;
+            this.text = text;
+        }
+
+        public double getX1() {
+            return x1;
+        }
+
+        public double getX2() {
+            return x2;
+        }
+
+        public double getY1() {
+            return y1;
+        }
+
+        public double getY2() {
+            return y2;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(x1, x2, y1, y2, text);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (!(o instanceof Chunk)) return false;
+            Chunk chunk = (Chunk) o;
+            return Double.compare(chunk.x1, x1) == 0 &&
+                    Double.compare(chunk.x2, x2) == 0 &&
+                    Double.compare(chunk.y1, y1) == 0 &&
+                    Double.compare(chunk.y2, y2) == 0 &&
+                    text.equals(chunk.text);
+        }
+    }
 }
