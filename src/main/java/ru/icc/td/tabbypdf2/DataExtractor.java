@@ -57,12 +57,14 @@ public class DataExtractor {
             setByKey(parentPath, name, "cells");
             check();
 
-            double x1 = Collections.min(chunks, Comparator.comparing(Chunk::getX1)).x1;
-            double y1 = Collections.min(chunks, Comparator.comparing(Chunk::getY1)).y1;
-            double x2 = Collections.max(chunks, Comparator.comparing(Chunk::getX2)).x2;
-            double y2 = Collections.max(chunks, Comparator.comparing(Chunk::getY2)).y2;
+            if (!chunks.isEmpty()) {
+                double x1 = Collections.min(chunks, Comparator.comparing(Chunk::getX1)).x1;
+                double y1 = Collections.min(chunks, Comparator.comparing(Chunk::getY1)).y1;
+                double x2 = Collections.max(chunks, Comparator.comparing(Chunk::getX2)).x2;
+                double y2 = Collections.max(chunks, Comparator.comparing(Chunk::getY2)).y2;
 
-            tables.add(new Rectangle2D.Double(x1, y1, x2 - x1, y2 - y1));
+                tables.add(new Rectangle2D.Double(x1, y1, x2 - x1, y2 - y1));
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
