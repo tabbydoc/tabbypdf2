@@ -90,13 +90,19 @@ public class DataExtractor {
                 JSONArray pos = obj.getJSONArray("pos");
 
                 chunks.add(new Chunk(pos.getDouble(0), pos.getDouble(1),
-                        pos.getDouble(2), pos.getDouble(3), obj.getString("text")));
+                        pos.getDouble(2), pos.getDouble(3), getWords(obj.getString("text"))));
             }
         } else {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject obj = jsonArray.getJSONObject(i);
-                String string = obj.getString("tex");
-                string = getWords(string);
+                StringBuilder stringBuilder = new StringBuilder();// = obj.getString("tex");
+                JSONArray strings = obj.getJSONArray("content");
+
+                for (int j = 0; j < strings.length(); j++) {
+                    stringBuilder.append(strings.getString(j)).append(" ");
+                }
+
+                String string = getWords(stringBuilder.toString());
                 cells.add(string);
             }
         }
@@ -106,13 +112,12 @@ public class DataExtractor {
         for (int i = 0; i < chunks.size(); i++) {
             Chunk chunk = chunks.get(i);
             String chunkText = chunk.text;
-            chunkText = getWords(chunkText);
 
             boolean contains = false;
 
-            for (int j = 0; j < cells.size(); j++) {
+            for (String cell : cells) {
 
-                if (chunkText.equals(cells.get(j))) {
+                if (chunkText.equals(cell)) {
                     contains = true;
                     break;
                 }
