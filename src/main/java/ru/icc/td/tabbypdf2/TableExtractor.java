@@ -24,7 +24,9 @@ import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -72,8 +74,8 @@ public final class TableExtractor {
 
     private boolean help = false;
 
-    private ExcelWriter writer = new ExcelWriter();
-    private DataExtractor extractor = new DataExtractor();
+    private ExcelWriter excelWriter;
+    private DataExtractor dataExtractor;
 
     public static void main(String[] args) throws Exception {
         new TableExtractor().run(args);
@@ -89,6 +91,8 @@ public final class TableExtractor {
     }
 
     private boolean useAnnModel;
+    private boolean saveToExcel;
+    private boolean useExtractor;
 
     private Document loadDocument(File file) throws IOException {
         return new DocumentLoader().load(file.toPath());
@@ -145,6 +149,18 @@ public final class TableExtractor {
                 tableDetector = null;
             }
 
+            // Excel
+            saveToExcel = AppConfig.isSaveToExcel();
+            if (saveToExcel) {
+                excelWriter = new ExcelWriter(debugPath);
+            }
+
+            // Extractor
+            useExtractor = AppConfig.isUseExtractor();
+            if (useExtractor) {
+                dataExtractor = new DataExtractor();
+            }
+
             final String[] extensions = {"pdf", "PDF"};
 
             if (inputFile.isFile()) {
@@ -175,6 +191,10 @@ public final class TableExtractor {
             } else {
                 System.err.println("The specified path to the source (*.pdf) files is not valid");
             }
+
+            if (saveToExcel) {
+                excelWriter.save();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
@@ -182,17 +202,6 @@ public final class TableExtractor {
             System.err.println(e.getMessage());
             parser.printUsage(System.err);
             System.exit(1);
-        }
-
-        try {
-            File file = new File(debugPath.toString() + "/book.xlsx");
-            FileOutputStream outputStream = new FileOutputStream(file);
-            ExcelWriter.getWorkbook().write(outputStream);
-            ExcelWriter.getWorkbook().close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 
@@ -207,7 +216,7 @@ public final class TableExtractor {
 
         PdfToImage pdfToImage = new PdfToImage(recomposedDocument.getSourceFile());
 
-        PredictionProcessing processing = new PredictionProcessing();
+        PredictionProcessing processing = new PredictionProcessing(true);
 
         List<Rectangle2D> tables;
         for (Page page : pages) {
@@ -277,9 +286,10 @@ public final class TableExtractor {
             documentComposer.compose(originDocument);
             recomposedDocument = recomposeDocument(originDocument);
 
-            extractor.start(originDocument);
-
-            if (useAnnModel && useDebug && extractTables(originDocument)) {
+            if (useExtractor) {
+                dataExtractor.start(originDocument);
+                excelWriter.writeExcel(originDocument);
+            } else if (extractTables(originDocument)) {
                 File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
                 FileWriter fileWriter = new FileWriter(out);
                 List<Table> tables = new ArrayList<>();
@@ -288,9 +298,11 @@ public final class TableExtractor {
                 }
                 writeTables(tables, fileWriter, originDocument.getFileName());
                 fileWriter.close();
-            }
 
-            writer.writeExcel(originDocument);
+                if (saveToExcel) {
+                    excelWriter.writeExcel(originDocument);
+                }
+            }
 
             if (useDebug) {
                 DebuggingDrawer debuggingDrawer = new DebuggingDrawer();

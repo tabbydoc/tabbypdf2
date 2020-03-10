@@ -1,5 +1,6 @@
 package ru.icc.td.tabbypdf2.out;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -12,28 +13,33 @@ import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Table;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+
+import static ru.icc.td.tabbypdf2.util.Utils.createOutputFile;
+
 public class ExcelWriter {
-    private static XSSFWorkbook workbook = new XSSFWorkbook();
-    private static XSSFSheet sheet;
-    private static int rowCount = 2;
+    private XSSFWorkbook workbook = new XSSFWorkbook();
+    private XSSFSheet sheet;
+    private int rowCount = 0;
+    private Path path;
 
     private int columnCount;
     private Row row;
 
-    public ExcelWriter() {
+    public ExcelWriter(Path path) {
         sheet = workbook.createSheet();
-    }
-
-    public static XSSFWorkbook getWorkbook() {
-        return workbook;
+        this.path = path;
     }
 
     public void writeExcel(Document document) {
         for (Page page : document.getPages()) {
             for (Table table : page.getTables()) {
                 row = sheet.createRow(rowCount++);
-                row.createCell(0).setCellValue(rowCount - 1);
-                row.createCell(1).setCellValue(document.getFileName());
+                row.createCell(0).setCellValue(rowCount);
+                row.createCell(1).setCellValue(FilenameUtils.getBaseName(document.getFileName()));
                 row.createCell(2).setCellValue(page.getIndex() + 1);
                 row.createCell(3).setCellValue(table.getMaxY());
                 row.createCell(4).setCellValue(table.getBlocks().size());
@@ -46,7 +52,7 @@ public class ExcelWriter {
                 }
 
                 columnCount = 4;
-                writeStat(ds);
+                writeStats(ds);
 
                 ds.clear();
                 DescriptiveStatistics dsX = new DescriptiveStatistics();
@@ -63,15 +69,15 @@ public class ExcelWriter {
                 columnCount++;
                 row.createCell(columnCount).setCellValue(relation);
 
-                writeStat(dsX);
+                writeStats(dsX);
                 columnCount++;
                 row.createCell(columnCount).setCellValue(table.getCenterX());
 
-                writeStat(dsY);
+                writeStats(dsY);
                 columnCount++;
                 row.createCell(columnCount).setCellValue(table.getCenterY());
 
-                writeStat(ds);
+                writeStats(ds);
 
                 KosarajuStrongConnectivityInspector<Block, DefaultWeightedEdge> inspector =
                         new KosarajuStrongConnectivityInspector<>(structure);
@@ -82,7 +88,7 @@ public class ExcelWriter {
         }
     }
 
-    private void writeStat(DescriptiveStatistics ds) {
+    private void writeStats(DescriptiveStatistics ds) {
         row.createCell(columnCount + 1).setCellValue(ds.getSum());
         row.createCell(columnCount + 2).setCellValue(ds.getN());
         row.createCell(columnCount + 3).setCellValue(ds.getMean());
@@ -96,6 +102,13 @@ public class ExcelWriter {
 
     private double square(Block block) {
         return block.width * block.height;
+    }
+
+    public void save() throws IOException {
+        File file = createOutputFile("excel", path, "book", "xlsx");
+        FileOutputStream outputStream = new FileOutputStream(file);
+        workbook.write(outputStream);
+        workbook.close();
     }
 
 }

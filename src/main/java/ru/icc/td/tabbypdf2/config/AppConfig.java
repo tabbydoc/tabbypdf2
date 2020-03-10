@@ -6,11 +6,17 @@ import java.util.Properties;
 
 public class AppConfig {
 
+    // ANN Model
     private static boolean useANNModel;
     private static String pathToANNModel;
     private static String pathToLabelMap;
+    // Debug
     private static boolean saveToIcdar;
+    private static boolean SaveToExcel;
+    // Postprocessing
     private static boolean usePostProcessing;
+    // Extractor
+    private static boolean useExtractor;
 
     static {
         Properties properties = new Properties();
@@ -18,11 +24,17 @@ public class AppConfig {
         try {
             InputStream inputStream = classLoader.getResourceAsStream("application.properties");
             properties.load(inputStream);
+            // ANN Model
             useANNModel = Boolean.parseBoolean(properties.getProperty("model.use_model"));
             pathToANNModel = properties.getProperty("model.path_to_model");
             pathToLabelMap = properties.getProperty("model.path_to_label_map");
+            // Debug
             saveToIcdar = Boolean.parseBoolean(properties.getProperty("debug.save_to_icdar"));
-            usePostProcessing = Boolean.parseBoolean(properties.getProperty("use_postprocessing"));
+            SaveToExcel = Boolean.parseBoolean(properties.getProperty("debug.save_to_excel"));
+            // Postprocessing
+            usePostProcessing = Boolean.parseBoolean(properties.getProperty("processing.use"));
+            // Extractor
+            useExtractor = Boolean.parseBoolean(properties.getProperty("extractor.use"));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -46,5 +58,13 @@ public class AppConfig {
 
     public static boolean isSaveToIcdar() {
         return saveToIcdar;
+    }
+
+    public static boolean isSaveToExcel() {
+        return SaveToExcel;
+    }
+
+    public static boolean isUseExtractor() {
+        return useExtractor;
     }
 }

@@ -1,6 +1,7 @@
 package ru.icc.td.tabbypdf2;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
@@ -48,14 +49,15 @@ public class DataExtractor {
 
     private List<Rectangle2D.Double> getTables() {
         String parentPath = document.getSourceFile().toPath().getParent().getParent().toString();
-        String name = document.getFileName().split(".pdf")[0];
+        String name = FilenameUtils.removeExtension(document.getFileName());
 
         List<Rectangle2D.Double> tables = new ArrayList<>();
 
         try {
-            setByKey(parentPath, name, "chunks");
-            setByKey(parentPath, name, "cells");
+            setByKey("chunks");
+            setByKey("cells");
             check();
+            // TODO: find all documents with empty chunks
 
             if (!chunks.isEmpty()) {
                 double x1 = Collections.min(chunks, Comparator.comparing(Chunk::getX1)).x1;
@@ -64,6 +66,8 @@ public class DataExtractor {
                 double y2 = Collections.max(chunks, Comparator.comparing(Chunk::getY2)).y2;
 
                 tables.add(new Rectangle2D.Double(x1, y1, x2 - x1, y2 - y1));
+            } else {
+                System.err.printf("Chunks is empty in document %s\n", FilenameUtils.getName(document.getFileName()));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -72,18 +76,20 @@ public class DataExtractor {
         return tables;
     }
 
-    private void setByKey(String parentPath, String name, String key) throws IOException {
-        String path;
+    private void setByKey(String key) throws IOException {
         boolean isChunks = key.equals("chunks");
+        File file;
+        String parentPath = FilenameUtils.getFullPath(document.getSourceFile().getParent());
+        String name = FilenameUtils.getBaseName(document.getFileName());
 
         if (isChunks) {
-            path = parentPath + "/chunk/" + name + ".chunk";
+            file = new File(String.format("%s/%s/%s.%s", parentPath, "chunk", name, "chunk"));
         } else {
-            path = parentPath + "/structure/" + name + ".json";
+            file = new File(String.format("%s/%s/%s.%s", parentPath, "structure", name, "json"));
         }
 
-        String file = FileUtils.readFileToString(new File(path), "utf-8");
-        JSONObject jsonObject = new JSONObject(file);
+        String fileString = FileUtils.readFileToString(file, "utf-8");
+        JSONObject jsonObject = new JSONObject(fileString);
         JSONArray jsonArray = jsonObject.getJSONArray(key);
 
         if (isChunks) {
@@ -97,7 +103,7 @@ public class DataExtractor {
         } else {
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject obj = jsonArray.getJSONObject(i);
-                StringBuilder stringBuilder = new StringBuilder();// = obj.getString("tex");
+                StringBuilder stringBuilder = new StringBuilder();
                 JSONArray strings = obj.getJSONArray("content");
 
                 for (int j = 0; j < strings.length(); j++) {

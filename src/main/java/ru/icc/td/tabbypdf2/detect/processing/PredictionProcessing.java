@@ -21,14 +21,9 @@ public class PredictionProcessing implements Processing<Prediction> {
     private Table table;
     public boolean isTable;
 
-    public PredictionProcessing() {
-        setAll();
-    }
-
     public PredictionProcessing(boolean config) {
         if (config) {
             setAll();
-        } else {
         }
     }
 

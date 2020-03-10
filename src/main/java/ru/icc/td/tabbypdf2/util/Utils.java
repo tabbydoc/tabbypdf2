@@ -435,6 +435,18 @@ public class Utils {
         return new File(String.format("%s/%s.%s", outputDirectoryPath, fileName, fileExt));
     }
 
+    public static File createOutputFile(String subDirName, Path debugDirectoryPath, String fileName, String fileExt) {
+        // Make the specified output directory
+        Path outputDirectoryPath = debugDirectoryPath;
+
+        if (null != subDirName)
+            outputDirectoryPath = debugDirectoryPath.resolve(subDirName);
+
+        outputDirectoryPath.toFile().mkdirs();
+
+        return new File(String.format("%s/%s.%s", outputDirectoryPath, fileName, fileExt));
+    }
+
     // Convert image to Mat
     public static Mat matify(BufferedImage im) {
         // Convert INT to BYTE
