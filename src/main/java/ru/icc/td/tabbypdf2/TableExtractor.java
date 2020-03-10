@@ -185,7 +185,8 @@ public final class TableExtractor {
         }
 
         try {
-            FileOutputStream outputStream = new FileOutputStream("book.xlsx");
+            File file = new File(debugPath.toString() + "/book.xlsx");
+            FileOutputStream outputStream = new FileOutputStream(file);
             ExcelWriter.getWorkbook().write(outputStream);
             ExcelWriter.getWorkbook().close();
         } catch (FileNotFoundException e) {
