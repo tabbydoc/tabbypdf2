@@ -18,6 +18,7 @@ import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Prediction;
 import ru.icc.td.tabbypdf2.model.Table;
+import ru.icc.td.tabbypdf2.out.DataExtractor;
 import ru.icc.td.tabbypdf2.out.ExcelWriter;
 import ru.icc.td.tabbypdf2.out.XmlWriter;
 import ru.icc.td.tabbypdf2.read.DocumentLoader;
@@ -158,7 +159,7 @@ public final class TableExtractor {
             // Extractor
             useExtractor = AppConfig.isUseExtractor();
             if (useExtractor) {
-                dataExtractor = new DataExtractor();
+                dataExtractor = new DataExtractor(AppConfig.getExtractorMode());
             }
 
             final String[] extensions = {"pdf", "PDF"};
@@ -181,7 +182,7 @@ public final class TableExtractor {
 
                     for (File file : files) {
                         int percent = Math.round((i * 100) / size);
-                        System.out.printf("%d / %d  %d%% %s\n",
+                        System.out.printf("%d / %d %d%% %s\n",
                                 i, size, percent, file.getCanonicalPath());
                         i++;
 

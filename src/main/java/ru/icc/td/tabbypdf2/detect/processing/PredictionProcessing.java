@@ -27,6 +27,10 @@ public class PredictionProcessing implements Processing<Prediction> {
         }
     }
 
+    public PredictionProcessing(List<Verification> verifications) {
+        this.verifications.addAll(verifications);
+    }
+
     @Override
     public void process(Prediction prediction) {
         if (prediction == null) {

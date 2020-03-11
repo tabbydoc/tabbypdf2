@@ -1,10 +1,14 @@
-package ru.icc.td.tabbypdf2;
+package ru.icc.td.tabbypdf2.out;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
+import ru.icc.td.tabbypdf2.detect.processing.verification.DiagramVerification;
+import ru.icc.td.tabbypdf2.detect.processing.verification.ImageVerification;
+import ru.icc.td.tabbypdf2.detect.processing.verification.StructureVerification;
+import ru.icc.td.tabbypdf2.interfaces.Verification;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Prediction;
@@ -17,9 +21,16 @@ import java.util.*;
 
 public class DataExtractor {
     private Document document;
+    private Mode mode = Mode.NEGATIVE;
 
     private List<Chunk> chunks = new ArrayList<>();
     private List<String> cells = new ArrayList<>();
+
+    public DataExtractor(String mode) {
+        if (mode.equals("SciTSR")) {
+            this.mode = Mode.SciTSR;
+        }
+    }
 
     public void start(Document document) {
         if (document == null)
@@ -31,33 +42,79 @@ public class DataExtractor {
         if (pages.isEmpty())
             return;
 
-        PredictionProcessing processing = new PredictionProcessing(false);
+
+        List<Rectangle2D.Double> tables = new ArrayList<>();
 
         for (Page page : pages) {
-            List<Rectangle2D.Double> tables = getTables();
+            if (mode == Mode.SciTSR) {
+                tables = getTables();
+                PredictionProcessing processing = new PredictionProcessing(false);
 
-            tables.forEach(rect -> {
-                Prediction prediction = new Prediction(rect, page);
-                processing.process(prediction);
-                page.addTable(processing.getTable());
-            });
+                tables.forEach(rect -> {
+                    Prediction prediction = new Prediction(rect, page);
+                    processing.process(prediction);
+                    page.addTable(processing.getTable());
+                });
+            } else {
+                tables.clear();
+                tables.addAll(getTables(page));
+
+                List<Verification> verifications = new ArrayList<>();
+                verifications.add(new StructureVerification());
+
+                PredictionProcessing processing = new PredictionProcessing(verifications);
+                tables.forEach(rect -> {
+                    Prediction prediction = new Prediction(rect, page);
+                    processing.process(prediction);
+
+                    if (!(prediction.x == 0 && prediction.y == 0) && !prediction.getBlocks().isEmpty() && prediction.isTruthful()) {
+                        page.addTable(processing.getTable());
+                    }
+                });
+            }
         }
 
         chunks.clear();
         cells.clear();
     }
 
-    private List<Rectangle2D.Double> getTables() {
-        String parentPath = document.getSourceFile().toPath().getParent().getParent().toString();
-        String name = FilenameUtils.removeExtension(document.getFileName());
+    private List<Rectangle2D.Double> getTables(Page page) {
+        List<Rectangle2D.Double> rectangles = new ArrayList<>();
+        double h = page.getHeight();
+        double w = page.getWidth();
+        double alpha = h / 8;
+        double beta = h / 2;
+        double a = 0, b = 0, x = 0, y = 0;
 
+        double S = h*w*0.2;
+        Random random = new Random();
+
+        for (int i = 0; i < 2; i++) {
+            while (a * b <= S) {
+                a = random.nextDouble() * (beta - alpha) + alpha;
+
+                double gamma = (2d / 3d) * a;
+                double delta = 3 * a;
+
+                b = random.nextDouble() * (delta - gamma) + gamma;
+            }
+
+            x = w/2 * random.nextDouble();
+            y = h - random.nextDouble() * h;
+            rectangles.add(new Rectangle2D.Double(x, y, b, a));
+        }
+
+        return rectangles;
+    }
+
+    private List<Rectangle2D.Double> getTables() {
         List<Rectangle2D.Double> tables = new ArrayList<>();
 
         try {
+
             setByKey("chunks");
             setByKey("cells");
             check();
-            // TODO: find all documents with empty chunks
 
             if (!chunks.isEmpty()) {
                 double x1 = Collections.min(chunks, Comparator.comparing(Chunk::getX1)).x1;
@@ -67,7 +124,7 @@ public class DataExtractor {
 
                 tables.add(new Rectangle2D.Double(x1, y1, x2 - x1, y2 - y1));
             } else {
-                System.err.printf("Chunks is empty in document %s\n", FilenameUtils.getName(document.getFileName()));
+                System.err.printf("Chunks is empty in the document %s\n", FilenameUtils.getName(document.getFileName()));
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -139,10 +196,10 @@ public class DataExtractor {
     }
 
     public String getWords(String text) {
-        String word = "";
         BreakIterator breakIterator = BreakIterator.getWordInstance();
         breakIterator.setText(text);
         int lastIndex = breakIterator.first();
+        String word = "";
         while (BreakIterator.DONE != lastIndex) {
             int firstIndex = lastIndex;
             lastIndex = breakIterator.next();
@@ -201,5 +258,9 @@ public class DataExtractor {
                     Double.compare(chunk.y2, y2) == 0 &&
                     text.equals(chunk.text);
         }
+    }
+
+    private enum Mode {
+        SciTSR, NEGATIVE
     }
 }

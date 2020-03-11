@@ -17,6 +17,7 @@ public class AppConfig {
     private static boolean usePostProcessing;
     // Extractor
     private static boolean useExtractor;
+    private static String extractorMode;
 
     static {
         Properties properties = new Properties();
@@ -35,6 +36,7 @@ public class AppConfig {
             usePostProcessing = Boolean.parseBoolean(properties.getProperty("processing.use"));
             // Extractor
             useExtractor = Boolean.parseBoolean(properties.getProperty("extractor.use"));
+            extractorMode = properties.getProperty("extractor.mode");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -66,5 +68,9 @@ public class AppConfig {
 
     public static boolean isUseExtractor() {
         return useExtractor;
+    }
+
+    public static String getExtractorMode() {
+        return extractorMode;
     }
 }
