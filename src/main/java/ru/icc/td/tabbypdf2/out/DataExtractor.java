@@ -5,8 +5,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
-import ru.icc.td.tabbypdf2.detect.processing.verification.DiagramVerification;
-import ru.icc.td.tabbypdf2.detect.processing.verification.ImageVerification;
 import ru.icc.td.tabbypdf2.detect.processing.verification.StructureVerification;
 import ru.icc.td.tabbypdf2.interfaces.Verification;
 import ru.icc.td.tabbypdf2.model.Document;
@@ -21,15 +19,13 @@ import java.util.*;
 
 public class DataExtractor {
     private Document document;
-    private Mode mode = Mode.NEGATIVE;
+    private String mode;
 
     private List<Chunk> chunks = new ArrayList<>();
     private List<String> cells = new ArrayList<>();
 
     public DataExtractor(String mode) {
-        if (mode.equals("SciTSR")) {
-            this.mode = Mode.SciTSR;
-        }
+        this.mode = mode;
     }
 
     public void start(Document document) {
@@ -42,35 +38,33 @@ public class DataExtractor {
         if (pages.isEmpty())
             return;
 
+        PredictionProcessing processing = new PredictionProcessing(false);
 
-        List<Rectangle2D.Double> tables = new ArrayList<>();
+        if (mode.equals("SciTSR")) {
+            processing = new PredictionProcessing(false);
+        } else if (mode.equals("NEGATIVE")) {
+            List<Verification> verifications = new ArrayList<>();
+            verifications.add(new StructureVerification());
+            processing = new PredictionProcessing(verifications);
+        }
 
         for (Page page : pages) {
-            if (mode == Mode.SciTSR) {
-                tables = getTables();
-                PredictionProcessing processing = new PredictionProcessing(false);
-
-                tables.forEach(rect -> {
+            if (mode.equals("SciTSR")) {
+                for (Rectangle2D.Double rect : getTables()) {
                     Prediction prediction = new Prediction(rect, page);
                     processing.process(prediction);
                     page.addTable(processing.getTable());
-                });
-            } else {
-                tables.clear();
-                tables.addAll(getTables(page));
-
-                List<Verification> verifications = new ArrayList<>();
-                verifications.add(new StructureVerification());
-
-                PredictionProcessing processing = new PredictionProcessing(verifications);
-                tables.forEach(rect -> {
+                }
+            } else if (mode.equals("NEGATIVE")) {
+                for (Rectangle2D.Double rect : getTables(page)) {
                     Prediction prediction = new Prediction(rect, page);
                     processing.process(prediction);
 
-                    if (!(prediction.x == 0 && prediction.y == 0) && !prediction.getBlocks().isEmpty() && prediction.isTruthful()) {
+                    if (!((prediction.x == 0 && prediction.y == 0) || prediction.getBlocks().isEmpty())
+                            && prediction.isTruthful()) {
                         page.addTable(processing.getTable());
                     }
-                });
+                }
             }
         }
 
@@ -111,7 +105,6 @@ public class DataExtractor {
         List<Rectangle2D.Double> tables = new ArrayList<>();
 
         try {
-
             setByKey("chunks");
             setByKey("cells");
             check();
@@ -258,9 +251,5 @@ public class DataExtractor {
                     Double.compare(chunk.y2, y2) == 0 &&
                     text.equals(chunk.text);
         }
-    }
-
-    private enum Mode {
-        SciTSR, NEGATIVE
     }
 }
