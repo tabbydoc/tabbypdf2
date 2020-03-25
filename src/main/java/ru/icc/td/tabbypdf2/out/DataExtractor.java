@@ -5,7 +5,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
-import ru.icc.td.tabbypdf2.detect.processing.verification.StructureVerification;
 import ru.icc.td.tabbypdf2.interfaces.Verification;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
@@ -44,7 +43,6 @@ public class DataExtractor {
             processing = new PredictionProcessing(false);
         } else if (mode.equals("NEGATIVE")) {
             List<Verification> verifications = new ArrayList<>();
-            verifications.add(new StructureVerification());
             processing = new PredictionProcessing(verifications);
         }
 
@@ -80,10 +78,10 @@ public class DataExtractor {
         double beta = h / 2;
         double a = 0, b = 0, x = 0, y = 0;
 
-        double S = h*w*0.2;
+        double S = h*w*0.05;
         Random random = new Random();
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < 5; i++) {
             while (a * b <= S) {
                 a = random.nextDouble() * (beta - alpha) + alpha;
 
@@ -93,7 +91,7 @@ public class DataExtractor {
                 b = random.nextDouble() * (delta - gamma) + gamma;
             }
 
-            x = w/2 * random.nextDouble();
+            x = random.nextDouble() * w;
             y = h - random.nextDouble() * h;
             rectangles.add(new Rectangle2D.Double(x, y, b, a));
         }
