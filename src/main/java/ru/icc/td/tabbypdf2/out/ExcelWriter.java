@@ -109,6 +109,7 @@ public class ExcelWriter {
         FileOutputStream outputStream = new FileOutputStream(file);
         workbook.write(outputStream);
         workbook.close();
+        outputStream.close();
     }
 
 }

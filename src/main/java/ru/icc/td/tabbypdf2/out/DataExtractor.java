@@ -4,12 +4,20 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
 import ru.icc.td.tabbypdf2.interfaces.Verification;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Prediction;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
@@ -44,6 +52,11 @@ public class DataExtractor {
         } else if (mode.equals("NEGATIVE")) {
             List<Verification> verifications = new ArrayList<>();
             processing = new PredictionProcessing(verifications);
+            try {
+                extractChunks();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
         for (Page page : pages) {
@@ -75,28 +88,93 @@ public class DataExtractor {
         double h = page.getHeight();
         double w = page.getWidth();
         double alpha = h / 8;
-        double beta = h / 2;
+        double beta = h;
+        double gamma = w / 8;
+        double delta = w;
+
         double a = 0, b = 0, x = 0, y = 0;
 
-        double S = h*w*0.05;
+        double S = h * w * 0.05;
         Random random = new Random();
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 15; i++) {
             while (a * b <= S) {
                 a = random.nextDouble() * (beta - alpha) + alpha;
-
-                double gamma = (2d / 3d) * a;
-                double delta = 3 * a;
-
                 b = random.nextDouble() * (delta - gamma) + gamma;
             }
 
             x = random.nextDouble() * w;
-            y = h - random.nextDouble() * h;
-            rectangles.add(new Rectangle2D.Double(x, y, b, a));
+            y = random.nextDouble() * h;
+
+            if (isTable(new Rectangle2D.Double(x, y, b, a), page)) {
+                rectangles.add(new Rectangle2D.Double(x, y, b, a));
+            }
         }
 
         return rectangles;
+    }
+
+    private void extractChunks() throws
+            IOException, SAXException, ParserConfigurationException {
+        String parentPath = FilenameUtils.getFullPath(document.getSourceFile().toString());
+        String name = FilenameUtils.getBaseName(document.getFileName());
+        File file = new File(String.format("%s/%s-reg.xml", parentPath, name));
+
+        try {
+            DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+            DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+            org.w3c.dom.Document doc = dBuilder.parse(file);
+
+            doc.getDocumentElement().normalize();
+
+            NodeList nList = doc.getElementsByTagName("table");
+
+            for (int i = 0; i < nList.getLength(); i++) {
+
+                Node nNode = nList.item(i);
+
+                if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+
+                    Element element = (Element) nNode;
+
+                    Element region = (Element) element.getElementsByTagName("region").item(0);
+                    String page = region.getAttributes().item(1).getNodeValue();
+                    NamedNodeMap map = region.getElementsByTagName("bounding-box").item(0).getAttributes();
+
+                    double x1 = Double.parseDouble(map.getNamedItem("x1").getNodeValue());
+                    double y1 = Double.parseDouble(map.getNamedItem("y1").getNodeValue());
+                    double x2 = Double.parseDouble(map.getNamedItem("x2").getNodeValue());
+                    double y2 = Double.parseDouble(map.getNamedItem("y2").getNodeValue());
+
+                    chunks.add(new Chunk(x1, x2, y1, y2, page));
+                }
+            }
+        } catch (
+                Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private boolean isTable(Rectangle2D.Double rectangle, Page page) {
+        for (Chunk chunk : chunks) {
+            if (chunk.text.equals(String.valueOf(page.getIndex() + 1))) {
+                Rectangle2D.Double chunkR = new Rectangle2D.Double(chunk.x1, chunk.y1,
+                        Math.abs(chunk.x2 - chunk.x1), Math.abs(chunk.y1 - chunk.y2));
+
+                Rectangle2D.Double intersection = new Rectangle2D.Double();
+
+                Rectangle2D.Double.intersect(rectangle, chunkR, intersection);
+
+                double s1 = rectangle.width * rectangle.height;
+                double s2 = intersection.width * intersection.height;
+
+                if (s2 / s1 >= 0.05) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     private List<Rectangle2D.Double> getTables() {
