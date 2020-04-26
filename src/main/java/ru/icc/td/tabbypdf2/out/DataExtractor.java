@@ -97,7 +97,7 @@ public class DataExtractor {
         double S = h * w * 0.05;
         Random random = new Random();
 
-        for (int i = 0; i < 15; i++) {
+        for (int i = 0; i < 30; i++) {
             while (a * b <= S) {
                 a = random.nextDouble() * (beta - alpha) + alpha;
                 b = random.nextDouble() * (delta - gamma) + gamma;
@@ -168,7 +168,7 @@ public class DataExtractor {
                 double s1 = rectangle.width * rectangle.height;
                 double s2 = intersection.width * intersection.height;
 
-                if (s2 / s1 >= 0.05) {
+                if (s2 / s1 >= 0.04) {
                     return false;
                 }
             }
