@@ -9,11 +9,11 @@ import ru.icc.td.tabbypdf2.model.Block;
 import ru.icc.td.tabbypdf2.model.Prediction;
 
 public class DiagramVerification implements Verification {
-    private final double[] parameters = new double[35];
+    private final double[] parameters = new double[38];
     private int counter;
-    private DescriptiveStatistics ds = new DescriptiveStatistics();
-    private DescriptiveStatistics dsX = new DescriptiveStatistics();
-    private DescriptiveStatistics dsY = new DescriptiveStatistics();
+    private final DescriptiveStatistics ds = new DescriptiveStatistics();
+    private final DescriptiveStatistics dsX = new DescriptiveStatistics();
+    private final DescriptiveStatistics dsY = new DescriptiveStatistics();
 
     @Override
     public boolean verify(Prediction prediction) {
@@ -30,14 +30,22 @@ public class DiagramVerification implements Verification {
 
         writeStat(ds);
 
+        ds.clear();
+        double sum = 0;
+
         for (Block block : prediction.getBlocks()) {
             dsX.addValue(block.getCenterX());
             dsY.addValue(block.getCenterY());
             ds.addValue(structure.degreeOf(block));
+            sum = sum + (block.width * block.height);
         }
 
+        double relation = sum / (prediction.width * prediction.height);
+        setElement(relation);
         writeStat(dsX);
+        setElement(prediction.getCenterX());
         writeStat(dsY);
+        setElement(prediction.getCenterY());
         writeStat(ds);
 
         KosarajuStrongConnectivityInspector<Block, DefaultWeightedEdge> inspector =

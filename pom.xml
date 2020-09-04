@@ -138,10 +138,11 @@
             <artifactId>proto</artifactId>
             <version>1.13.0-rc0</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
         <dependency>
             <groupId>org.openpnp</groupId>
             <artifactId>opencv</artifactId>
-            <version>3.4.2-0</version>
+            <version>4.3.0-2</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/nu.pattern/opencv -->
         <dependency>
