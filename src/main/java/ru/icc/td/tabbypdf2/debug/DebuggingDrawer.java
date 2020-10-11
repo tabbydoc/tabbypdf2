@@ -230,7 +230,7 @@ public final class DebuggingDrawer {
                 for (Projection.Vertical vertical : table.getMap().get(horizontal)) {
                     contentDrawer.strokeLine(vertical);
                 }
-            }*/
+            }
 
 
             List<Projection.Vertical> verticals = table.getVerticals();
@@ -242,6 +242,7 @@ public final class DebuggingDrawer {
             for (Projection.Vertical vertical : verticals) {
                 contentDrawer.strokeLine(vertical);
             }
+             */
         }
     }
 

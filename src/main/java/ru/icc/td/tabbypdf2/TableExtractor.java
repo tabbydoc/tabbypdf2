@@ -219,7 +219,7 @@ public final class TableExtractor {
 
         PredictionProcessing processing = new PredictionProcessing(true);
 
-        List<Rectangle2D> tables;
+        List<Rectangle2D> tables = null;
         for (Page page : pages) {
             BufferedImage img = pdfToImage.getImageForPage(page.getIndex());
             Mat imgResult = matify(img);
@@ -238,7 +238,7 @@ public final class TableExtractor {
             results.add(b);
             Core.merge(results, imgResult);
             img = mat2BufferedImage(imgResult);
-            tables = tableDetector.detectTables(img);
+            // tables = tableDetector.detectTables(img);
             if (tables == null)
                 continue;
             if (tables.isEmpty())

@@ -19,7 +19,7 @@ public class DiagramVerification implements Verification {
     public boolean verify(Prediction prediction) {
         counter = 0;
 
-        setElement(prediction.getMaxY());
+        // setElement(prediction.getMaxY());
         setElement(prediction.getBlocks().size());
 
         Graph<Block, DefaultWeightedEdge> structure = prediction.getStructure();
@@ -42,11 +42,11 @@ public class DiagramVerification implements Verification {
 
         double relation = sum / (prediction.width * prediction.height);
         setElement(relation);
-        writeStat(dsX);
+        writeStatForCoords(dsX);
         setElement(prediction.getCenterX());
-        writeStat(dsY);
+        writeStatForCoords(dsY);
         setElement(prediction.getCenterY());
-        writeStat(ds);
+        writeStatForVertexes(ds);
 
         KosarajuStrongConnectivityInspector<Block, DefaultWeightedEdge> inspector =
                 new KosarajuStrongConnectivityInspector<>(structure);
@@ -63,6 +63,27 @@ public class DiagramVerification implements Verification {
         counter++;
     }
 
+    private void writeStatForCoords(DescriptiveStatistics ds) {
+        setElement(ds.getMean());
+        setElement(ds.getMax());
+        setElement(ds.getMin());
+        setElement(ds.getPercentile(50));
+        setElement(ds.getStandardDeviation());
+        // setElement(ds.getVariance());
+        ds.clear();
+    }
+
+    private void writeStatForVertexes(DescriptiveStatistics ds) {
+        setElement(ds.getSum());
+        setElement(ds.getMean());
+        setElement(ds.getMax());
+        setElement(ds.getMin());
+        setElement(ds.getPercentile(50));
+        setElement(ds.getStandardDeviation());
+        // setElement(ds.getVariance());
+        ds.clear();
+    }
+
     private void writeStat(DescriptiveStatistics ds) {
         setElement(ds.getSum());
         setElement(ds.getN());
@@ -71,7 +92,7 @@ public class DiagramVerification implements Verification {
         setElement(ds.getMin());
         setElement(ds.getPercentile(50));
         setElement(ds.getStandardDeviation());
-        setElement(ds.getVariance());
+        // setElement(ds.getVariance());
         ds.clear();
     }
 }
