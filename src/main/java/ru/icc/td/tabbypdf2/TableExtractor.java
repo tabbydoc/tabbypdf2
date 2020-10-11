@@ -66,14 +66,14 @@ public final class TableExtractor {
     @Option(name = "-d",
             aliases = {"--debug"},
             usage = "enable debug")
-    private boolean useDebug = true;
+    private final boolean useDebug = true;
     private Path debugPath;
 
     @Option(name = "-?",
             aliases = {"--help"},
             usage = "show this message")
 
-    private boolean help = false;
+    private final boolean help = false;
 
     private ExcelWriter excelWriter;
     private DataExtractor dataExtractor;
@@ -238,7 +238,7 @@ public final class TableExtractor {
             results.add(b);
             Core.merge(results, imgResult);
             img = mat2BufferedImage(imgResult);
-            // tables = tableDetector.detectTables(img);
+            tables = tableDetector.detectTables(img);
             if (tables == null)
                 continue;
             if (tables.isEmpty())
