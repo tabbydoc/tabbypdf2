@@ -105,16 +105,17 @@ public class DataExtractor {
         List<Prediction> predictions = new ArrayList<>();
         double h = page.getHeight();
         double w = page.getWidth();
-        double alpha = h / 8;
+        double alpha = h / 5;
         double beta = h;
-        double gamma = w / 8;
+        double gamma = w / 5;
         double delta = w;
 
         double a = 0, b = 0, x = 0, y = 0;
 
-        double S = h * w * 0.2;
+        double S = h * w * 0.05;
         Random random = new Random();
         int counter = 0;
+        int NEB = 0;
 
         while (counter < 1) {
             while (a * b <= S) {
@@ -129,9 +130,15 @@ public class DataExtractor {
             if (isTable(rect, page)) {
                 Prediction prediction = new Prediction(rect, page);
 
+                if (prediction.width * prediction.height < S && NEB < 10) {
+                    NEB++;
+                    continue;
+                }
+
                 if (prediction.getBlocks().size() >= 1 && !prediction.getBlocks().isEmpty()) {
                     predictions.add(prediction);
                     counter++;
+                    NEB = 0;
                 }
             }
         }

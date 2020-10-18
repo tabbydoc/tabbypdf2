@@ -4,7 +4,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import ru.icc.td.tabbypdf2.detect.processing.verification.feature.ParametersFactory;
+import ru.icc.td.tabbypdf2.detect.processing.verification.feature.ParameterFactory;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Table;
@@ -19,8 +19,8 @@ import static ru.icc.td.tabbypdf2.util.Utils.createOutputFile;
 public class ExcelWriter {
     private final XSSFWorkbook workbook = new XSSFWorkbook();
     private final XSSFSheet sheet;
-
     private final Path path;
+    private int rowCount = 0;
 
     public ExcelWriter(Path path) {
         sheet = workbook.createSheet();
@@ -28,13 +28,12 @@ public class ExcelWriter {
     }
 
     public void writeExcel(Document document) {
-        int rowCount = 0;
 
         for (Page page : document.getPages()) {
             for (Table table : page.getTables()) {
                 Row row = sheet.createRow(rowCount++);
 
-                ParametersFactory factory = new ParametersFactory(table);
+                ParameterFactory factory = new ParameterFactory(table);
 
                 if (rowCount == 1) {
                     String[] names = factory.getNames();
@@ -44,6 +43,7 @@ public class ExcelWriter {
 
                     for (int i = 0; i < factory.size; i++) {
                         row.createCell(i + 3).setCellValue(names[i]);
+                        System.out.printf("'%s', ", names[i]);
                     }
 
                     row = sheet.createRow(rowCount++);

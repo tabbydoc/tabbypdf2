@@ -8,7 +8,7 @@ public class DiagramVerification implements Verification {
 
     @Override
     public boolean verify(Prediction prediction) {
-        ParametersFactory factory = new ParametersFactory(prediction);
+        ParameterFactory factory = new ParameterFactory(prediction);
 
         double[] r = Model.score(factory.getParameters());
         return r[1] >= 0.50;

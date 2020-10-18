@@ -7,18 +7,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ParametersFactory {
+public class ParameterFactory {
     private final double[] parameters;
     private final List<String> names = new ArrayList<>();
     public int size = 0;
     private int counter;
 
-    public ParametersFactory(Prediction prediction) {
+    public ParameterFactory(Prediction prediction) {
         counter = 0;
 
         List<Feature> features = new ArrayList<>(Arrays.asList(
                 new BlockCounterFeature(prediction), new EdgeFeature(prediction), new CoordinateFeature(prediction),
-                new VertexFeature(prediction), new FullnessFeature(prediction), new ConnectivityFeature(prediction)));
+                new VertexFeature(prediction), new FullnessFeature(prediction), new ConnectivityFeature(prediction),
+                new AlignFeature(prediction)));
 
         for (Feature feature: features) {
             size = size + feature.size;
@@ -29,12 +30,13 @@ public class ParametersFactory {
         features.forEach(feature -> setElements(feature.getValues()));
     }
 
-    public ParametersFactory(Table table) {
+    public ParameterFactory(Table table) {
         counter = 0;
 
         List<Feature> features = new ArrayList<>(Arrays.asList(
                 new BlockCounterFeature(table), new EdgeFeature(table), new CoordinateFeature(table),
-                new VertexFeature(table), new FullnessFeature(table), new ConnectivityFeature(table)));
+                new VertexFeature(table), new FullnessFeature(table), new ConnectivityFeature(table),
+                new AlignFeature(table)));
 
         for (Feature feature: features) {
             size = size + feature.size;
@@ -60,7 +62,11 @@ public class ParametersFactory {
 
     private void setElements(double[] values) {
         for (double d: values) {
-            setElement(d);
+            if (Double.isNaN(d)) {
+                setElement(0);
+            } else {
+                setElement(d);
+            }
         }
     }
 }
