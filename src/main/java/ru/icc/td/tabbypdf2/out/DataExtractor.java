@@ -116,7 +116,7 @@ public class DataExtractor {
         Random random = new Random();
         int counter = 0;
 
-        while (counter < 2) {
+        while (counter < 1) {
             while (a * b <= S) {
                 a = random.nextDouble() * (beta - alpha) + alpha;
                 b = random.nextDouble() * (delta - gamma) + gamma;

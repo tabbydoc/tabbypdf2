@@ -47,7 +47,6 @@ public class Table extends Rectangle2D.Double {
         structure = prediction.getStructure();
         page = prediction.getPage();
         map = prediction.getMap();
-
         setAll();
     }
 
