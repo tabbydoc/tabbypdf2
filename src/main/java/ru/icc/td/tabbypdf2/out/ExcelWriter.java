@@ -43,7 +43,6 @@ public class ExcelWriter {
 
                     for (int i = 0; i < factory.size; i++) {
                         row.createCell(i + 3).setCellValue(names[i]);
-                        System.out.printf("'%s', ", names[i]);
                     }
 
                     row = sheet.createRow(rowCount++);
