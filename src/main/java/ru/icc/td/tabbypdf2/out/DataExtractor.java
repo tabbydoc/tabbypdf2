@@ -9,6 +9,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+import ru.icc.td.tabbypdf2.config.AppConfig;
 import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
@@ -49,11 +50,11 @@ public class DataExtractor {
 
         switch (mode) {
             case "SciTSR":
-                processing = new PredictionProcessing(false);
+                processing = new PredictionProcessing(false, false);
                 break;
             case "NEGATIVE":
             case "ICDAR":
-                processing = new PredictionProcessing(false);
+                processing = new PredictionProcessing(AppConfig.isUseVerification(), AppConfig.isUseRefinement());
                 try {
                     extractChunks();
                 } catch (Exception e) {

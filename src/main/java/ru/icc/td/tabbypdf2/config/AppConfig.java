@@ -14,7 +14,9 @@ public class AppConfig {
     private static boolean saveToIcdar;
     private static boolean SaveToExcel;
     // Postprocessing
-    private static boolean usePostProcessing;
+    private static boolean useVerification;
+    private static boolean useRefinement;
+
     // Extractor
     private static boolean useExtractor;
     private static String extractorMode;
@@ -33,7 +35,8 @@ public class AppConfig {
             saveToIcdar = Boolean.parseBoolean(properties.getProperty("debug.save_to_icdar"));
             SaveToExcel = Boolean.parseBoolean(properties.getProperty("debug.save_to_excel"));
             // Postprocessing
-            usePostProcessing = Boolean.parseBoolean(properties.getProperty("processing.use"));
+            useVerification = Boolean.parseBoolean(properties.getProperty("verification.use"));
+            useRefinement = Boolean.parseBoolean(properties.getProperty("refinement.use"));
             // Extractor
             useExtractor = Boolean.parseBoolean(properties.getProperty("extractor.use"));
             extractorMode = properties.getProperty("extractor.mode");
@@ -54,8 +57,12 @@ public class AppConfig {
         return pathToLabelMap;
     }
 
-    public static boolean isUsePostProcessing() {
-        return usePostProcessing;
+    public static boolean isUseVerification() {
+        return useVerification;
+    }
+
+    public static boolean isUseRefinement() {
+        return useRefinement;
     }
 
     public static boolean isSaveToIcdar() {

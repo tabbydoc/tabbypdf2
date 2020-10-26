@@ -217,7 +217,8 @@ public final class TableExtractor {
 
         PdfToImage pdfToImage = new PdfToImage(recomposedDocument.getSourceFile());
 
-        PredictionProcessing processing = new PredictionProcessing(AppConfig.isUsePostProcessing());
+        PredictionProcessing processing = new PredictionProcessing(AppConfig.isUseVerification(),
+                AppConfig.isUseRefinement());
 
         List<Rectangle2D> tables = null;
         for (Page page : pages) {

@@ -21,9 +21,13 @@ public class PredictionProcessing implements Processing<Prediction> {
     private Table table;
     public boolean isTable;
 
-    public PredictionProcessing(boolean config) {
-        if (config) {
-            setAll();
+    public PredictionProcessing(boolean verification, boolean refinement) {
+        if (verification) {
+            setVerifications();
+        }
+
+        if (refinement) {
+            setRefinements();
         }
     }
 
@@ -64,9 +68,12 @@ public class PredictionProcessing implements Processing<Prediction> {
         isTable = true;
     }
 
-    private void setAll(){
+    private void setVerifications() {
         verifications.addAll(Arrays.asList(new StructureVerification(),
                 new ImageVerification(), new DiagramVerification()));
+    }
+
+    private void setRefinements() {
     }
 
     public Table getTable() {
