@@ -12,14 +12,14 @@ import java.util.List;
 import java.util.Map;
 
 public class Prediction extends Rectangle2D.Double {
-    private Page page;
-    private List<Block> blocks = new ArrayList<>();
+    private final Page page;
+    private final List<Block> blocks = new ArrayList<>();
     private Graph<Block, DefaultWeightedEdge> structure = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
     private boolean isTruthful;
     private Map<Projection.Horizontal, List<Projection.Vertical>> map;
     private List<Projection.Vertical> verticals;
 
-    public Prediction(Rectangle2D prediction, Page page){
+    public Prediction(Rectangle2D prediction, Page page) {
         this.page = page;
         setRect(prediction);
         setPageBlocks(page);
@@ -44,34 +44,10 @@ public class Prediction extends Rectangle2D.Double {
                     blocks.add(block);
                     pageBlocks.remove(block);
                     i--;
-                    setAll();
                     setBlocks();
                 }
             }
         }
-    }
-
-    private void setAll() {
-        double minX = java.lang.Double.MAX_VALUE;
-        double minY = java.lang.Double.MAX_VALUE;
-        double maxX = java.lang.Double.MIN_VALUE;
-        double maxY = java.lang.Double.MIN_VALUE;
-
-        for (Block block : blocks) {
-            if (block.x < minX)
-                minX = block.x;
-
-            if (block.x + block.width > maxX)
-                maxX = block.x + block.width;
-
-            if (block.y < minY)
-                minY = block.y;
-
-            if (block.y + block.height > maxY)
-                maxY = block.y + block.height;
-        }
-
-        setRect(minX, minY, maxX - minX, maxY - minY);
     }
 
     public List<Projection.Horizontal> getHorizontals() {
@@ -128,7 +104,6 @@ public class Prediction extends Rectangle2D.Double {
 
     public void removeBlock(Block block) {
         blocks.remove(block);
-        setAll();
         updateStructure();
     }
 
