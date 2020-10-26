@@ -20,7 +20,7 @@ public class VertexFeature extends Feature {
 
         Graph<Block, DefaultWeightedEdge> structure = table.getStructure();
 
-        for (Block block : table.getBlocks()) {
+        for (Block block : table.getStructure().vertexSet()) {
             ds.addValue(structure.degreeOf(block));
         }
     }
@@ -36,7 +36,7 @@ public class VertexFeature extends Feature {
         names[5] = "sd";
         Graph<Block, DefaultWeightedEdge> structure = prediction.getStructure();
 
-        for (Block block : prediction.getBlocks()) {
+        for (Block block : prediction.getStructure().vertexSet()) {
             ds.addValue(structure.degreeOf(block));
         }
     }

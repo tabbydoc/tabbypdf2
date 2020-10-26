@@ -217,7 +217,7 @@ public final class TableExtractor {
 
         PdfToImage pdfToImage = new PdfToImage(recomposedDocument.getSourceFile());
 
-        PredictionProcessing processing = new PredictionProcessing(true);
+        PredictionProcessing processing = new PredictionProcessing(AppConfig.isUsePostProcessing());
 
         List<Rectangle2D> tables = null;
         for (Page page : pages) {
@@ -244,20 +244,10 @@ public final class TableExtractor {
             if (tables.isEmpty())
                 continue;
 
-            boolean usePostProcessing = AppConfig.isUsePostProcessing();
-
             for (Rectangle2D rect : tables) {
                 Prediction prediction = new Prediction(rect, page);
-
-                if (usePostProcessing) {
-                    processing.process(prediction);
-
-                    if (processing.isTable) {
-                        page.addTable(processing.getTable());
-                    }
-                } else {
-                    page.addTable(new Table(prediction));
-                }
+                processing.process(prediction);
+                page.addTable(processing.getTable());
             }
         }
 
@@ -291,6 +281,12 @@ public final class TableExtractor {
                 dataExtractor.start(originDocument);
                 excelWriter.writeExcel(originDocument);
             } else if (extractTables(originDocument)) {
+                if (saveToExcel) {
+                    excelWriter.writeExcel(originDocument);
+                }
+            }
+
+            if (AppConfig.isSaveToIcdar()) {
                 File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
                 FileWriter fileWriter = new FileWriter(out);
                 List<Table> tables = new ArrayList<>();
@@ -299,10 +295,6 @@ public final class TableExtractor {
                 }
                 writeTables(tables, fileWriter, originDocument.getFileName());
                 fileWriter.close();
-
-                if (saveToExcel) {
-                    excelWriter.writeExcel(originDocument);
-                }
             }
 
             if (useDebug) {

@@ -1,6 +1,5 @@
 package ru.icc.td.tabbypdf2.out;
 
-import jj2000.j2k.entropy.PrecinctSizeSpec;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.json.JSONArray;
@@ -11,17 +10,15 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import ru.icc.td.tabbypdf2.detect.processing.PredictionProcessing;
-import ru.icc.td.tabbypdf2.interfaces.Verification;
 import ru.icc.td.tabbypdf2.model.Document;
 import ru.icc.td.tabbypdf2.model.Page;
 import ru.icc.td.tabbypdf2.model.Prediction;
-import javax.xml.parsers.DocumentBuilderFactory;
+
 import javax.xml.parsers.DocumentBuilder;
-
-import java.io.File;
-
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.awt.geom.Rectangle2D;
+import java.io.File;
 import java.io.IOException;
 import java.text.BreakIterator;
 import java.util.*;
@@ -150,7 +147,7 @@ public class DataExtractor {
             IOException, SAXException, ParserConfigurationException {
         String parentPath = FilenameUtils.getFullPath(document.getSourceFile().toString());
         String name = FilenameUtils.getBaseName(document.getFileName());
-        File file = new File(String.format("%s/%s-reg.xml", parentPath, name));
+        File file = new File(String.format("%s/%s-reg-output.xml", parentPath, name));
 
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
