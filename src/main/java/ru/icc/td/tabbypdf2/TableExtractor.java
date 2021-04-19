@@ -23,6 +23,7 @@ import ru.icc.td.tabbypdf2.out.ExcelWriter;
 import ru.icc.td.tabbypdf2.out.XmlWriter;
 import ru.icc.td.tabbypdf2.read.DocumentLoader;
 
+import javax.imageio.ImageIO;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -253,11 +254,17 @@ public final class TableExtractor {
                     processing.process(prediction);
 
                     if (processing.isTable) {
-                        page.addTable(processing.getTable());
+                        Table table = processing.getTable();
+                        page.addTable(table);
                     }
                 } else {
-                    page.addTable(new Table(prediction));
+                    Table table = new Table(prediction);
+                    page.addTable(table);
                 }
+            }
+
+            for (Table table: page.getTables()) {
+                table.extractTable();
             }
         }
 
@@ -285,12 +292,14 @@ public final class TableExtractor {
 
             DocumentComposer documentComposer = new DocumentComposer();
             documentComposer.compose(originDocument);
-            recomposedDocument = recomposeDocument(originDocument);
+            //recomposedDocument = recomposeDocument(originDocument);
 
+            // useExtractor=true - SCI_TSR
             if (useExtractor) {
                 dataExtractor.start(originDocument);
                 excelWriter.writeExcel(originDocument);
-            } else if (extractTables(originDocument)) {
+            }
+            else if (extractTables(originDocument)) {
                 File out = createOutputFile(file, "xml", debugPath, "-reg-output", "xml");
                 FileWriter fileWriter = new FileWriter(out);
                 List<Table> tables = new ArrayList<>();

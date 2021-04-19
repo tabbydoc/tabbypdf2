@@ -51,7 +51,7 @@ public class PredictionProcessing implements Processing<Prediction> {
         }
 
         for (Refinement<Prediction> r : refinements) {
-            r.refine(prediction);
+           r.refine(prediction);
 
             if (!prediction.isTruthful()) {
                 isTable = false;

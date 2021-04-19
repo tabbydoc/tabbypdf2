@@ -11,6 +11,7 @@ public class Block extends Rectangle2D.Double {
     private double minSpaceWidth = 0f;
     private double maxSpaceWidth = 0f;
     private double averageSpaceWidth = 0f;
+    private int id = -1;
 
     {
         words = new ArrayList<>(3000);
@@ -39,8 +40,12 @@ public class Block extends Rectangle2D.Double {
         double minSpaceWidth = java.lang.Double.MAX_VALUE;
         double maxSpaceWidth = java.lang.Double.MIN_VALUE;
         double sumSpaceWidth = 0f;
+        this.id = -1;
 
         for (Word word : words) {
+            if (this.id < word.getStartChunkID())
+                this.id = word.getStartChunkID();
+
             if (word.x < minX)
                 minX = word.x;
 
@@ -67,6 +72,15 @@ public class Block extends Rectangle2D.Double {
 
     public List<Word> getWords() {
         return words;
+    }
+
+    public String getText(){
+        StringBuilder sb = new StringBuilder();
+        for(Word word: words){
+            sb.append(word.getText());
+            sb.append(" ");
+        }
+        return sb.toString();
     }
 
     public void addWord(Word word) {

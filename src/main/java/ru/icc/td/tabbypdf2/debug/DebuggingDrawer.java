@@ -5,6 +5,8 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import ru.icc.td.tabbypdf2.detect.processing.recognition.Projection;
+import ru.icc.td.tabbypdf2.extract.Segment;
+import ru.icc.td.tabbypdf2.extract.TableProjection;
 import ru.icc.td.tabbypdf2.model.*;
 
 import java.awt.*;
@@ -217,6 +219,15 @@ public final class DebuggingDrawer {
     private void drawTables(Page page, PDFContentDrawer contentDrawer) throws IOException {
         for (Table table : page.getTables()) {
             contentDrawer.strokeRectangle(table);
+            for(Segment projection: table.getRows()) {
+                contentDrawer.strokeLine(new Line2D.Double(table.getMinX() + 5, projection.getStart(), table.getMaxX() - 5, projection.getStart()));
+                contentDrawer.strokeLine(new Line2D.Double(table.getMinX() + 5, projection.getEnd(), table.getMaxX() - 5, projection.getEnd()));
+            }
+
+            for(Segment projection: table.getColumns()) {
+                contentDrawer.strokeLine(new Line2D.Double(projection.getStart(), table.getMinY() + 5, projection.getStart(), table.getMaxY() - 5));
+                contentDrawer.strokeLine(new Line2D.Double(projection.getEnd(), table.getMinY() + 5, projection.getEnd(), table.getMaxY() - 5));
+            }
 
             /*if (table.getMap() == null) {
                 return;

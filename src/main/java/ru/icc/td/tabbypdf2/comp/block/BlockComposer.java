@@ -20,5 +20,4 @@ public final class BlockComposer implements Composer<Page> {
         // Rough block processing
         processing.process(page);
     }
-
 }

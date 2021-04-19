@@ -27,9 +27,9 @@ public class RcnnTableDetector {
         if (tables == null) {
             return null;
         }
-        List<Rectangle2D> result = new ArrayList<Rectangle2D>();
+        List<Rectangle2D> result = new ArrayList<>();
         for (TensorBox tbox: tables) {
-            if (tbox.getScore() > 0.90) {
+            if (tbox.getScore() > 0.60) {
                 int ymin = Math.round(tbox.getMinY() * h);
                 int xmin = Math.round(tbox.getMinX() * w);
                 int ymax = Math.round(tbox.getMaxY() * h);

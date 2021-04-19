@@ -4,11 +4,29 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultWeightedEdge;
 import org.jgrapht.graph.SimpleDirectedWeightedGraph;
 import ru.icc.td.tabbypdf2.detect.processing.recognition.Projection;
+import ru.icc.td.tabbypdf2.extract.Extractor;
+import ru.icc.td.tabbypdf2.extract.Segment;
+import ru.icc.td.tabbypdf2.extract.TableProjection;
 
 import java.awt.geom.Rectangle2D;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.StringWriter;
 
 public class Table extends Rectangle2D.Double {
     private List<Block> blocks = new ArrayList<>();
@@ -16,6 +34,8 @@ public class Table extends Rectangle2D.Double {
     private Graph<Block, DefaultWeightedEdge> structure = new SimpleDirectedWeightedGraph<>(DefaultWeightedEdge.class);
     private Map<Projection.Horizontal, List<Projection.Vertical>> map;
     private List<Projection.Vertical> verticals = new ArrayList<>();
+    private TableProjection rows = new TableProjection();
+    private TableProjection columns = new TableProjection();
 
     public Map<Projection.Horizontal, List<Projection.Vertical>> getMap() {
         return map;
@@ -53,6 +73,14 @@ public class Table extends Rectangle2D.Double {
 
     public List<Block> getBlocks() {
         return blocks;
+    }
+
+    public ArrayList<Segment> getRows(){
+        return this.rows.getSegments();
+    }
+
+    public ArrayList<Segment> getColumns(){
+        return this.columns.getSegments();
     }
 
     private void setAll() {
@@ -96,5 +124,15 @@ public class Table extends Rectangle2D.Double {
 
     public Graph<Block, DefaultWeightedEdge> getStructure() {
         return structure;
+    }
+
+    public void extractTable() {
+        for (Block block: this.blocks){
+            System.out.println(block.getText());
+            rows.add(new Segment((int)block.getMinY(), (int)block.getMaxY()));
+            columns.add(new Segment((int)block.getMinX(), (int)block.getMaxX()));
+        }
+        rows.sort();
+        columns.sort();
     }
 }
