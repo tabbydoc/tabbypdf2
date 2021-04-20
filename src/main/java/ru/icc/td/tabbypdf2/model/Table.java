@@ -128,7 +128,6 @@ public class Table extends Rectangle2D.Double {
 
     public void extractTable() {
         for (Block block: this.blocks){
-            System.out.println(block.getText());
             rows.add(new Segment((int)block.getMinY(), (int)block.getMaxY()));
             columns.add(new Segment((int)block.getMinX(), (int)block.getMaxX()));
         }

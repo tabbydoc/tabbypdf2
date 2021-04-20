@@ -36,7 +36,11 @@ public class DiagramVerification implements Verification {
         for (Block block : prediction.getBlocks()) {
             dsX.addValue(block.getCenterX());
             dsY.addValue(block.getCenterY());
-            ds.addValue(structure.degreeOf(block));
+            try {
+                ds.addValue(structure.degreeOf(block));
+            } catch (Exception e) {
+                continue;
+            }
             sum = sum + (block.width * block.height);
         }
 
